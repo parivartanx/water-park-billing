@@ -9,6 +9,7 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
   const [costumeQuantity, setCostumeQuantity] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [discountType, setDiscountType] = useState<'flat' | 'percentage'>('percentage')
+  const [paymentMode, setPaymentMode] = useState<'cash' | 'card' | 'online'>('cash')
 
   const costumePrice = 20 // Example price per costume
   const subtotal = costumeQuantity * costumePrice
@@ -75,10 +76,10 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
 
       <form className="space-y-8">
         {/* Customer Details */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#DC004E]">
+        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#DC004E]">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Customer Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+            <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
               <input
                 type="text"
@@ -88,10 +89,8 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Customer Number
-              </label>
+            <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Customer Number</label>
               <input
                 type="tel"
                 value={customerNumber}
@@ -104,12 +103,12 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
         </div>
 
         {/* Costume Details */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#DC004E]">
+        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#DC004E]">
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <FaTshirt className="mr-2 text-[#DC004E]" /> Costume Details
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-center">
+            <div className="flex items-center bg-gray-50 p-4 rounded-lg shadow-sm">
               <label className="block text-sm font-medium text-gray-700 mb-2 mr-4">
                 Costume Quantity
               </label>
@@ -138,11 +137,11 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
           </div>
         </div>
 
-        {/* Amount and Discount */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#DC004E]">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Amount and Discount</h2>
+        {/* Payment Details */}
+        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#DC004E]">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Payment Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+            <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
               <label className="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
               <select
                 value={discountType}
@@ -153,7 +152,7 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
                 <option value="flat">Flat</option>
               </select>
             </div>
-            <div>
+            <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
               <label className="block text-sm font-medium text-gray-700 mb-2">Discount</label>
               <input
                 type="number"
@@ -163,11 +162,23 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E]"
               />
             </div>
+            <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Payment Mode</label>
+              <select
+                value={paymentMode}
+                onChange={(e) => setPaymentMode(e.target.value as 'cash' | 'card' | 'online')}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E]"
+              >
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+                <option value="online">Online</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Bill Summary */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#DC004E]">
+        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#DC004E]">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Bill Summary</h2>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
