@@ -1,69 +1,152 @@
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useState } from 'react'
 import logo from '../assets/logo.png'
+import {
+  LayoutDashboard,
+  Ticket,
+  Lock,
+  Shirt,
+  FileText,
+  User,
+  Box,
+  LogOut,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react'
 
 const Sidebar = (): JSX.Element => {
   const location = useLocation()
   const [isStockOpen, setIsStockOpen] = useState(false)
 
   const menuItems = [
-    { icon: '📊', label: 'Dashboard', path: '/' },
-    { icon: '🎫', label: 'Ticket Billing', path: '/ticket-billing' },
-    { icon: '🔐', label: 'Locker Billing', path: '/locker-billing' },
-    { icon: '👔', label: 'Costume Billing', path: '/costume-billing' },
-    { icon: '📜', label: 'Bill History', path: '/bill-history' },
-    { icon: '👤', label: 'Profile', path: '/profile' }
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: Ticket, label: 'Ticket Billing', path: '/ticket-billing' },
+    { icon: Lock, label: 'Locker Billing', path: '/locker-billing' },
+    { icon: Shirt, label: 'Costume Billing', path: '/costume-billing' },
+    { icon: FileText, label: 'Bill History', path: '/bill-history' },
+    { icon: User, label: 'Profile', path: '/profile' }
   ]
 
   const stockItems = [
-    { icon: '🔐', label: 'Locker', path: '/locker' },
-    { icon: '👔', label: 'Costume', path: '/costume' }
+    { icon: Lock, label: 'Locker', path: '/locker' },
+    { icon: Shirt, label: 'Costume', path: '/costume' }
   ]
 
+  const MenuItem = ({
+    item,
+    isActive
+  }: {
+    item: {
+      icon: React.ComponentType<{ className?: string }>
+      label: string
+      path: string
+    }
+    isActive: boolean
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  }) => {
+    const Icon = item.icon
+    return (
+      <Link
+        to={item.path}
+        className={`
+          flex items-center px-6 py-3 
+          text-white/90 hover:bg-pink-700/20 
+          transition-all duration-300 
+          group relative
+          ${isActive ? 'bg-pink-800/50 border-r-4 border-[#FFB800]' : ''}
+        `}
+      >
+        <div
+          className={`
+          p-2 rounded-lg mr-4 
+          ${isActive ? 'bg-[#FFB800]/20' : 'bg-white/10'}
+          group-hover:bg-[#FFB800]/30
+          transition-colors
+        `}
+        >
+          <Icon
+            className={`
+              w-5 h-5 
+              ${isActive ? 'text-[#FFB800]' : 'text-white/80'}
+              group-hover:text-[#FFB800]
+              transition-colors
+            `}
+          />
+        </div>
+        <span className="font-medium">{item.label}</span>
+      </Link>
+    )
+  }
+
   return (
-    <div className="fixed h-screen w-64 bg-[#DC004E] shadow-lg flex flex-col">
+    <div className="fixed h-screen w-64 bg-gradient-to-b from-[#DC004E] to-[#A30342] shadow-2xl flex flex-col">
       {/* Logo Section */}
       <div className="p-6 border-b border-pink-300/20">
         <div className="flex items-center gap-3">
-          <img src={logo} alt="Logo" className="w-10 h-10" />
-          <h1 className="text-white text-xl font-bold">Lagoon Park</h1>
+          <img
+            src={logo}
+            alt="Logo"
+            className="w-12 h-12 rounded-full shadow-lg transform hover:scale-110 transition-transform"
+          />
+          <h1 className="text-white text-2xl font-bold tracking-wider">Lagoon Park</h1>
         </div>
       </div>
 
       {/* Menu Section */}
-      <nav className="mt-0">
+      <nav className="mt-2 flex-grow overflow-y-auto custom-scrollbar">
         {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center px-6 py-3 text-white/90 hover:bg-pink-700 transition-colors ${
-              location.pathname === item.path ? 'bg-pink-800 border-r-4 border-[#FFB800]' : ''
-            }`}
-          >
-            <span className="mr-3">{item.icon}</span>
-            <span>{item.label}</span>
-          </Link>
+          <MenuItem key={item.path} item={item} isActive={location.pathname === item.path} />
         ))}
 
         {/* Stock Dropdown */}
         <div>
           <button
-            className="flex items-center px-6 py-3 w-full text-white/90 hover:bg-pink-700 transition-colors focus:outline-none"
+            className="
+              flex items-center px-6 py-3 w-full 
+              text-white/90 hover:bg-pink-700/20 
+              transition-colors focus:outline-none
+              group
+            "
             onClick={() => setIsStockOpen(!isStockOpen)}
           >
-            <span className="mr-3">📦</span>
-            <span>Stock</span>
-            <span className="ml-auto">{isStockOpen ? '▲' : '▼'}</span>
+            <div
+              className={`
+              p-2 rounded-lg mr-4 
+              ${isStockOpen ? 'bg-[#FFB800]/20' : 'bg-white/10'}
+              group-hover:bg-[#FFB800]/30
+              transition-colors
+            `}
+            >
+              <Box
+                className={`
+                  w-5 h-5 
+                  ${isStockOpen ? 'text-[#FFB800]' : 'text-white/80'}
+                  group-hover:text-[#FFB800]
+                  transition-colors
+                `}
+              />
+            </div>
+            <span className="font-medium">Stock</span>
+            <span className="ml-auto">
+              {isStockOpen ? (
+                <ChevronUp className="text-white/80 w-4 h-4" />
+              ) : (
+                <ChevronDown className="text-white/80 w-4 h-4" />
+              )}
+            </span>
           </button>
           {isStockOpen && (
-            <div className="bg-pink-900/50">
+            <div className="bg-pink-900/30 py-2">
               {stockItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`block px-10 py-2 text-white/80 hover:bg-pink-800 transition-colors ${
-                    location.pathname === item.path ? 'bg-pink-800 border-r-4 border-[#FFB800]' : ''
-                  }`}
+                  className={`
+                    block px-16 py-2 
+                    text-white/80 hover:bg-pink-800/50 
+                    transition-colors 
+                    ${location.pathname === item.path ? 'bg-pink-800/50 border-r-4 border-[#FFB800]' : ''}
+                  `}
                 >
                   {item.label}
                 </Link>
@@ -74,13 +157,33 @@ const Sidebar = (): JSX.Element => {
       </nav>
 
       {/* Logout Section at Bottom */}
-      <div className="mt-auto">
+      <div className="border-t border-pink-300/20">
         <Link
           to="/logout"
-          className="flex items-center px-6 py-3 text-white/90 hover:bg-pink-700 transition-colors"
+          className="
+            flex items-center px-6 py-4 
+            text-white/90 hover:bg-pink-700/20 
+            transition-all group
+          "
         >
-          <span className="mr-3">↪️</span>
-          <span>Logout</span>
+          <div
+            className="
+            p-2 rounded-lg mr-4 
+            bg-white/10 
+            group-hover:bg-[#FFB800]/30
+            transition-colors
+          "
+          >
+            <LogOut
+              className="
+                w-5 h-5 
+                text-white/80 
+                group-hover:text-[#FFB800]
+                transition-colors
+              "
+            />
+          </div>
+          <span className="font-medium">Logout</span>
         </Link>
       </div>
     </div>

@@ -40,6 +40,17 @@ interface PaymentCardProps {
   totalAmount: number
 }
 
+type ProductType = 'ticket' | 'locker' | 'costume' | 'Other'
+
+interface RecentBookingProps {
+  id: number
+  customer: string
+  product: ProductType
+  quantity: number
+  date: string
+  amount: number
+}
+
 const StockCard = ({ title, available, total }: StockCardProps): JSX.Element => (
   <div className="bg-white p-6 rounded-lg shadow-md">
     <div className="flex justify-between items-center mb-4">
@@ -174,27 +185,41 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  const recentBookings = [
+  const productIcons: Record<ProductType, string> = {
+    ticket: '🎫',
+    locker: '🔐',
+    costume: '👗',
+    Other: '📋'
+  }
+
+  const productColors: Record<ProductType, string> = {
+    ticket: 'blue',
+    locker: 'green',
+    costume: 'purple',
+    Other: 'gray'
+  }
+
+  const recentBookings: RecentBookingProps[] = [
     {
       id: 1,
-      customer: 'John Doe',
-      product: 'Water Slide',
+      customer: 'Alice Smith',
+      product: 'ticket',
       quantity: 2,
       date: '2023-10-01',
-      amount: 120
+      amount: 200
     },
     {
       id: 2,
-      customer: 'Jane Smith',
-      product: 'Wave Pool',
+      customer: 'John Doe',
+      product: 'locker',
       quantity: 1,
       date: '2023-10-02',
       amount: 150
     },
     {
       id: 3,
-      customer: 'Alice Johnson',
-      product: 'Lazy River',
+      customer: 'Jane Smith',
+      product: 'costume',
       quantity: 3,
       date: '2023-10-03',
       amount: 200
@@ -202,7 +227,7 @@ const Dashboard: React.FC = () => {
     {
       id: 4,
       customer: 'Bob Brown',
-      product: 'Splash Pad',
+      product: 'Other',
       quantity: 1,
       date: '2023-10-04',
       amount: 180
@@ -210,7 +235,7 @@ const Dashboard: React.FC = () => {
     {
       id: 5,
       customer: 'Charlie Davis',
-      product: 'Water Slide',
+      product: 'Other',
       quantity: 2,
       date: '2023-10-05',
       amount: 220
@@ -218,7 +243,7 @@ const Dashboard: React.FC = () => {
     {
       id: 6,
       customer: 'Diana Evans',
-      product: 'Wave Pool',
+      product: 'ticket',
       quantity: 1,
       date: '2023-10-06',
       amount: 160
@@ -226,7 +251,7 @@ const Dashboard: React.FC = () => {
     {
       id: 7,
       customer: 'Frank Green',
-      product: 'Lazy River',
+      product: 'locker',
       quantity: 3,
       date: '2023-10-07',
       amount: 140
@@ -234,7 +259,7 @@ const Dashboard: React.FC = () => {
     {
       id: 8,
       customer: 'Grace Hall',
-      product: 'Splash Pad',
+      product: 'costume',
       quantity: 1,
       date: '2023-10-08',
       amount: 190
@@ -242,7 +267,7 @@ const Dashboard: React.FC = () => {
     {
       id: 9,
       customer: 'Hank Ives',
-      product: 'Water Slide',
+      product: 'Other',
       quantity: 2,
       date: '2023-10-09',
       amount: 210
@@ -250,7 +275,7 @@ const Dashboard: React.FC = () => {
     {
       id: 10,
       customer: 'Ivy Jones',
-      product: 'Wave Pool',
+      product: 'Other',
       quantity: 1,
       date: '2023-10-10',
       amount: 170
@@ -322,31 +347,58 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow-md mt-6">
-        <h3 className="text-lg font-semibold mb-4">Recent Bookings</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Recent Bookings</h3>
+        </div>
         <table className="min-w-full bg-white">
-          <thead>
+          <thead className="bg-gray-100">
             <tr>
-              <th className="py-2">Customer</th>
-              <th className="py-2">Product</th>
-              <th className="py-2">Quantity</th>
-              <th className="py-2">Date</th>
-              <th className="py-2">Amount</th>
+              <th className="py-2 px-4 text-left">Customer</th>
+              <th className="py-2 px-4 text-left">Product</th>
+              <th className="py-2 px-4 text-left">Quantity</th>
+              <th className="py-2 px-4 text-left">Date</th>
+              <th className="py-2 px-4 text-left">Amount</th>
             </tr>
           </thead>
-          <tbody className="text-gray-700">
+          <tbody>
             {recentBookings.map((booking, index) => (
-              <tr key={booking.id} className={index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}>
-                <td className="border px-4 py-2">{booking.customer}</td>
-                <td className="border px-4 py-2">{booking.product}</td>
-                <td className="border px-4 py-2">{booking.quantity}</td>
-                <td className="border px-4 py-2">{booking.date}</td>
-                <td className="border px-4 py-2">₹{booking.amount.toLocaleString()}</td>
+              <tr
+                key={booking.id}
+                className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-gray-100 transition-colors`}
+              >
+                <td className="py-3 px-4">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 rounded-full bg-[#DC004E]/10 flex items-center justify-center mr-3">
+                      <span className="text-[#DC004E] font-bold">{booking.customer.charAt(0)}</span>
+                    </div>
+                    <span className="font-medium">{booking.customer}</span>
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                  <div
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${productColors[booking.product]}-50 text-${productColors[booking.product]}-700`}
+                  >
+                    <span className="mr-2">{productIcons[booking.product]}</span>
+                    {booking.product}
+                  </div>
+                </td>
+                <td className="py-3 px-4 font-medium">{booking.quantity}</td>
+                <td className="py-3 px-4 text-gray-600">
+                  {new Date(booking.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </td>
+                <td className="py-3 px-4 font-semibold text-gray-800">
+                  ${booking.amount.toLocaleString()}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="flex justify-end mt-4">
-          <button className="text-[#DC004E] hover:underline">View More</button>
+          <button className="text-[#DC004E] hover:underline text-sm">View More</button>
         </div>
       </div>
     </div>
