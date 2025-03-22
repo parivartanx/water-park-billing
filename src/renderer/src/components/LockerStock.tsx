@@ -1,16 +1,16 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const LockerStock: React.FC = (): React.ReactElement => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const totalLockers = 100; // Example total lockers
-  const availableLockers = 75; // Example available lockers
-  const occupiedLockers = totalLockers - availableLockers;
+  const totalLockers = 100 // Example total lockers
+  const availableLockers = 75 // Example available lockers
+  const occupiedLockers = totalLockers - availableLockers
 
   const handleAddLocker = (): void => {
-    navigate('/add-locker');
-  };
+    navigate('/add-locker')
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -25,7 +25,12 @@ const LockerStock: React.FC = (): React.ReactElement => {
             className="flex items-center px-4 py-2 bg-[#DC004E] text-white font-medium rounded-lg hover:bg-[#b0003e] transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             Add Locker
           </button>
@@ -37,8 +42,18 @@ const LockerStock: React.FC = (): React.ReactElement => {
             <div className="p-6">
               <div className="flex items-center">
                 <div className="p-3 bg-blue-100 rounded-lg">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <svg
+                    className="w-6 h-6 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
                   </svg>
                 </div>
                 <div className="ml-4">
@@ -57,8 +72,18 @@ const LockerStock: React.FC = (): React.ReactElement => {
             <div className="p-6">
               <div className="flex items-center">
                 <div className="p-3 bg-green-100 rounded-lg">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-6 h-6 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
                 <div className="ml-4">
@@ -66,9 +91,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
                   <p className="text-3xl font-bold text-green-600 mt-2">{availableLockers}</p>
                 </div>
               </div>
-              <div className="mt-4 text-sm text-gray-600">
-                Lockers ready for new customers
-              </div>
+              <div className="mt-4 text-sm text-gray-600">Lockers ready for new customers</div>
             </div>
           </div>
 
@@ -77,8 +100,18 @@ const LockerStock: React.FC = (): React.ReactElement => {
             <div className="p-6">
               <div className="flex items-center">
                 <div className="p-3 bg-red-100 rounded-lg">
-                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m0 0v2m0-2h2m-2 0H8m4-6V4" />
+                  <svg
+                    className="w-6 h-6 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 15v2m0 0v2m0-2h2m-2 0H8m4-6V4"
+                    />
                   </svg>
                 </div>
                 <div className="ml-4">
@@ -86,9 +119,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
                   <p className="text-3xl font-bold text-red-600 mt-2">{occupiedLockers}</p>
                 </div>
               </div>
-              <div className="mt-4 text-sm text-gray-600">
-                Currently in use by customers
-              </div>
+              <div className="mt-4 text-sm text-gray-600">Currently in use by customers</div>
             </div>
           </div>
         </div>
@@ -134,7 +165,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default LockerStock;
+export default LockerStock

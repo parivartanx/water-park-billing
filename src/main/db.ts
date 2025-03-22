@@ -14,3 +14,6 @@ localDB
   .on('error', (err) => console.error('Sync error:', err))
 
 // write queries here
+
+export { localDB, remoteDB }
+

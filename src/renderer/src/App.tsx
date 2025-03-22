@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Sidebar from './components/Sidebar'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+// Sidebar now used in ProtectedRoute component
 import Dashboard from './components/Dashboard'
 import TicketBilling from './components/TicketBilling'
 import LockerBilling from './components/LockerBilling'
@@ -11,13 +11,20 @@ import Profile from './components/Profile'
 import LockerStock from './components/LockerStock'
 import AddLocker from './components/AddLocker'
 import CostumeStock from './components/CostumeStock'
+import SignIn from './components/SignIn'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './context/AuthContext'
+
 const App = (): JSX.Element => {
   return (
-    <Router>
-      <div className="flex">
-        <Sidebar />
-        <div className="ml-64 p-6 flex-1 overflow-y-auto">
-          <Routes>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public route */}
+          <Route path="/signin" element={<SignIn />} />
+
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/ticket-billing" element={<TicketBilling />} />
             <Route path="/locker-billing" element={<LockerBilling />} />
@@ -29,10 +36,13 @@ const App = (): JSX.Element => {
             <Route path="/locker" element={<LockerStock />} />
             <Route path="/add-locker" element={<AddLocker />} />
             <Route path="/costume" element={<CostumeStock />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
+          </Route>
+
+          {/* Redirect any unknown routes to signin */}
+          <Route path="*" element={<Navigate to="/signin" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   )
 }
 

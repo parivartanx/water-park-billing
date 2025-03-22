@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+/* eslint-disable prettier/prettier */
+import React, { useState } from 'react'
 
 interface Employee {
-  name: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  joiningDate: string;
+  name: string
+  phoneNumber: string
+  email: string
+  password: string
+  joiningDate: string
 }
 
 const Profile: React.FC = (): React.ReactElement => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const employee: Employee = {
     name: 'John Doe',
@@ -18,16 +19,15 @@ const Profile: React.FC = (): React.ReactElement => {
     email: 'john.doe@example.com',
     password: 'password123', // Actual password for demonstration
     joiningDate: '2023-01-15',
-  };
+  }
 
   const formatDate = (date: string): string => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    });
-  };
-
+    })
+  }
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto">
@@ -47,7 +47,10 @@ const Profile: React.FC = (): React.ReactElement => {
               </div>
               <div className="ml-6">
                 <h2 className="text-2xl font-bold text-white">{employee.name}</h2>
-                <p className="text-pink-100 mt-1">Employee since {formatDate(employee.joiningDate)}</p>
+                <p className="text-pink-100 mt-1">
+                  Employee since
+                  {formatDate(employee.joiningDate)}
+                </p>
               </div>
             </div>
           </div>
@@ -81,7 +84,12 @@ const Profile: React.FC = (): React.ReactElement => {
 
               <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
                 <div className="flex items-center">
-                  <svg className="w-5 h-5 text-[#DC004E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5 text-[#DC004E]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m0 0v2m0-2h2m-2 0H8m4-6V4" />
                   </svg>
                   <div className="ml-4 flex-grow">
@@ -122,7 +130,7 @@ const Profile: React.FC = (): React.ReactElement => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Profile;
+export default Profile
