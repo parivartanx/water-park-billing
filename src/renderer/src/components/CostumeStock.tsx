@@ -17,7 +17,10 @@ const CostumeStock: React.FC = (): React.ReactElement => {
     })
   }
 
-  const renderSizeCard = (sizeOption: string, fittingType: 'half' | 'full'): React.ReactElement => (
+  const renderSizeCard = (
+    sizeOption: string,
+    fittingType: 'half' | 'full'
+  ): React.ReactElement => (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <div className="p-6">
         <div className="flex items-center justify-between">
@@ -38,7 +41,9 @@ const CostumeStock: React.FC = (): React.ReactElement => {
               </svg>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-semibold text-gray-900">Size {sizeOption}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Size {sizeOption}
+              </h3>
               <p className="text-sm text-gray-500">{fittingType} Fitting</p>
             </div>
           </div>
@@ -56,7 +61,9 @@ const CostumeStock: React.FC = (): React.ReactElement => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Costume Stock</h1>
-          <p className="text-gray-600 mt-2">Monitor and manage your costume inventory</p>
+          <p className="text-gray-600 mt-2">
+            Monitor and manage your costume inventory
+          </p>
         </div>
 
         <div className="space-y-8">
@@ -78,7 +85,9 @@ const CostumeStock: React.FC = (): React.ReactElement => {
               Half Fitting
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {['S', 'M', 'L', 'XL', 'XXL'].map((sizeOption) => renderSizeCard(sizeOption, 'half'))}
+              {['S', 'M', 'L', 'XL', 'XXL'].map((sizeOption) =>
+                renderSizeCard(sizeOption, 'half')
+              )}
             </div>
           </div>
 
@@ -102,12 +111,19 @@ const CostumeStock: React.FC = (): React.ReactElement => {
                   strokeWidth="2"
                   d="M17 8l-5-5-5 5"
                 />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 3v12"
+                />
               </svg>
               Full Fitting
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {['S', 'M', 'L', 'XL', 'XXL'].map((sizeOption) => renderSizeCard(sizeOption, 'full'))}
+              {['S', 'M', 'L', 'XL', 'XXL'].map((sizeOption) =>
+                renderSizeCard(sizeOption, 'full')
+              )}
             </div>
           </div>
 
@@ -136,7 +152,9 @@ const CostumeStock: React.FC = (): React.ReactElement => {
                   </label>
                   <select
                     value={fitting}
-                    onChange={(e) => setFitting(e.target.value as 'half' | 'full')}
+                    onChange={(e) =>
+                      setFitting(e.target.value as 'half' | 'full')
+                    }
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-white"
                   >
                     <option value="half">Half</option>
@@ -144,10 +162,14 @@ const CostumeStock: React.FC = (): React.ReactElement => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Size
+                  </label>
                   <select
                     value={size}
-                    onChange={(e) => setSize(e.target.value as 'S' | 'M' | 'L' | 'XL' | 'XXL')}
+                    onChange={(e) =>
+                      setSize(e.target.value as 'S' | 'M' | 'L' | 'XL' | 'XXL')
+                    }
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-white"
                   >
                     <option value="S">S</option>
@@ -160,7 +182,9 @@ const CostumeStock: React.FC = (): React.ReactElement => {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quantity
+                  </label>
                   <input
                     type="number"
                     value={quantity}
@@ -202,7 +226,12 @@ const CostumeStock: React.FC = (): React.ReactElement => {
             onClick={handleSave}
             className="flex items-center px-6 py-3 bg-[#DC004E] text-white font-medium rounded-lg hover:bg-[#b0003e] transition-colors duration-200 shadow-md hover:shadow-lg"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

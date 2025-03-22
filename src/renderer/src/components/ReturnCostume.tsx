@@ -12,7 +12,9 @@ interface CostumeDetails {
 
 const ReturnCostume: React.FC = (): React.ReactElement => {
   const [customerNumber, setCustomerNumber] = useState('')
-  const [costumeDetails, setCostumeDetails] = useState<CostumeDetails | null>(null)
+  const [costumeDetails, setCostumeDetails] = useState<CostumeDetails | null>(
+    null
+  )
   const [isProcessing, setIsProcessing] = useState(false)
 
   const fetchCostumeDetails = (): void => {
@@ -56,7 +58,9 @@ const ReturnCostume: React.FC = (): React.ReactElement => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Return Costume</h1>
-            <p className="text-gray-600 mt-2">Process costume returns and refunds</p>
+            <p className="text-gray-600 mt-2">
+              Process costume returns and refunds
+            </p>
           </div>
         </div>
 
@@ -104,7 +108,10 @@ const ReturnCostume: React.FC = (): React.ReactElement => {
                   }`}
                 >
                   {isProcessing ? (
-                    <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2"
+                      viewBox="0 0 24 24"
+                    >
                       <circle
                         className="opacity-25"
                         cx="12"
@@ -151,18 +158,24 @@ const ReturnCostume: React.FC = (): React.ReactElement => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-gray-500">Customer Name</label>
+                    <label className="text-sm text-gray-500">
+                      Customer Name
+                    </label>
                     <p className="text-lg font-medium text-gray-900">
                       {costumeDetails.customerName}
                     </p>
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">Costume ID</label>
-                    <p className="text-lg font-medium text-gray-900">#{costumeDetails.costumeId}</p>
+                    <p className="text-lg font-medium text-gray-900">
+                      #{costumeDetails.costumeId}
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">Date Issued</label>
-                    <p className="text-lg font-medium text-gray-900">{costumeDetails.dateIssued}</p>
+                    <p className="text-lg font-medium text-gray-900">
+                      {costumeDetails.dateIssued}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -173,13 +186,17 @@ const ReturnCostume: React.FC = (): React.ReactElement => {
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500">Time Elapsed</label>
+                    <label className="text-sm text-gray-500">
+                      Time Elapsed
+                    </label>
                     <p className="text-lg font-medium text-gray-900">
                       {costumeDetails.timeElapsed}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500">Costume Details</label>
+                    <label className="text-sm text-gray-500">
+                      Costume Details
+                    </label>
                     <p className="text-lg font-medium text-gray-900">
                       {costumeDetails.costumeName} - {costumeDetails.size}
                     </p>
@@ -208,7 +225,10 @@ const ReturnCostume: React.FC = (): React.ReactElement => {
                 >
                   {isProcessing ? (
                     <>
-                      <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                      <svg
+                        className="animate-spin h-5 w-5 mr-2"
+                        viewBox="0 0 24 24"
+                      >
                         <circle
                           className="opacity-25"
                           cx="12"

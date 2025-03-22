@@ -1,5 +1,13 @@
 import React, { useState } from 'react'
-import { Minus, Plus, Calculator, Ticket, User, CreditCard, QrCode } from 'lucide-react'
+import {
+  Minus,
+  Plus,
+  Calculator,
+  Ticket,
+  User,
+  CreditCard,
+  QrCode
+} from 'lucide-react'
 
 interface Ticket {
   id: number
@@ -14,7 +22,9 @@ const TicketBilling: React.FC = () => {
   const [mobileNumber, setMobileNumber] = useState('')
   const [paymentMode, setPaymentMode] = useState('cash')
   const [discount, setDiscount] = useState(0)
-  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>('percentage')
+  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>(
+    'percentage'
+  )
   const [selectedTickets, setSelectedTickets] = useState<Ticket[]>([])
   const [tickets] = useState<Ticket[]>([
     {
@@ -22,14 +32,16 @@ const TicketBilling: React.FC = () => {
       name: 'Adult Day Pass',
       price: 49.99,
       quantity: 0,
-      description: 'Full day access to all water park attractions for adults (13+ years)'
+      description:
+        'Full day access to all water park attractions for adults (13+ years)'
     },
     {
       id: 2,
       name: 'Child Day Pass',
       price: 29.99,
       quantity: 0,
-      description: 'Full day access to all water park attractions for children (4-12 years)'
+      description:
+        'Full day access to all water park attractions for children (4-12 years)'
     },
     {
       id: 3,
@@ -69,14 +81,21 @@ const TicketBilling: React.FC = () => {
     setSelectedTickets((prevSelected) =>
       prevSelected.map((ticket) =>
         ticket.id === ticketId
-          ? { ...ticket, quantity: Math.max(0, ticket.quantity + (increment ? 1 : -1)) }
+          ? {
+              ...ticket,
+              quantity: Math.max(0, ticket.quantity + (increment ? 1 : -1))
+            }
           : ticket
       )
     )
   }
 
-  const subtotal = selectedTickets.reduce((sum, ticket) => sum + ticket.price * ticket.quantity, 0)
-  const discountAmount = discountType === 'percentage' ? (discount / 100) * subtotal : discount
+  const subtotal = selectedTickets.reduce(
+    (sum, ticket) => sum + ticket.price * ticket.quantity,
+    0
+  )
+  const discountAmount =
+    discountType === 'percentage' ? (discount / 100) * subtotal : discount
   const gstAmount = (subtotal - discountAmount) * GST_RATE
   const total = subtotal - discountAmount + gstAmount
 
@@ -103,7 +122,9 @@ const TicketBilling: React.FC = () => {
           <Ticket className="text-[#DC004E]" />
           Ticket Billing
         </h1>
-        <p className="text-gray-500 mt-2">Create a new ticket booking for your customers</p>
+        <p className="text-gray-500 mt-2">
+          Create a new ticket booking for your customers
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -154,7 +175,9 @@ const TicketBilling: React.FC = () => {
 
         {/* Ticket Selection */}
         <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#DC004E]">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Available Tickets</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">
+            Available Tickets
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {tickets.map((ticket) => (
               <div
@@ -168,9 +191,13 @@ const TicketBilling: React.FC = () => {
               >
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-semibold text-gray-800">{ticket.name}</h3>
-                  <span className="text-[#DC004E] font-bold">₹{ticket.price}</span>
+                  <span className="text-[#DC004E] font-bold">
+                    ₹{ticket.price}
+                  </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">{ticket.description}</p>
+                <p className="text-sm text-gray-600 mb-3">
+                  {ticket.description}
+                </p>
                 {selectedTickets.some((t) => t.id === ticket.id) && (
                   <div className="flex items-center justify-end gap-3 mt-2">
                     <button
@@ -184,7 +211,8 @@ const TicketBilling: React.FC = () => {
                       <Minus size={20} />
                     </button>
                     <span className="font-medium text-gray-800">
-                      {selectedTickets.find((t) => t.id === ticket.id)?.quantity || 0}
+                      {selectedTickets.find((t) => t.id === ticket.id)
+                        ?.quantity || 0}
                     </span>
                     <button
                       type="button"
@@ -206,11 +234,15 @@ const TicketBilling: React.FC = () => {
         {/* Billing Details */}
         {selectedTickets.length > 0 && (
           <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#DC004E]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">Billing Details</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              Billing Details
+            </h2>
 
             {/* Payment Mode */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Mode</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Payment Mode
+              </label>
               <div className="flex items-center space-x-2">
                 <select
                   value={paymentMode}
@@ -222,7 +254,11 @@ const TicketBilling: React.FC = () => {
                   <option value="upi">UPI</option>
                 </select>
                 <div className="ml-2">
-                  {paymentModeIcons[paymentMode as keyof typeof paymentModeIcons]}
+                  {
+                    paymentModeIcons[
+                      paymentMode as keyof typeof paymentModeIcons
+                    ]
+                  }
                 </div>
               </div>
             </div>
@@ -235,7 +271,9 @@ const TicketBilling: React.FC = () => {
                 </label>
                 <select
                   value={discountType}
-                  onChange={(e) => setDiscountType(e.target.value as 'flat' | 'percentage')}
+                  onChange={(e) =>
+                    setDiscountType(e.target.value as 'flat' | 'percentage')
+                  }
                   className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-gray-50"
                 >
                   <option value="percentage">Percentage</option>
@@ -264,7 +302,9 @@ const TicketBilling: React.FC = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Discount</span>
-                <span className="font-medium text-[#DC004E]">-₹{discountAmount.toFixed(2)}</span>
+                <span className="font-medium text-[#DC004E]">
+                  -₹{discountAmount.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">GST (18%)</span>

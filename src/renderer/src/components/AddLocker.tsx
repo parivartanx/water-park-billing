@@ -3,13 +3,17 @@ import { Lock, DollarSign, Wallet, PlusCircle } from 'lucide-react'
 
 const AddLocker: React.FC = (): React.ReactElement => {
   const [pricePerUnit, setPricePerUnit] = useState<number | null>(null)
-  const [refundPricePerUnit, setRefundPricePerUnit] = useState<number | null>(null)
+  const [refundPricePerUnit, setRefundPricePerUnit] = useState<number | null>(
+    null
+  )
   const [lockerNumberFrom, setLockerNumberFrom] = useState<number | null>(null)
   const [lockerNumberTo, setLockerNumberTo] = useState<number | null>(null)
 
   // Automatically calculate locker count based on locker number range
   const lockerCount =
-    lockerNumberFrom !== null && lockerNumberTo !== null && lockerNumberTo >= lockerNumberFrom
+    lockerNumberFrom !== null &&
+    lockerNumberTo !== null &&
+    lockerNumberTo >= lockerNumberFrom
       ? lockerNumberTo - lockerNumberFrom + 1
       : 0
 
@@ -53,7 +57,9 @@ const AddLocker: React.FC = (): React.ReactElement => {
               <Lock className="h-8 w-8 text-[#DC004E]" />
               Add New Lockers
             </h1>
-            <p className="text-gray-500 text-sm">Configure and manage your locker inventory</p>
+            <p className="text-gray-500 text-sm">
+              Configure and manage your locker inventory
+            </p>
           </div>
 
           <div className="p-6 space-y-6">
@@ -68,7 +74,8 @@ const AddLocker: React.FC = (): React.ReactElement => {
                     type="number"
                     value={lockerNumberFrom ?? ''}
                     onChange={(e) => {
-                      const value = e.target.value === '' ? null : Number(e.target.value)
+                      const value =
+                        e.target.value === '' ? null : Number(e.target.value)
                       setLockerNumberFrom(value)
                     }}
                     className="w-full px-4 py-3 border-2 border-transparent bg-gray-100 rounded-lg focus:outline-none focus:border-[#DC004E] focus:bg-white transition-all duration-300"
@@ -90,7 +97,8 @@ const AddLocker: React.FC = (): React.ReactElement => {
                     type="number"
                     value={lockerNumberTo ?? ''}
                     onChange={(e) => {
-                      const value = e.target.value === '' ? null : Number(e.target.value)
+                      const value =
+                        e.target.value === '' ? null : Number(e.target.value)
                       setLockerNumberTo(value)
                     }}
                     className="w-full px-4 py-3 border-2 border-transparent bg-gray-100 rounded-lg focus:outline-none focus:border-[#DC004E] focus:bg-white transition-all duration-300"
@@ -122,7 +130,8 @@ const AddLocker: React.FC = (): React.ReactElement => {
                     type="number"
                     value={pricePerUnit ?? ''}
                     onChange={(e) => {
-                      const value = e.target.value === '' ? null : Number(e.target.value)
+                      const value =
+                        e.target.value === '' ? null : Number(e.target.value)
                       setPricePerUnit(value)
                     }}
                     className="w-full px-4 py-3 border-2 border-transparent bg-gray-100 rounded-lg focus:outline-none focus:border-[#DC004E] focus:bg-white transition-all duration-300"
@@ -144,7 +153,8 @@ const AddLocker: React.FC = (): React.ReactElement => {
                     type="number"
                     value={refundPricePerUnit ?? ''}
                     onChange={(e) => {
-                      const value = e.target.value === '' ? null : Number(e.target.value)
+                      const value =
+                        e.target.value === '' ? null : Number(e.target.value)
                       setRefundPricePerUnit(value)
                     }}
                     className="w-full px-4 py-3 border-2 border-transparent bg-gray-100 rounded-lg focus:outline-none focus:border-[#DC004E] focus:bg-white transition-all duration-300"

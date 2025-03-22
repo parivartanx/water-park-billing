@@ -42,7 +42,7 @@ const Sidebar = (): JSX.Element => {
       path: string
     }
     isActive: boolean
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+     
   }) => {
     const Icon = item.icon
     return (
@@ -88,14 +88,20 @@ const Sidebar = (): JSX.Element => {
             alt="Logo"
             className="w-12 h-12 rounded-full shadow-lg transform hover:scale-110 transition-transform"
           />
-          <h1 className="text-white text-2xl font-bold tracking-wider">Lagoon Park</h1>
+          <h1 className="text-white text-2xl font-bold tracking-wider">
+            Lagoon Park
+          </h1>
         </div>
       </div>
 
       {/* Menu Section */}
       <nav className="mt-2 flex-grow overflow-y-auto custom-scrollbar">
         {menuItems.map((item) => (
-          <MenuItem key={item.path} item={item} isActive={location.pathname === item.path} />
+          <MenuItem
+            key={item.path}
+            item={item}
+            isActive={location.pathname === item.path}
+          />
         ))}
 
         {/* Stock Dropdown */}

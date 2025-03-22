@@ -51,7 +51,11 @@ interface RecentBookingProps {
   amount: number
 }
 
-const StockCard = ({ title, available, total }: StockCardProps): JSX.Element => (
+const StockCard = ({
+  title,
+  available,
+  total
+}: StockCardProps): JSX.Element => (
   <div className="bg-white p-6 rounded-lg shadow-md">
     <div className="flex justify-between items-center mb-4">
       <h3 className="text-lg font-semibold">{title}</h3>
@@ -118,7 +122,10 @@ const Dashboard: React.FC = () => {
       {
         fill: true,
         label: 'Hourly Revenue',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 1000) + 400),
+        data: Array.from(
+          { length: 24 },
+          () => Math.floor(Math.random() * 1000) + 400
+        ),
         borderColor: '#DC004E',
         backgroundColor: 'rgba(220, 0, 78, 0.1)'
       }
@@ -130,7 +137,10 @@ const Dashboard: React.FC = () => {
     datasets: [
       {
         label: 'Weekly Revenue',
-        data: Array.from({ length: 7 }, () => Math.floor(Math.random() * 20000) + 5000),
+        data: Array.from(
+          { length: 7 },
+          () => Math.floor(Math.random() * 20000) + 5000
+        ),
         backgroundColor: 'rgba(16, 185, 129, 0.8)',
         borderColor: 'rgb(16, 185, 129)',
         borderWidth: 1
@@ -162,7 +172,8 @@ const Dashboard: React.FC = () => {
         beginAtZero: true,
         ticks: {
           callback: (tickValue: string | number): string => {
-            const value = typeof tickValue === 'string' ? parseFloat(tickValue) : tickValue
+            const value =
+              typeof tickValue === 'string' ? parseFloat(tickValue) : tickValue
             return `$${value.toLocaleString()}`
           }
         }
@@ -177,7 +188,8 @@ const Dashboard: React.FC = () => {
         beginAtZero: true,
         ticks: {
           callback: (tickValue: string | number): string => {
-            const value = typeof tickValue === 'string' ? parseFloat(tickValue) : tickValue
+            const value =
+              typeof tickValue === 'string' ? parseFloat(tickValue) : tickValue
             return `$${value.toLocaleString()}`
           }
         }
@@ -296,9 +308,13 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           <div className="space-y-4">
-            <p className="text-2xl font-bold">${totalRevenue.today.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              ${totalRevenue.today.toLocaleString()}
+            </p>
             <p className="text-sm text-gray-600">Total Sales</p>
-            <p className="text-sm text-gray-500">({totalRevenue.todayTickets} tickets)</p>
+            <p className="text-sm text-gray-500">
+              ({totalRevenue.todayTickets} tickets)
+            </p>
           </div>
         </div>
 
@@ -310,9 +326,13 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           <div className="space-y-4">
-            <p className="text-2xl font-bold">${totalRevenue.yesterday.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              ${totalRevenue.yesterday.toLocaleString()}
+            </p>
             <p className="text-sm text-gray-600">Total Sales</p>
-            <p className="text-sm text-gray-500">({totalRevenue.yesterdayTickets} tickets)</p>
+            <p className="text-sm text-gray-500">
+              ({totalRevenue.yesterdayTickets} tickets)
+            </p>
           </div>
         </div>
 
@@ -369,7 +389,9 @@ const Dashboard: React.FC = () => {
                 <td className="py-3 px-4">
                   <div className="flex items-center">
                     <div className="w-8 h-8 rounded-full bg-[#DC004E]/10 flex items-center justify-center mr-3">
-                      <span className="text-[#DC004E] font-bold">{booking.customer.charAt(0)}</span>
+                      <span className="text-[#DC004E] font-bold">
+                        {booking.customer.charAt(0)}
+                      </span>
                     </div>
                     <span className="font-medium">{booking.customer}</span>
                   </div>
@@ -378,7 +400,9 @@ const Dashboard: React.FC = () => {
                   <div
                     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${productColors[booking.product]}-50 text-${productColors[booking.product]}-700`}
                   >
-                    <span className="mr-2">{productIcons[booking.product]}</span>
+                    <span className="mr-2">
+                      {productIcons[booking.product]}
+                    </span>
                     {booking.product}
                   </div>
                 </td>
@@ -398,7 +422,9 @@ const Dashboard: React.FC = () => {
           </tbody>
         </table>
         <div className="flex justify-end mt-4">
-          <button className="text-[#DC004E] hover:underline text-sm">View More</button>
+          <button className="text-[#DC004E] hover:underline text-sm">
+            View More
+          </button>
         </div>
       </div>
     </div>

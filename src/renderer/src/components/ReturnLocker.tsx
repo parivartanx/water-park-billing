@@ -10,7 +10,9 @@ interface BillingDetails {
 
 const ReturnLocker: React.FC = (): React.ReactElement => {
   const [lockerNumber, setLockerNumber] = useState('')
-  const [billingDetails, setBillingDetails] = useState<BillingDetails | null>(null)
+  const [billingDetails, setBillingDetails] = useState<BillingDetails | null>(
+    null
+  )
   const [isProcessing, setIsProcessing] = useState(false)
 
   const fetchBillingDetails = (): void => {
@@ -52,7 +54,9 @@ const ReturnLocker: React.FC = (): React.ReactElement => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Return Locker</h1>
-            <p className="text-gray-600 mt-2">Process locker returns and refunds</p>
+            <p className="text-gray-600 mt-2">
+              Process locker returns and refunds
+            </p>
           </div>
         </div>
 
@@ -100,7 +104,10 @@ const ReturnLocker: React.FC = (): React.ReactElement => {
                   }`}
                 >
                   {isProcessing ? (
-                    <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2"
+                      viewBox="0 0 24 24"
+                    >
                       <circle
                         className="opacity-25"
                         cx="12"
@@ -147,20 +154,26 @@ const ReturnLocker: React.FC = (): React.ReactElement => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-gray-500">Customer Name</label>
+                    <label className="text-sm text-gray-500">
+                      Customer Name
+                    </label>
                     <p className="text-lg font-medium text-gray-900">
                       {billingDetails.customerName}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500">Locker Number</label>
+                    <label className="text-sm text-gray-500">
+                      Locker Number
+                    </label>
                     <p className="text-lg font-medium text-gray-900">
                       #{billingDetails.lockerNumber}
                     </p>
                   </div>
                   <div>
                     <label className="text-sm text-gray-500">Date Issued</label>
-                    <p className="text-lg font-medium text-gray-900">{billingDetails.dateIssued}</p>
+                    <p className="text-lg font-medium text-gray-900">
+                      {billingDetails.dateIssued}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -171,7 +184,9 @@ const ReturnLocker: React.FC = (): React.ReactElement => {
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500">Time Elapsed</label>
+                    <label className="text-sm text-gray-500">
+                      Time Elapsed
+                    </label>
                     <p className="text-lg font-medium text-gray-900">
                       {billingDetails.timeElapsed}
                     </p>
@@ -200,7 +215,10 @@ const ReturnLocker: React.FC = (): React.ReactElement => {
                 >
                   {isProcessing ? (
                     <>
-                      <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                      <svg
+                        className="animate-spin h-5 w-5 mr-2"
+                        viewBox="0 0 24 24"
+                      >
                         <circle
                           className="opacity-25"
                           cx="12"

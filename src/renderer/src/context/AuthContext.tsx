@@ -1,7 +1,11 @@
 import { useState, useEffect, ReactNode } from 'react'
 import { AuthContext, User } from './AuthTypes'
 
-export const AuthProvider = ({ children }: { children: ReactNode }): JSX.Element => {
+export const AuthProvider = ({
+  children
+}: {
+  children: ReactNode
+}): JSX.Element => {
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 

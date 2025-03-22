@@ -16,4 +16,3 @@ localDB
 // write queries here
 
 export { localDB, remoteDB }
-

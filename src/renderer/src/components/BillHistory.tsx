@@ -15,7 +15,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
   const [bills, setBills] = useState<Bill[]>([])
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [filterType, setFilterType] = useState<'ticket' | 'locker' | 'costume' | ''>('')
+  const [filterType, setFilterType] = useState<
+    'ticket' | 'locker' | 'costume' | ''
+  >('')
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
@@ -68,7 +70,8 @@ const BillHistory: React.FC = (): React.ReactElement => {
     const billDate = new Date(bill.date)
     const start = startDate ? new Date(startDate) : null
     const end = endDate ? new Date(endDate) : null
-    const matchesDate = (!start || billDate >= start) && (!end || billDate <= end)
+    const matchesDate =
+      (!start || billDate >= start) && (!end || billDate <= end)
     const matchesType = !filterType || bill.type === filterType
     const matchesSearch =
       !searchQuery ||
@@ -92,7 +95,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Bill History</h1>
-            <p className="text-gray-600 mt-2">View and manage past billing records</p>
+            <p className="text-gray-600 mt-2">
+              View and manage past billing records
+            </p>
           </div>
           <div className="flex items-center space-x-4">
             <div className="relative">
@@ -124,7 +129,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
           <div className="p-6 border-b border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date Range
+                </label>
                 <div className="flex space-x-2">
                   <input
                     type="date"
@@ -141,11 +148,15 @@ const BillHistory: React.FC = (): React.ReactElement => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type Filter</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Type Filter
+                </label>
                 <select
                   value={filterType}
                   onChange={(e) =>
-                    setFilterType(e.target.value as 'ticket' | 'locker' | 'costume' | '')
+                    setFilterType(
+                      e.target.value as 'ticket' | 'locker' | 'costume' | ''
+                    )
                   }
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] text-sm"
                 >
@@ -213,11 +224,18 @@ const BillHistory: React.FC = (): React.ReactElement => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredBills.map((bill) => (
-                  <tr key={bill.id} className="hover:bg-gray-50 transition-colors duration-200">
+                  <tr
+                    key={bill.id}
+                    className="hover:bg-gray-50 transition-colors duration-200"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <div className="text-sm font-medium text-gray-900">{bill.customerName}</div>
-                        <div className="text-sm text-gray-500">{bill.phone}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {bill.customerName}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {bill.phone}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -293,7 +311,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                 />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No bills found</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No bills found
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 Try adjusting your search or filter criteria
               </p>

@@ -1,5 +1,12 @@
 import React, { useState, useMemo } from 'react'
-import { Lock, User, CreditCard, QrCode, Calculator, Search } from 'lucide-react'
+import {
+  Lock,
+  User,
+  CreditCard,
+  QrCode,
+  Calculator,
+  Search
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 interface Locker {
@@ -15,7 +22,9 @@ const LockerBilling: React.FC = (): React.ReactElement => {
   const [mobileNumber, setMobileNumber] = useState<string>('')
   const [paymentMode, setPaymentMode] = useState<string>('cash')
   const [discount, setDiscount] = useState<number>(0)
-  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>('percentage')
+  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>(
+    'percentage'
+  )
   const [savedLockers, setSavedLockers] = useState<Locker[]>([])
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -44,7 +53,9 @@ const LockerBilling: React.FC = (): React.ReactElement => {
 
   const filteredLockers = useMemo(() => {
     return availableLockers.filter(
-      (locker) => locker.name.toLowerCase().includes(searchTerm.toLowerCase()) && locker.isAvailable
+      (locker) =>
+        locker.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        locker.isAvailable
     )
   }, [availableLockers, searchTerm])
 
@@ -74,12 +85,15 @@ const LockerBilling: React.FC = (): React.ReactElement => {
 
   const toggleLockerSelection = (lockerId: number): void => {
     setSelectedLockers((prev) =>
-      prev.includes(lockerId) ? prev.filter((id) => id !== lockerId) : [...prev, lockerId]
+      prev.includes(lockerId)
+        ? prev.filter((id) => id !== lockerId)
+        : [...prev, lockerId]
     )
   }
 
   const subtotal = savedLockers.reduce((acc, locker) => acc + locker.amount, 0)
-  const discountAmount = discountType === 'percentage' ? (discount / 100) * subtotal : discount
+  const discountAmount =
+    discountType === 'percentage' ? (discount / 100) * subtotal : discount
   const total = subtotal - discountAmount
 
   const handleSubmit = (e: React.FormEvent): void => {
@@ -163,7 +177,9 @@ const LockerBilling: React.FC = (): React.ReactElement => {
         {/* Locker Details */}
         <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#DC004E]">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800">Locker Details</h2>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Locker Details
+            </h2>
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
@@ -176,7 +192,8 @@ const LockerBilling: React.FC = (): React.ReactElement => {
 
           {savedLockers.length === 0 ? (
             <div className="text-center text-gray-500 py-4">
-              No lockers added yet. Click &apos;Select Lockers&apos; to get started.
+              No lockers added yet. Click &apos;Select Lockers&apos; to get
+              started.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -186,8 +203,12 @@ const LockerBilling: React.FC = (): React.ReactElement => {
                   className="p-4 rounded-lg border-2 border-gray-200 hover:border-[#DC004E] transition-all duration-300 flex justify-between items-center"
                 >
                   <div>
-                    <h3 className="font-semibold text-gray-800">{locker.name}</h3>
-                    <span className="text-[#DC004E] font-bold">₹{locker.amount}</span>
+                    <h3 className="font-semibold text-gray-800">
+                      {locker.name}
+                    </h3>
+                    <span className="text-[#DC004E] font-bold">
+                      ₹{locker.amount}
+                    </span>
                   </div>
                   <button
                     type="button"
@@ -206,7 +227,9 @@ const LockerBilling: React.FC = (): React.ReactElement => {
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-xl shadow-xl w-[600px] max-h-[80vh] flex flex-col">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Select Available Lockers</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Select Available Lockers
+              </h2>
 
               {/* Search Bar */}
               <div className="mb-4 relative">
@@ -237,8 +260,12 @@ const LockerBilling: React.FC = (): React.ReactElement => {
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <h3 className="font-semibold text-gray-800">{locker.name}</h3>
-                        <span className="text-[#DC004E] font-bold">₹{locker.amount}</span>
+                        <h3 className="font-semibold text-gray-800">
+                          {locker.name}
+                        </h3>
+                        <span className="text-[#DC004E] font-bold">
+                          ₹{locker.amount}
+                        </span>
                       </div>
                       {selectedLockers.includes(locker.id) && (
                         <div className="text-[#DC004E]">✓</div>
@@ -280,11 +307,15 @@ const LockerBilling: React.FC = (): React.ReactElement => {
         {/* Billing Details */}
         {savedLockers.length > 0 && (
           <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#DC004E]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">Billing Details</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              Billing Details
+            </h2>
 
             {/* Payment Mode */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Mode</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Payment Mode
+              </label>
               <div className="flex items-center space-x-2">
                 <select
                   value={paymentMode}
@@ -296,7 +327,11 @@ const LockerBilling: React.FC = (): React.ReactElement => {
                   <option value="upi">UPI</option>
                 </select>
                 <div className="ml-2">
-                  {paymentModeIcons[paymentMode as keyof typeof paymentModeIcons]}
+                  {
+                    paymentModeIcons[
+                      paymentMode as keyof typeof paymentModeIcons
+                    ]
+                  }
                 </div>
               </div>
             </div>
@@ -309,7 +344,9 @@ const LockerBilling: React.FC = (): React.ReactElement => {
                 </label>
                 <select
                   value={discountType}
-                  onChange={(e) => setDiscountType(e.target.value as 'flat' | 'percentage')}
+                  onChange={(e) =>
+                    setDiscountType(e.target.value as 'flat' | 'percentage')
+                  }
                   className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-gray-50"
                 >
                   <option value="percentage">Percentage</option>
@@ -338,7 +375,9 @@ const LockerBilling: React.FC = (): React.ReactElement => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Discount</span>
-                <span className="font-medium text-[#DC004E]">-₹{discountAmount.toFixed(2)}</span>
+                <span className="font-medium text-[#DC004E]">
+                  -₹{discountAmount.toFixed(2)}
+                </span>
               </div>
               <div className="h-px bg-gray-200 my-2"></div>
               <div className="flex justify-between items-center text-lg font-bold">

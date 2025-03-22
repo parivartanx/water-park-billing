@@ -1,5 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-// Sidebar now used in ProtectedRoute component
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate
+} from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import TicketBilling from './components/TicketBilling'
 import LockerBilling from './components/LockerBilling'

@@ -9,8 +9,12 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
   const [customerNumber, setCustomerNumber] = useState('')
   const [costumeQuantity, setCostumeQuantity] = useState(0)
   const [discount, setDiscount] = useState(0)
-  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>('percentage')
-  const [paymentMode, setPaymentMode] = useState<'cash' | 'card' | 'upi'>('cash')
+  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>(
+    'percentage'
+  )
+  const [paymentMode, setPaymentMode] = useState<'cash' | 'card' | 'upi'>(
+    'cash'
+  )
 
   const paymentModeIcons = {
     cash: <FaUser className="w-5 h-5 text-[#DC004E]" />,
@@ -20,10 +24,13 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
 
   const costumePrice = 20 // Example price per costume
   const subtotal = costumeQuantity * costumePrice
-  const discountAmount = discountType === 'percentage' ? (discount / 100) * subtotal : discount
+  const discountAmount =
+    discountType === 'percentage' ? (discount / 100) * subtotal : discount
   const total = subtotal - discountAmount
 
-  function handleMobileNumberChange(e: React.ChangeEvent<HTMLInputElement>): void {
+  function handleMobileNumberChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void {
     const inputNumber = e.target.value.slice(0, 10)
     setCustomerNumber(inputNumber)
   }
@@ -133,7 +140,9 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
             <div className="flex items-center space-x-4">
               <button
                 type="button"
-                onClick={() => setCostumeQuantity(Math.max(0, costumeQuantity - 1))}
+                onClick={() =>
+                  setCostumeQuantity(Math.max(0, costumeQuantity - 1))
+                }
                 className="px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
               >
                 -
@@ -159,7 +168,10 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
           {/* Discount Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
-              <label htmlFor="discount" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="discount"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Discount
               </label>
               <input
@@ -182,7 +194,9 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
               <select
                 id="discountType"
                 value={discountType}
-                onChange={(e) => setDiscountType(e.target.value as 'flat' | 'percentage')}
+                onChange={(e) =>
+                  setDiscountType(e.target.value as 'flat' | 'percentage')
+                }
                 className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-gray-50"
               >
                 <option value="percentage">Percentage</option>
@@ -190,14 +204,19 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
               </select>
             </div>
             <div>
-              <label htmlFor="paymentMode" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="paymentMode"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Payment Mode
               </label>
               <div className="flex items-center space-x-2">
                 <select
                   id="paymentMode"
                   value={paymentMode}
-                  onChange={(e) => setPaymentMode(e.target.value as 'cash' | 'card' | 'upi')}
+                  onChange={(e) =>
+                    setPaymentMode(e.target.value as 'cash' | 'card' | 'upi')
+                  }
                   className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-gray-50"
                 >
                   <option value="cash">Cash</option>
@@ -217,7 +236,9 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Discount</span>
-              <span className="font-medium text-[#DC004E]">-₹{discountAmount.toFixed(2)}</span>
+              <span className="font-medium text-[#DC004E]">
+                -₹{discountAmount.toFixed(2)}
+              </span>
             </div>
             <div className="h-px bg-gray-200 my-2"></div>
             <div className="flex justify-between items-center text-lg font-bold">
