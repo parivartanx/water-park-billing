@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../assets/logo.png'
 import {
   LayoutDashboard,
@@ -14,9 +14,14 @@ import {
   ChevronUp
 } from 'lucide-react'
 
+import { useAuthStore } from '../stores/authStore'
+
 const Sidebar = (): JSX.Element => {
   const location = useLocation()
+  const navigate = useNavigate()
   const [isStockOpen, setIsStockOpen] = useState(false)
+
+  const { logout } = useAuthStore()
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -166,6 +171,10 @@ const Sidebar = (): JSX.Element => {
       <div className="border-t border-pink-300/20">
         <Link
           to="/logout"
+          onClick={() => {
+            logout()
+            navigate('/login')
+          }}  
           className="
             flex items-center px-6 py-4 
             text-white/90 hover:bg-pink-700/20 

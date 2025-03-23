@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Lock, User, Ticket, Shirt, Key } from 'lucide-react'
-import { useAuth } from '../hooks/useAuth'
+import { useAuthStore } from '../stores/authStore'
 
 type Role = 'ticket' | 'costume' | 'locker'
 
@@ -50,44 +50,56 @@ const SignIn = (): JSX.Element => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
-  const [error, setError] = useState('')
+  const [localError, setLocalError] = useState('')
   const navigate = useNavigate()
-  const { login } = useAuth()
+  
+  // Get auth store state and actions
+  const { login, employee, loading, error: authError } = useAuthStore()
 
-  const handleSignIn = (e: React.FormEvent): void => {
+  /// use callback function for login
+  const handleLogin = useCallback(() => {
+    try {
+      // Call the login function from auth store
+      console.log('Logging in with:', { username, password, role: selectedRole })
+      login(username, password, selectedRole || '')
+    } catch {
+      setLocalError('Login failed. Please try again.')
+    }
+  }, [username, password, selectedRole, login])
+
+  // Navigate to dashboard after successful login
+  useEffect(() => {
+    if (employee) {
+      navigate('/')
+    }
+  }, [employee, navigate])
+
+  const handleSignIn =(e: React.FormEvent) => {
     e.preventDefault()
+    setLocalError('')
 
     if (!selectedRole) {
-      setError('Please select a role')
+      setLocalError('Please select a role')
       return
     }
 
     if (!username || !password) {
-      setError('Please fill in all fields')
+      setLocalError('Please fill in all fields')
       return
     }
 
-    const roleConfig = roleConfigs[selectedRole]
-    if (
-      username === roleConfig.credentials.username &&
-      password === roleConfig.credentials.password
-    ) {
-      login({ username, role: selectedRole })
-      navigate('/')
-    } else {
-      setError('Invalid username or password')
-    }
+    handleLogin()
   }
 
   const handleRoleSelect = (role: Role) => {
     setSelectedRole(role)
-    setUsername(roleConfigs[role].credentials.username)
-    setPassword('')
-    setError('')
+    // Auto-fill credentials for demo purposes
+   
+    setLocalError('')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#d65e88] to-[#A30342] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#DC004E] to-[#A30342] p-4">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -110,14 +122,14 @@ const SignIn = (): JSX.Element => {
                 onClick={() => handleRoleSelect(role)}
                 className={`p-4 rounded-lg flex flex-col items-center justify-center gap-2 transition-all ${
                   selectedRole === role
-                    ? 'bg-opacity-20 ring-2 ring-offset-2'
+                    ? `bg-opacity-20 ring-2 ring-offset-2`
                     : 'hover:bg-opacity-10'
                 }`}
                 style={{
                   backgroundColor: `${roleConfigs[role].color}${
                     selectedRole === role ? '33' : '11'
                   }`,
-                  ringColor: roleConfigs[role].color
+                  ...(selectedRole === role ? { ringColor: roleConfigs[role].color } : {})
                 }}
               >
                 <div
@@ -133,13 +145,14 @@ const SignIn = (): JSX.Element => {
             ))}
           </div>
 
-          {error && (
+          {/* Error Messages */}
+          {(localError || authError) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
             >
-              {error}
+              {localError || authError}
             </motion.div>
           )}
 
@@ -154,10 +167,11 @@ const SignIn = (): JSX.Element => {
                 </div>
                 <input
                   type="text"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E]"
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -172,10 +186,11 @@ const SignIn = (): JSX.Element => {
                 </div>
                 <input
                   type="password"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E]"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -190,13 +205,13 @@ const SignIn = (): JSX.Element => {
                   ? roleConfigs[selectedRole].color
                   : '#9CA3AF'
               }}
-              disabled={!selectedRole}
+              disabled={!selectedRole || loading}
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </motion.button>
           </form>
 
-          {selectedRole && (
+          {/* {selectedRole && (
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Demo credentials for {roleConfigs[selectedRole].title}:
@@ -206,7 +221,7 @@ const SignIn = (): JSX.Element => {
                 Password: {roleConfigs[selectedRole].credentials.password}
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </motion.div>
 

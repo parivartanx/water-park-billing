@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { login } from './controllers/auth.controller'
 
 function createWindow(): void {
   // Create the browser window.
@@ -52,6 +53,19 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
+  // Register IPC handlers for authentication
+  ipcMain.handle('login', async (_event, args) => {
+    console.log('Login handler called with args:', args)
+    try {
+      const { email, password, role } = args
+      return await login(email, password, role)
+    } catch (error) {
+      console.error('Error in login handler:', error)
+      return { error: 'Authentication failed. Please try again.' }
+    }
+  })
+
+  // 
   createWindow()
 
   app.on('activate', function () {

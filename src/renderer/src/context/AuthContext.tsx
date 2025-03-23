@@ -1,41 +1,35 @@
-import { useState, useEffect, ReactNode } from 'react'
-import { AuthContext, User } from './AuthTypes'
+import React, { useState, useEffect, ReactNode } from 'react'
+import { AuthContext } from './AuthTypes'
 
 export const AuthProvider = ({
   children
 }: {
   children: ReactNode
 }): JSX.Element => {
-  const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
     // Check if user is already logged in from localStorage
-    const storedAuth = localStorage.getItem('isAuthenticated')
-    const storedUser = localStorage.getItem('user')
+    const storedAuth = localStorage.getItem('access_token')
+    const storedRefreshToken = localStorage.getItem('refresh_token')
 
-    if (storedAuth === 'true' && storedUser) {
+    if (storedAuth && storedRefreshToken) {
       setIsAuthenticated(true)
-      setUser(JSON.parse(storedUser))
+
+      
     }
   }, [])
 
-  const login = (user: User): void => {
-    setUser(user)
-    setIsAuthenticated(true)
-    localStorage.setItem('isAuthenticated', 'true')
-    localStorage.setItem('user', JSON.stringify(user))
-  }
+ 
 
   const logout = (): void => {
-    setUser(null)
     setIsAuthenticated(false)
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('user')
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout }}>
       {children}
     </AuthContext.Provider>
   )

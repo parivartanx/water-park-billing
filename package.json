@@ -25,6 +25,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@tailwindcss/vite": "^4.0.14",
     "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.8.4",
     "chart.js": "^4.4.8",
     "electron-updater": "^6.3.9",
     "framer-motion": "^12.5.0",
