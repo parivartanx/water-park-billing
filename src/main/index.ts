@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { login } from './controllers/auth.controller'
+import { getTickets, getTicketById } from './controllers/ticket.controller'
 
 function createWindow(): void {
   // Create the browser window.
@@ -62,6 +63,26 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error in login handler:', error)
       return { error: 'Authentication failed. Please try again.' }
+    }
+  })
+
+  /// ticket handlers
+  ipcMain.handle('get-tickets', async () => {
+    try {
+      return await getTickets()
+    } catch (error) {
+      console.error('Error getting tickets:', error)
+      return { error: 'Failed to fetch tickets' }
+    }
+  })
+
+  ipcMain.handle('get-ticket-by-id', async (_event, args) => {
+    try {
+      const { id } = args
+      return await getTicketById(id)
+    } catch (error) {
+      console.error('Error getting ticket by id:', error)
+      return { error: 'Failed to fetch ticket' }
     }
   })
 
