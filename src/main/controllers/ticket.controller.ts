@@ -44,6 +44,8 @@ export const saveTicketBilling = async (billing: TicketBilling, access_token: st
             return { error: 'Unauthorized to save ticket billing' }
         }
         billing.createdBy = decoded.id
+        billing.createdAt = new Date().toISOString()
+        billing.updatedAt = new Date().toISOString()
         return await ticketBillingDB.post(billing)
     } catch (error) {
         console.error('Error saving ticket billing:', error);

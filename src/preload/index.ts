@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Define allowed IPC channels for security
-const validChannels = ['login', 'logout', 'get-tickets', 'get-ticket-by-id', 'create-ticket-billing'] as const
+const validChannels = ['login', 'logout', 'get-tickets', 'get-ticket-by-id', 'create-ticket-billing', 'get-lockers', 'create-locker-billing', 'get-locker-stock'] as const
 export type ValidChannel = typeof validChannels[number]
 
 // Custom APIs for renderer

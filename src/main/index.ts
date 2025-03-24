@@ -4,6 +4,8 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { login } from './controllers/auth.controller'
 import { getTickets, getTicketById, saveTicketBilling } from './controllers/ticket.controller'
+import { getLockers, getLockerStock } from './controllers/locker.controller'
+import { createLockerBilling } from './controllers/locker.controller'
 
 function createWindow(): void {
   // Create the browser window.
@@ -95,6 +97,37 @@ app.whenReady().then(() => {
       return { error: 'Failed to create ticket billing' }
     }
   })
+
+  /// locker handlers
+  ipcMain.handle('get-lockers', async (_event, args) => {
+    try {
+      console.log('Get lockers handler called with args:', args)
+      return await getLockers()
+    } catch (error) {
+      console.error('Error getting lockers:', error)
+      return { error: 'Failed to fetch lockers' }
+    }
+  })
+
+  ipcMain.handle('get-locker-stock', async (_event, args) => {
+    try {
+      console.log('Get locker stock handler called with args:', args)
+      return await getLockerStock()
+    } catch (error) {
+      console.error('Error getting locker stock:', error)
+      return { error: 'Failed to fetch locker stock' }
+    }
+  })
+
+  ipcMain.handle('create-locker-billing', async (_event, args) => {
+    try {
+      return await createLockerBilling(args.lockerBilling, args.access_token)
+    } catch (error) {
+      console.error('Error creating locker billing:', error)
+      return { error: 'Failed to create locker billing' }
+    }
+  })  
+
 
   // 
   createWindow()

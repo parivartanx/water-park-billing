@@ -1,6 +1,6 @@
-export interface TicketBilling {
+export interface LockerBilling {
     _id?: string;
-    tickets: SelectedTicket[];
+    lockerIds: string[];
     customerName: string;
     mobileNumber: string;
     paymentMode: string;
@@ -10,12 +10,8 @@ export interface TicketBilling {
     discountAmount: number;
     gstAmount: number;
     total: number;
+    isReturned: boolean;
     createdBy?: string;
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-export interface SelectedTicket {
-    _id: string;
-    quantity: number;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

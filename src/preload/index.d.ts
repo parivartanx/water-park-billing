@@ -1,7 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 
 // Define valid IPC channels
-type ValidChannel = 'login' | 'logout' | 'get-tickets' | 'get-ticket-by-id'
+type ValidChannel = 'login' | 'logout' | 'get-tickets' | 'get-ticket-by-id' | 'get-lockers' | 'get-locker-stock' | 'create-locker-billing' | 'create-ticket-billing' 
 
 // Define custom API interface
 interface CustomAPI {

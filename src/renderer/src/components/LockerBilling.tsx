@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   Lock,
   User,
@@ -8,13 +8,10 @@ import {
   Search
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-
-interface Locker {
-  id: number
-  name: string
-  amount: number
-  isAvailable: boolean
-}
+import { useLockerStore } from '@renderer/stores/lockerStore'
+import type { Locker } from '@renderer/types/locker'
+import { useLockerBillingStore } from '@renderer/stores/lockerStore'
+import { toast } from 'react-hot-toast'
 
 const LockerBilling: React.FC = (): React.ReactElement => {
   const navigate = useNavigate()
@@ -22,28 +19,17 @@ const LockerBilling: React.FC = (): React.ReactElement => {
   const [mobileNumber, setMobileNumber] = useState<string>('')
   const [paymentMode, setPaymentMode] = useState<string>('cash')
   const [discount, setDiscount] = useState<number>(0)
-  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>(
-    'percentage'
-  )
+  const [discountType, setDiscountType] = useState<'flat' | 'percentage'>('percentage')
   const [savedLockers, setSavedLockers] = useState<Locker[]>([])
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [searchTerm, setSearchTerm] = useState<string>('')
-  const [selectedLockers, setSelectedLockers] = useState<number[]>([])
+  const [selectedLockers, setSelectedLockers] = useState<string[]>([])
+  const { lockers, loading, error, getLockers } = useLockerStore()
+  const { createLockerBilling, } = useLockerBillingStore()
 
-  // Predefined list of lockers
-  const availableLockers: Locker[] = useMemo(
-    () => [
-      { id: 1, name: 'Locker A1', amount: 50, isAvailable: true },
-      { id: 2, name: 'Locker A2', amount: 50, isAvailable: true },
-      { id: 3, name: 'Locker B1', amount: 75, isAvailable: true },
-      { id: 4, name: 'Locker B2', amount: 75, isAvailable: true },
-      { id: 5, name: 'Locker C1', amount: 100, isAvailable: true },
-      { id: 6, name: 'Locker C2', amount: 100, isAvailable: true },
-      { id: 7, name: 'Locker D1', amount: 125, isAvailable: true },
-      { id: 8, name: 'Locker D2', amount: 125, isAvailable: true }
-    ],
-    []
-  )
+  useEffect(() => {
+    getLockers()
+  }, [])
 
   const paymentModeIcons = {
     cash: <User className="w-5 h-5 text-[#DC004E]" />,
@@ -52,22 +38,22 @@ const LockerBilling: React.FC = (): React.ReactElement => {
   }
 
   const filteredLockers = useMemo(() => {
-    return availableLockers.filter(
+    return lockers.filter(
       (locker) =>
-        locker.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        locker.isAvailable
+        locker.lockerNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        locker.status === 'available'
     )
-  }, [availableLockers, searchTerm])
+  }, [lockers, searchTerm])
 
   const addLocker = (): void => {
     if (selectedLockers.length > 0) {
       const newLockers = selectedLockers
         .map((lockerId) => {
-          const locker = availableLockers.find((l) => l.id === lockerId)
-          return locker
+          const locker = lockers.find((l) => l._id === lockerId)
+          return locker && locker._id
             ? {
                 ...locker,
-                id: Date.now() + locker.id
+                id: Date.now() + Math.random(),
               }
             : null
         })
@@ -79,11 +65,11 @@ const LockerBilling: React.FC = (): React.ReactElement => {
     }
   }
 
-  const removeLocker = (id: number): void => {
-    setSavedLockers(savedLockers.filter((locker) => locker.id !== id))
+  const removeLocker = (id: string): void => {
+    setSavedLockers(savedLockers.filter((locker) => locker._id && locker._id !== id))
   }
 
-  const toggleLockerSelection = (lockerId: number): void => {
+  const toggleLockerSelection = (lockerId: string): void => {
     setSelectedLockers((prev) =>
       prev.includes(lockerId)
         ? prev.filter((id) => id !== lockerId)
@@ -91,7 +77,7 @@ const LockerBilling: React.FC = (): React.ReactElement => {
     )
   }
 
-  const subtotal = savedLockers.reduce((acc, locker) => acc + locker.amount, 0)
+  const subtotal = savedLockers.reduce((acc, locker) => acc + locker.pricePerUnit, 0)
   const discountAmount =
     discountType === 'percentage' ? (discount / 100) * subtotal : discount
   const total = subtotal - discountAmount
@@ -109,24 +95,66 @@ const LockerBilling: React.FC = (): React.ReactElement => {
       discountAmount,
       total
     })
+    const lockerBilling = {
+      lockerIds: savedLockers.map((locker) => locker._id!).filter((id): id is string => id !== undefined),
+      customerName,
+      mobileNumber,
+      paymentMode,
+      discount,
+      discountType,
+      subtotal,
+      discountAmount,
+      gstAmount: 0,
+      total,
+      isReturned: false
+    }
+    const access_token = localStorage.getItem('access_token')
+    if (!access_token) {
+      /// show toast
+      toast.error('Unauthorized to create locker billing')
+      return;
+    }
+    createLockerBilling(lockerBilling, access_token).then(() => {
+      /// clear form
+      setCustomerName('')
+      setMobileNumber('')
+      setPaymentMode('cash')
+      setDiscount(0)
+      setDiscountType('percentage')
+      setSavedLockers([])
+      setSelectedLockers([])
+      setIsModalOpen(false)
+    }).catch((error) => {
+      console.log(error)
+    })
   }
 
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-          <Lock className="text-[#DC004E]" />
-          Locker Billing
-        </h1>
-        <button
-          type="button"
-          onClick={() => navigate('/return-locker')}
-          className="px-4 py-2 bg-[#DC004E] text-white rounded-lg hover:bg-[#b0003e] transition-colors duration-200 flex items-center gap-2"
-        >
-          <Lock size={20} />
-          Return Locker
-        </button>
-      </div>
+      {loading ? (
+        <div className="text-center text-gray-500 py-4">
+          Loading...
+        </div>
+      ) : error ? (
+        <div className="text-center text-red-500 py-4">
+          Error: {error}
+        </div>
+      ) : (
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <Lock className="text-[#DC004E]" />
+            Locker Billing
+          </h1>
+          <button
+            type="button"
+            onClick={() => navigate('/return-locker')}
+            className="px-4 py-2 bg-[#DC004E] text-white rounded-lg hover:bg-[#b0003e] transition-colors duration-200 flex items-center gap-2"
+          >
+            <Lock size={20} />
+            Return Locker
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Customer Details */}
@@ -199,20 +227,20 @@ const LockerBilling: React.FC = (): React.ReactElement => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {savedLockers.map((locker) => (
                 <div
-                  key={locker.id}
+                  key={locker._id}
                   className="p-4 rounded-lg border-2 border-gray-200 hover:border-[#DC004E] transition-all duration-300 flex justify-between items-center"
                 >
                   <div>
                     <h3 className="font-semibold text-gray-800">
-                      {locker.name}
+                      {locker.lockerNo}
                     </h3>
                     <span className="text-[#DC004E] font-bold">
-                      ₹{locker.amount}
+                      ₹{locker.pricePerUnit.toString()}
                     </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeLocker(locker.id)}
+                    onClick={() => removeLocker(locker._id || '')}
                     className="text-red-500 hover:text-red-700 transition-colors duration-200"
                   >
                     Remove
@@ -247,30 +275,26 @@ const LockerBilling: React.FC = (): React.ReactElement => {
               <div className="grid grid-cols-3 gap-4 overflow-y-auto flex-grow">
                 {filteredLockers.map((locker) => (
                   <div
-                    key={locker.id}
-                    onClick={() => toggleLockerSelection(locker.id)}
+                    key={locker._id}
+                    onClick={() => toggleLockerSelection(locker._id || '')}
                     className={`
                       p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
                       ${
-                        selectedLockers.includes(locker.id)
+                        selectedLockers.includes(locker._id || '')
                           ? 'border-[#DC004E] bg-[#DC004E]/10'
                           : 'border-gray-200 hover:border-[#DC004E]'
                       }
                     `}
                   >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold text-gray-800">
-                          {locker.name}
-                        </h3>
-                        <span className="text-[#DC004E] font-bold">
-                          ₹{locker.amount}
-                        </span>
-                      </div>
-                      {selectedLockers.includes(locker.id) && (
-                        <div className="text-[#DC004E]">✓</div>
-                      )}
+                    <div className="flex justify-between">
+                      <span className="font-medium">{locker.lockerNo}</span>
+                      <span className="text-[#DC004E]">
+                        ₹{locker.pricePerUnit.toString()}
+                      </span>
                     </div>
+                    {locker._id && selectedLockers.includes(locker._id) && (
+                      <div className="text-[#DC004E]">✓</div>
+                    )}
                   </div>
                 ))}
               </div>
