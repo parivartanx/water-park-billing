@@ -3,6 +3,7 @@ import { Locker } from "@renderer/types/locker";
 import type { ValidChannel } from "../types/electron";
 import { LockerBilling } from "@renderer/types/locker.billing";
 import toast from "react-hot-toast";
+import { LockerStock } from "@renderer/types/locket-stock";
 
 export interface LockerStore {
     lockers: Locker[];
@@ -25,6 +26,32 @@ export const useLockerStore = create<LockerStore>((set) => ({
             console.error('Error fetching lockers:', error)
             set({ error: error instanceof Error ? error.message : 'Unknown error', loading: false })
             return []
+        }
+    }
+}))
+
+/// locker stock
+export interface LockerStockStore {
+    lockerStock: LockerStock | null;
+    loading: boolean;
+    error: string | null;
+    getLockerStock: () => Promise<LockerStock | null>;
+}
+
+export const useLockerStockStore = create<LockerStockStore>((set) => ({
+    lockerStock: null,
+    loading: false,
+    error: null,
+    getLockerStock: async () => {
+        try {
+            set({ loading: true, error: null })
+            const lockerStock = await window.electron.ipcRenderer.invoke('get-locker-stock' as ValidChannel) as LockerStock | null
+            set({ lockerStock, loading: false })
+            return lockerStock
+        } catch (error) {
+            console.error('Error fetching locker stock:', error)
+            set({ error: error instanceof Error ? error.message : 'Unknown error', loading: false })
+            return null
         }
     }
 }))
@@ -67,3 +94,6 @@ export const useLockerBillingStore = create<LockerBillingStore>((set) => ({
         }
     }
 }))
+
+
+/// 

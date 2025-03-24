@@ -1,17 +1,34 @@
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLockerStockStore } from '../stores/lockerStore'
 
 const LockerStock: React.FC = (): React.ReactElement => {
   const navigate = useNavigate()
 
-  const totalLockers = 100 // Example total lockers
-  const availableLockers = 75 // Example available lockers
-  const occupiedLockers = totalLockers - availableLockers
+  const { lockerStock, loading, error, getLockerStock } = useLockerStockStore()
+
+  const getLockerStockFunc = useCallback(() => {
+    getLockerStock()
+  }, [getLockerStock])
+
+  useEffect(() => {
+    getLockerStockFunc()
+  }, [getLockerStockFunc])
 
   const handleAddLocker = (): void => {
     navigate('/add-locker')
   }
 
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>
+  }
+  if (!lockerStock) {
+    return <div>No locker stock found</div>
+  }
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -68,7 +85,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
                     Total Lockers
                   </h3>
                   <p className="text-3xl font-bold text-[#DC004E] mt-2">
-                    {totalLockers}
+                    {lockerStock.totalLockers}
                   </p>
                 </div>
               </div>
@@ -102,7 +119,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
                     Available Lockers
                   </h3>
                   <p className="text-3xl font-bold text-green-600 mt-2">
-                    {availableLockers}
+                    {lockerStock.availableLockers}
                   </p>
                 </div>
               </div>
@@ -136,7 +153,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
                     Occupied Lockers
                   </h3>
                   <p className="text-3xl font-bold text-red-600 mt-2">
-                    {occupiedLockers}
+                    {lockerStock.occupiedLockers}
                   </p>
                 </div>
               </div>
@@ -154,7 +171,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
               Locker Usage
             </h3>
             <div className="text-sm font-medium text-gray-600">
-              {occupiedLockers} of {totalLockers} lockers in use
+              {lockerStock.occupiedLockers} of {lockerStock.totalLockers} lockers in use
             </div>
           </div>
           <div className="relative pt-1">
@@ -166,13 +183,13 @@ const LockerStock: React.FC = (): React.ReactElement => {
               </div>
               <div className="text-right">
                 <span className="text-xs font-semibold inline-block text-red-600">
-                  {Math.round((occupiedLockers / totalLockers) * 100)}%
+                  {Math.round((lockerStock.occupiedLockers / lockerStock.totalLockers) * 100)}%
                 </span>
               </div>
             </div>
             <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-red-200">
               <div
-                style={{ width: `${(occupiedLockers / totalLockers) * 100}%` }}
+                style={{ width: `${(lockerStock.occupiedLockers / lockerStock.totalLockers) * 100}%` }}
                 className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#DC004E] transition-all duration-500"
               />
             </div>
@@ -181,13 +198,13 @@ const LockerStock: React.FC = (): React.ReactElement => {
             <div className="flex items-center">
               <div className="w-3 h-3 rounded-full bg-[#DC004E] mr-2" />
               <span>
-                Occupied ({Math.round((occupiedLockers / totalLockers) * 100)}%)
+                Occupied ({Math.round((lockerStock.occupiedLockers / lockerStock.totalLockers) * 100)}%)
               </span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 rounded-full bg-green-500 mr-2" />
               <span>
-                Available ({Math.round((availableLockers / totalLockers) * 100)}
+                Available ({Math.round((lockerStock.availableLockers / lockerStock.totalLockers) * 100)}
                 %)
               </span>
             </div>
