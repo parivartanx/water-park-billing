@@ -1,6 +1,5 @@
 export interface Ticket {
-    id?: string;
-    parkId: string;
+    _id?: string;
     ticketType: string; // "General", "VIP", "Combo", etc.
     price: number;
     status: string; // "Active","Inactive"

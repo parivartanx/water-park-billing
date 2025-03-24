@@ -1,5 +1,6 @@
-import { ticketDB, } from "../db";
-
+import { ticketDB, ticketBillingDB } from "../db";
+import { TicketBilling } from "../types/ticket.billing";
+import { decodeToken } from "./auth.controller";
 
 // get tickets
 export const getTickets = async () => {
@@ -31,4 +32,21 @@ export const getTicketById = async (id: string) => {
     }
 }
 
-
+/// ============================ Ticket billing functions ==============================
+export const saveTicketBilling = async (billing: TicketBilling, access_token: string) => {
+    try {
+      
+        const decoded = decodeToken(access_token)
+        if(!decoded) {
+            return { error: 'Unauthorized to save ticket billing' }
+        }
+        if(decoded.role !== "ticket"){
+            return { error: 'Unauthorized to save ticket billing' }
+        }
+        billing.createdBy = decoded.id
+        return await ticketBillingDB.post(billing)
+    } catch (error) {
+        console.error('Error saving ticket billing:', error);
+        throw error;
+    }
+}

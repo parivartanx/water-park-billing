@@ -1,6 +1,17 @@
     /// write auth controller to remote api 
 import { apiEndPoint } from '../db'
 import axios from 'axios'
+import dotenv from 'dotenv'
+import { jwtDecode, JwtPayload } from "jwt-decode";
+
+dotenv.config()
+
+// Custom JWT Payload interface
+interface CustomJwtPayload extends JwtPayload {
+  role: string;
+  email: string;
+  id: string;
+}
 
 // Define the response type structure
 interface LoginResponse {
@@ -60,5 +71,14 @@ export const login = async (email: string, password: string, role: string) => {
                 status: 'inactive'
             }
         } as LoginResponse
+    }
+}
+
+export const decodeToken = (token: string): CustomJwtPayload | null => {
+    try {
+        return jwtDecode<CustomJwtPayload>(token);
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        return null;
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Minus,
   Plus,
@@ -6,15 +6,16 @@ import {
   Ticket,
   User,
   CreditCard,
-  QrCode
+  QrCode,
+  Loader2,
+  AlertCircle
 } from 'lucide-react'
+import { useTicketStore, useTicketBillingStore } from '../stores/ticket.store'
+import type { Ticket as TicketType } from '../types/ticket'
+import toast from 'react-hot-toast'
 
-interface Ticket {
-  id: number
-  name: string
-  price: number
-  quantity: number
-  description: string
+interface SelectedTicket extends TicketType {
+  quantity: number;
 }
 
 const TicketBilling: React.FC = () => {
@@ -25,39 +26,13 @@ const TicketBilling: React.FC = () => {
   const [discountType, setDiscountType] = useState<'flat' | 'percentage'>(
     'percentage'
   )
-  const [selectedTickets, setSelectedTickets] = useState<Ticket[]>([])
-  const [tickets] = useState<Ticket[]>([
-    {
-      id: 1,
-      name: 'Adult Day Pass',
-      price: 49.99,
-      quantity: 0,
-      description:
-        'Full day access to all water park attractions for adults (13+ years)'
-    },
-    {
-      id: 2,
-      name: 'Child Day Pass',
-      price: 29.99,
-      quantity: 0,
-      description:
-        'Full day access to all water park attractions for children (4-12 years)'
-    },
-    {
-      id: 3,
-      name: 'Family Pack (2+2)',
-      price: 149.99,
-      quantity: 0,
-      description: 'Package for 2 adults and 2 children with full day access'
-    },
-    {
-      id: 4,
-      name: 'Senior Citizen',
-      price: 39.99,
-      quantity: 0,
-      description: 'Special discounted pass for seniors (60+ years)'
-    }
-  ])
+  const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([])
+  const { getTickets, loading, error, tickets } = useTicketStore()
+  const { createTicketBilling, billingLoading, billingError } = useTicketBillingStore()
+
+  useEffect(() => {
+    getTickets()
+  }, [getTickets])
 
   const paymentModeIcons = {
     cash: <User className="w-5 h-5 text-[#DC004E]" />,
@@ -67,26 +42,37 @@ const TicketBilling: React.FC = () => {
 
   const GST_RATE = 0.18
 
-  const toggleTicketSelection = (ticket: Ticket): void => {
+  const toggleTicketSelection = (ticket: TicketType): void => {
     setSelectedTickets((prevSelected) => {
-      if (prevSelected.some((t) => t.id === ticket.id)) {
-        return prevSelected.filter((t) => t.id !== ticket.id)
+      if (prevSelected.some((t) => t._id === ticket._id)) {
+        toast.success(`Removed ${ticket.ticketType} from selection`)
+        return prevSelected.filter((t) => t._id !== ticket._id)
       } else {
+        toast.success(`Added ${ticket.ticketType} to selection`)
         return [...prevSelected, { ...ticket, quantity: 1 }]
       }
     })
   }
 
-  const updateTicketQuantity = (ticketId: number, increment: boolean): void => {
+  const updateTicketQuantity = (ticketId: string, increment: boolean): void => {
     setSelectedTickets((prevSelected) =>
-      prevSelected.map((ticket) =>
-        ticket.id === ticketId
-          ? {
-              ...ticket,
-              quantity: Math.max(0, ticket.quantity + (increment ? 1 : -1))
-            }
-          : ticket
-      )
+      prevSelected.map((ticket) => {
+        if (ticket._id === ticketId) {
+          const newQuantity = Math.max(0, ticket.quantity + (increment ? 1 : -1))
+          if (increment && newQuantity > ticket.quantity) {
+            toast.success(`Increased ${ticket.ticketType} quantity to ${newQuantity}`)
+          } else if (!increment && newQuantity < ticket.quantity) {
+            toast(`Decreased ${ticket.ticketType} quantity to ${newQuantity}`, {
+              icon: '↓',
+            })
+          }
+          return {
+            ...ticket,
+            quantity: newQuantity
+          }
+        }
+        return ticket
+      })
     )
   }
 
@@ -99,20 +85,77 @@ const TicketBilling: React.FC = () => {
   const gstAmount = (subtotal - discountAmount) * GST_RATE
   const total = subtotal - discountAmount + gstAmount
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
-    console.log({
-      customerName,
-      mobileNumber,
-      tickets: selectedTickets,
-      paymentMode,
-      discount,
-      discountType,
-      subtotal,
-      discountAmount,
-      gstAmount,
-      total
-    })
+    
+    if (selectedTickets.length === 0) {
+      toast.error('Please select at least one ticket')
+      return
+    }
+
+    if (selectedTickets.some(ticket => ticket.quantity === 0)) {
+      toast.error('Please remove tickets with zero quantity')
+      return
+    }
+
+    const loadingToast = toast.loading('Processing ticket billing...')
+    
+    try {
+      /// extract ticket id and quantity
+      const tickets = selectedTickets.map((ticket) => ({
+        _id: ticket._id || '',
+        quantity: ticket.quantity
+      }))
+      
+      await createTicketBilling({
+        customerName,
+        mobileNumber,
+        tickets,
+        paymentMode,
+        discount,
+        discountType,
+        subtotal,
+        discountAmount,
+        gstAmount,
+        total
+      })
+
+      toast.dismiss(loadingToast)
+      toast.success('Ticket billing completed successfully!')
+
+      // Reset form
+      setCustomerName('')
+      setMobileNumber('')
+      setPaymentMode('cash')
+      setDiscount(0)
+      setDiscountType('percentage')
+      setSelectedTickets([])
+
+    } catch (error) {
+      toast.dismiss(loadingToast)
+      toast.error(billingError || 'Failed to create ticket billing')
+      console.error('Error creating ticket billing:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 text-[#DC004E] animate-spin" />
+        <span className="ml-2 text-gray-600">Loading tickets...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">
+          <p>Error loading tickets:</p>
+          <p>{error}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -181,44 +224,44 @@ const TicketBilling: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {tickets.map((ticket) => (
               <div
-                key={ticket.id}
+                key={ticket._id}
                 className={`p-4 rounded-lg border-2 transition-all duration-300 cursor-pointer ${
-                  selectedTickets.some((t) => t.id === ticket.id)
+                  selectedTickets.some((t) => t._id === ticket._id)
                     ? 'border-[#DC004E] bg-pink-50'
                     : 'border-gray-200 hover:border-[#DC004E] hover:shadow-md'
                 }`}
                 onClick={() => toggleTicketSelection(ticket)}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-gray-800">{ticket.name}</h3>
+                  <h3 className="font-semibold text-gray-800">{ticket.ticketType}</h3>
                   <span className="text-[#DC004E] font-bold">
                     ₹{ticket.price}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 mb-3">
-                  {ticket.description}
+                  {ticket.status}
                 </p>
-                {selectedTickets.some((t) => t.id === ticket.id) && (
+                {selectedTickets.some((t) => t._id === ticket._id) && (
                   <div className="flex items-center justify-end gap-3 mt-2">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
-                        updateTicketQuantity(ticket.id, false)
+                        updateTicketQuantity(ticket._id!, false)
                       }}
                       className="p-1 rounded-full hover:bg-pink-100 text-[#DC004E] transition-colors duration-200"
                     >
                       <Minus size={20} />
                     </button>
                     <span className="font-medium text-gray-800">
-                      {selectedTickets.find((t) => t.id === ticket.id)
+                      {selectedTickets.find((t) => t._id === ticket._id)
                         ?.quantity || 0}
                     </span>
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
-                        updateTicketQuantity(ticket.id, true)
+                        updateTicketQuantity(ticket._id!, true)
                       }}
                       className="p-1 rounded-full hover:bg-pink-100 text-[#DC004E] transition-colors duration-200"
                     >
@@ -319,12 +362,30 @@ const TicketBilling: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-4 mt-6">
+              {billingError && (
+                <div className="flex items-center text-red-600 mr-4">
+                  <AlertCircle className="w-5 h-5 mr-2" />
+                  <span>{billingError}</span>
+                </div>
+              )}
               <button
                 type="submit"
-                className="px-6 py-2 bg-[#DC004E] text-white rounded-lg hover:bg-[#b0003e] transition-colors duration-200 flex items-center gap-2"
+                disabled={billingLoading}
+                className={`px-6 py-2 bg-[#DC004E] text-white rounded-lg transition-colors duration-200 flex items-center gap-2 ${
+                  billingLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#b0003e]'
+                }`}
               >
-                <Calculator size={20} />
-                Generate Bill
+                {billingLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Calculator size={20} />
+                    Generate Bill
+                  </>
+                )}
               </button>
             </div>
           </div>

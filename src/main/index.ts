@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { login } from './controllers/auth.controller'
-import { getTickets, getTicketById } from './controllers/ticket.controller'
+import { getTickets, getTicketById, saveTicketBilling } from './controllers/ticket.controller'
 
 function createWindow(): void {
   // Create the browser window.
@@ -83,6 +83,16 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error getting ticket by id:', error)
       return { error: 'Failed to fetch ticket' }
+    }
+  })
+
+  /// ticket billing handlers
+  ipcMain.handle('create-ticket-billing', async (_event, args) => {
+    try {
+      return await saveTicketBilling(args.billing, args.access_token)
+    } catch (error) {
+      console.error('Error creating ticket billing:', error)
+      return { error: 'Failed to create ticket billing' }
     }
   })
 

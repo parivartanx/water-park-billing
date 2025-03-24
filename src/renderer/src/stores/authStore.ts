@@ -17,7 +17,7 @@ export interface AuthState {
   logout: () => void
 }
 
-export const initialAuthState: AuthState = {
+const initialAuthState: AuthState = {
   employee: null,
   loading: false,
   error: null,
@@ -25,7 +25,7 @@ export const initialAuthState: AuthState = {
   logout: () => {}
 }
 
-// Initialize employee from localStorage if available
+// Helper function to get initial employee state from localStorage
 const getInitialEmployee = (): Employee | null => {
   const storedEmployee = localStorage.getItem('employee')
   return storedEmployee ? JSON.parse(storedEmployee) : null
@@ -37,34 +37,39 @@ export const useAuthStore = create<AuthState>()((set) => ({
   login: async (email: string, password: string, role: string) => {
     set({ loading: true, error: null })
     try {
-      // Call the IPC handler in the main process and explicitly type the response
-      const response = await window.electron.ipcRenderer.invoke('login', { email, password, role }) as LoginResponse
-      console.log('Login response:', response)
-      // store token in local storage
-      localStorage.setItem('access_token', response.accessToken || '')
-      localStorage.setItem('refresh_token', response.refreshToken || '')
-      /// store employee in local storage
-      localStorage.setItem('employee', JSON.stringify(response.employee))
+      const response = await window.electron.ipcRenderer.invoke('login', { 
+        email, 
+        password, 
+        role 
+      }) as LoginResponse
+
       if (response.error) {
         set({ loading: false, error: response.error })
         return
       }
-      
-      // Store the employee data in the state
+
+      // Store tokens and employee data in localStorage
+      localStorage.setItem('access_token', response.accessToken || '')
+      localStorage.setItem('refresh_token', response.refreshToken || '')
+      localStorage.setItem('employee', JSON.stringify(response.employee))
+
+      // Update store state
       set({ employee: response.employee, loading: false, error: null })
     } catch (error) {
       console.error('Login error:', error)
       set({ 
         loading: false, 
-        error: error instanceof Error ? error.message : 'Authentication failed. Please try again.' 
+        error: error instanceof Error ? error.message : 'Login failed'
       })
     }
   },
   logout: () => {
-    set(initialAuthState)
-    // remove token from local storage
+    // Clear localStorage
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('employee')
+    
+    // Reset store state
+    set(initialAuthState)
   }
 }))

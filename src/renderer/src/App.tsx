@@ -19,11 +19,37 @@ import CostumeStock from './components/CostumeStock'
 import SignIn from './components/SignIn'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
+import { Toaster } from 'react-hot-toast'
 
 const App = (): JSX.Element => {
   return (
     <AuthProvider>
       <Router>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#fff',
+              color: '#363636',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              borderRadius: '8px',
+              padding: '12px 24px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#DC004E',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
         <Routes>
           {/* Public route */}
           <Route path="/signin" element={<SignIn />} />
