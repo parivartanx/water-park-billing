@@ -6,6 +6,7 @@ import { login } from './controllers/auth.controller'
 import { getTickets, getTicketById, saveTicketBilling } from './controllers/ticket.controller'
 import { getLockers, getLockerStock } from './controllers/locker.controller'
 import { createLockerBilling } from './controllers/locker.controller'
+import { createCostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling } from './controllers/costume.controller'
 
 function createWindow(): void {
   // Create the browser window.
@@ -128,6 +129,43 @@ app.whenReady().then(() => {
     }
   })  
 
+  /// costume handlers
+  ipcMain.handle('get-costume-stock', async (_event, args) => {
+    try {
+      console.log('Get costume stock handler called with args:', args)
+      return await getCostumeStock()
+    } catch (error) {
+      console.error('Error getting costume stock:', error)
+      return { error: 'Failed to fetch costume stock' }
+    }
+  })
+
+  ipcMain.handle('create-costume-stock', async (_event, args) => {
+    try {
+      return await createCostumeStock(args.costumeStock, args.access_token)
+    } catch (error) {
+      console.error('Error creating costume stock:', error)
+      return { error: 'Failed to create costume stock' }  
+    }
+  })
+
+  ipcMain.handle('delete-costume-stock', async (_event, args) => {
+    try {
+      return await deleteCostumeStock(args.id)
+    } catch (error) {
+      console.error('Error deleting costume stock:', error)
+      return { error: 'Failed to delete costume stock' }
+    }
+  })
+
+  ipcMain.handle('create-costume-billing', async (_event, args) => {
+    try {
+      return await createCostumeBilling(args.costumeBilling, args.access_token)
+    } catch (error) {
+      console.error('Error creating costume billing:', error)
+      return { error: 'Failed to create costume billing' }
+    }
+  })
 
   // 
   createWindow()

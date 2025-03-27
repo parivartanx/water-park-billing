@@ -45,7 +45,7 @@ export const useLockerStockStore = create<LockerStockStore>((set) => ({
     getLockerStock: async () => {
         try {
             set({ loading: true, error: null })
-            const lockerStock = await window.electron.ipcRenderer.invoke('get-locker-stock' as ValidChannel) as LockerStock | null
+            const lockerStock = await window.electron.ipcRenderer.invoke('get-locker-stock') as LockerStock | null
             set({ lockerStock, loading: false })
             return lockerStock
         } catch (error) {

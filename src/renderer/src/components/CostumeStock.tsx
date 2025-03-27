@@ -1,73 +1,163 @@
-import React, { useState } from 'react'
+import { CostumeCategory, CostumeSize } from '@renderer/utils/enums'
+import React, { useState, useEffect } from 'react'
+import { useCostumeStockStore } from '../stores/costumeStore'
+import { toast } from 'react-hot-toast'
 
 const CostumeStock: React.FC = (): React.ReactElement => {
-  const [category, setCategory] = useState<'half' | 'full' | 'ladies' | 'kids'>('half')
-  const [size, setSize] = useState<'S' | 'M' | 'L' | 'XL' | 'XXL'>('M')
+  const [category, setCategory] = useState<CostumeCategory>(CostumeCategory.HALF_PANT)
+  const [size, setSize] = useState<CostumeSize>(CostumeSize.M)
   const [quantity, setQuantity] = useState<number | null>(null)
   const [pricePerUnit, setPricePerUnit] = useState<number | null>(null)
   const [refundPrice, setRefundPrice] = useState<number | null>(null)
+  const { loading, error, costumeStock, getCostumeStock, createCostumeStock } = useCostumeStockStore()
 
-  const handleSave = (): void => {
-    console.log('Costume details saved:', {
-      category,
-      size,
-      quantity,
-      pricePerUnit,
-      refundPrice
-    })
+  // Fetch costume stock data on component mount
+  useEffect(() => {
+    fetchCostumeStock()
+  }, [])
+
+  const fetchCostumeStock = async () => {
+    try {
+      await getCostumeStock()
+    } catch {
+      toast.error('Failed to fetch costume stock data')
+    }
+  }
+
+  const handleSave = async (): Promise<void> => {
+    // Get access token from localStorage
+    const access_token = localStorage.getItem('access_token')
+    if (!access_token) {
+      toast.error('You are not authenticated. Please log in.')
+      return
+    }
+
+    // Validate required fields
+    if (!quantity || !pricePerUnit || !refundPrice) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    try {
+      await createCostumeStock({
+        category,
+        size,
+        quantity,
+        pricePerUnit,
+        refundPrice
+      }, access_token)
+
+      // Check if there was an error during creation
+      if (error) {
+        toast.error(error)
+        return
+      }
+
+      // Reset form fields after successful creation
+      setQuantity(null)
+      setPricePerUnit(null)
+      setRefundPrice(null)
+            
+      // Refresh costume stock data
+      await fetchCostumeStock()
+    } catch {
+      toast.error('Failed to update costume stock')
+    }
+  }
+
+  // Find stock quantity for a specific category and size
+  const getStockQuantity = (categoryType: CostumeCategory, sizeOption: CostumeSize): number => {
+    const stockItem = costumeStock.find(
+      item => item.category === categoryType && item.size === sizeOption
+    )
+    return stockItem ? stockItem.quantity : 0
   }
 
   const renderSizeCard = (
-    sizeOption: string,
-    categoryType: 'half' | 'full' | 'ladies' | 'kids'
-  ): React.ReactElement => (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      <div className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="p-3 bg-pink-50 rounded-lg">
-              <svg
-                className="w-6 h-6 text-[#DC004E]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M7 21a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2H7zm5-18v18m0-18h5a2 2 0 012 2v14a2 2 0 01-2 2h-5"
-                />
-              </svg>
+    sizeOption: CostumeSize,
+    categoryType: CostumeCategory
+  ): React.ReactElement => {
+    const stockQuantity = getStockQuantity(categoryType, sizeOption)
+    
+    return (
+      <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="p-3 bg-pink-50 rounded-lg">
+                <svg
+                  className="w-6 h-6 text-[#DC004E]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M7 21a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2H7zm5-18v18m0-18h5a2 2 0 012 2v14a2 2 0 01-2 2h-5"
+                  />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold text-gray-900 capitalize">
+                  Size {sizeOption}
+                </h3>
+                <p className="text-sm text-gray-500 capitalize">
+                  {categoryType} Category
+                </p>
+              </div>
             </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Size {sizeOption}
-              </h3>
-              <p className="text-sm text-gray-500">{categoryType} Category</p>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-[#DC004E]">{stockQuantity}</p>
+              <p className="text-sm text-gray-500">In Stock</p>
             </div>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold text-[#DC004E]">{quantity ?? 0}</p>
-            <p className="text-sm text-gray-500">In Stock</p>
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Costume Stock</h1>
-          <p className="text-gray-600 mt-2">
-            Monitor and manage your costume inventory
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Costume Stock</h1>
+            <p className="text-gray-600 mt-2">
+              Monitor and manage your costume inventory
+            </p>
+          </div>
+          {loading && (
+            <div className="flex items-center text-[#DC004E]">
+              <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                <circle 
+                  className="opacity-25" 
+                  cx="12" 
+                  cy="12" 
+                  r="10" 
+                  stroke="currentColor" 
+                  strokeWidth="4" 
+                  fill="none" 
+                />
+                <path 
+                  className="opacity-75" 
+                  fill="currentColor" 
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" 
+                />
+              </svg>
+              <span>Loading...</span>
+            </div>
+          )}
+          {error && (
+            <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg">
+              {error}
+            </div>
+          )}
         </div>
 
         <div className="space-y-8">
-          {['half', 'full', 'ladies', 'kids'].map((categoryType) => (
+          {Object.values(CostumeCategory).map((categoryType) => (
             <div key={categoryType} className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center capitalize">
                 <svg
@@ -86,8 +176,8 @@ const CostumeStock: React.FC = (): React.ReactElement => {
                 {categoryType} Category
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {['S', 'M', 'L', 'XL', 'XXL'].map((sizeOption) =>
-                  renderSizeCard(sizeOption, categoryType as 'half' | 'full' | 'ladies' | 'kids')
+                {Object.values(CostumeSize).map((sizeOption) =>
+                  renderSizeCard(sizeOption, categoryType as CostumeCategory)
                 )}
               </div>
             </div>
@@ -115,21 +205,46 @@ const CostumeStock: React.FC = (): React.ReactElement => {
             </h2>
             <button 
               onClick={handleSave}
-              className="px-4 py-2 bg-[#DC004E] text-white rounded-lg hover:bg-[#b0003e] transition-colors duration-200 flex items-center gap-2"
+              disabled={loading}
+              className={`px-4 py-2 ${loading ? 'bg-gray-400' : 'bg-[#DC004E] hover:bg-[#b0003e]'} text-white rounded-lg transition-colors duration-200 flex items-center gap-2`}
             >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-5 w-5" 
-                viewBox="0 0 20 20" 
-                fill="currentColor"
-              >
-                <path 
-                  fillRule="evenodd" 
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" 
-                  clipRule="evenodd" 
-                />
-              </svg>
-              Save Changes
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle 
+                      className="opacity-25" 
+                      cx="12" 
+                      cy="12" 
+                      r="10" 
+                      stroke="currentColor" 
+                      strokeWidth="4" 
+                      fill="none" 
+                    />
+                    <path 
+                      className="opacity-75" 
+                      fill="currentColor" 
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" 
+                    />
+                  </svg>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-5 w-5" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path 
+                      fillRule="evenodd" 
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" 
+                      clipRule="evenodd" 
+                    />
+                  </svg>
+                  Save Changes
+                </>
+              )}
             </button>
           </div>
 
@@ -140,13 +255,14 @@ const CostumeStock: React.FC = (): React.ReactElement => {
               <div className="relative">
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as 'half' | 'full' | 'ladies' | 'kids')}
+                  onChange={(e) => setCategory(e.target.value as CostumeCategory)}
                   className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent appearance-none"
+                  disabled={loading}
                 >
-                  <option value="half">Half</option>
-                  <option value="full">Full</option>
-                  <option value="ladies">Ladies</option>
-                  <option value="kids">Kids</option>
+                  <option value={CostumeCategory.HALF_PANT}>HALF PANT</option>
+                  <option value={CostumeCategory.FULL_PANT_LADIES}>FULL PANT LADIES</option>
+                  <option value={CostumeCategory.LADIES_DRESS}>LADIES DRESS</option>
+                  <option value={CostumeCategory.KIDS_DRESS}>KIDS DRESS</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                   <svg 
@@ -168,14 +284,15 @@ const CostumeStock: React.FC = (): React.ReactElement => {
               <div className="relative">
                 <select
                   value={size}
-                  onChange={(e) => setSize(e.target.value as 'S' | 'M' | 'L' | 'XL' | 'XXL')}
+                  onChange={(e) => setSize(e.target.value as CostumeSize)}
                   className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent appearance-none"
+                  disabled={loading}
                 >
-                  <option value="S">S</option>
-                  <option value="M">M</option>
-                  <option value="L">L</option>
-                  <option value="XL">XL</option>
-                  <option value="XXL">XXL</option>
+                  <option value={CostumeSize.S}>S</option>
+                  <option value={CostumeSize.M}>M</option>
+                  <option value={CostumeSize.L}>L</option>
+                  <option value={CostumeSize.XL}>XL</option>
+                  <option value={CostumeSize.XXL}>XXL</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                   <svg 
@@ -193,107 +310,49 @@ const CostumeStock: React.FC = (): React.ReactElement => {
 
             {/* Quantity Input */}
             <div className="group relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity 
-                <span className="text-gray-500 ml-1 text-xs">(Optional)</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={quantity ?? ''}
-                  onChange={(e) => {
-                    const value = e.target.value === '' ? null : Number(e.target.value)
-                    setQuantity(value)
-                  }}
-                  placeholder="Enter quantity"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-5 w-5 text-gray-400" 
-                    viewBox="0 0 20 20" 
-                    fill="currentColor"
-                  >
-                    <path 
-                      fillRule="evenodd" 
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" 
-                      clipRule="evenodd" 
-                    />
-                  </svg>
-                </div>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+              <input
+                type="number"
+                value={quantity === null ? '' : quantity}
+                onChange={(e) => setQuantity(e.target.value ? parseInt(e.target.value) : null)}
+                placeholder="Enter quantity"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
+                disabled={loading}
+                min="1"
+              />
             </div>
 
             {/* Price Per Unit Input */}
             <div className="group relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price Per Unit 
-                <span className="text-gray-500 ml-1 text-xs">(Optional)</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={pricePerUnit ?? ''}
-                  onChange={(e) => {
-                    const value = e.target.value === '' ? null : Number(e.target.value)
-                    setPricePerUnit(value)
-                  }}
-                  placeholder="Enter price"
-                  className="w-full px-4 py-3 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-400">₹</span>
-                </div>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Unit (₹)</label>
+              <input
+                type="number"
+                value={pricePerUnit === null ? '' : pricePerUnit}
+                onChange={(e) => setPricePerUnit(e.target.value ? parseFloat(e.target.value) : null)}
+                placeholder="Enter price per unit"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
+                disabled={loading}
+                min="0"
+                step="0.01"
+              />
             </div>
 
             {/* Refund Price Input */}
             <div className="group relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Refund Price 
-                <span className="text-gray-500 ml-1 text-xs">(Optional)</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={refundPrice ?? ''}
-                  onChange={(e) => {
-                    const value = e.target.value === '' ? null : Number(e.target.value)
-                    setRefundPrice(value)
-                  }}
-                  placeholder="Enter refund price"
-                  className="w-full px-4 py-3 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-400">₹</span>
-                </div>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Refund Price (₹)</label>
+              <input
+                type="number"
+                value={refundPrice === null ? '' : refundPrice}
+                onChange={(e) => setRefundPrice(e.target.value ? parseFloat(e.target.value) : null)}
+                placeholder="Enter refund price"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
+                disabled={loading}
+                min="0"
+                step="0.01"
+              />
             </div>
           </div>
         </div>
-
-        {/* <div className="flex justify-end mt-8">
-          <button
-            onClick={handleSave}
-            className="flex items-center px-6 py-3 bg-[#DC004E] text-white font-medium rounded-lg hover:bg-[#b0003e] transition-colors duration-200 shadow-md hover:shadow-lg"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-              />
-            </svg>
-            Save Changes
-          </button>
-        </div> */}
       </div>
     </div>
   )

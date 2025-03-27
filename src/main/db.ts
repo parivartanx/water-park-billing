@@ -17,6 +17,7 @@ const costumeDB = new PouchDB('costumes')
 const lockerDB = new PouchDB('lockers')
 const ticketBillingDB = new PouchDB('ticket-billing')
 const lockerBillingDB = new PouchDB('locker-billing')
+const costumeBillingDB = new PouchDB('costume-billing')
 
 /// remote dbs 
 const remoteEmployeeDB = new PouchDB('http://admin:password@127.0.0.1:5984/employees')
@@ -26,6 +27,7 @@ const remoteCostumeDB = new PouchDB('http://admin:password@127.0.0.1:5984/costum
 const remoteLockerDB = new PouchDB('http://admin:password@127.0.0.1:5984/lockers')
 const remoteTicketBillingDB = new PouchDB('http://admin:password@127.0.0.1:5984/ticket-billing')
 const remoteLockerBillingDB = new PouchDB('http://admin:password@127.0.0.1:5984/locker-billing')
+const remoteCostumeBillingDB = new PouchDB('http://admin:password@127.0.0.1:5984/costume-billing')
 
 /// sync dbs
 employeeDB.sync(remoteEmployeeDB, { live: true, retry: true })
@@ -49,10 +51,15 @@ ticketBillingDB.sync(remoteTicketBillingDB, { live: true, retry: true })
 lockerBillingDB.sync(remoteLockerBillingDB, { live: true, retry: true })
 .on('change', (info) => console.log('Sync change:', info))
 .on('error', (err) => console.error('Sync error:', err))
+costumeBillingDB.sync(remoteCostumeBillingDB, { live: true, retry: true })
+.on('change', (info) => console.log('Sync change:', info))
+.on('error', (err) => console.error('Sync error:', err))
+
+
 
 
 
 //
 
 
-export { employeeDB, customerDB, ticketDB, costumeDB, lockerDB, ticketBillingDB, lockerBillingDB }
+export { employeeDB, customerDB, ticketDB, costumeDB, lockerDB, ticketBillingDB, lockerBillingDB, costumeBillingDB }
