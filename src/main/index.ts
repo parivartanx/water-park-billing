@@ -7,6 +7,7 @@ import { getTickets, getTicketById, saveTicketBilling } from './controllers/tick
 import { getLockers, getLockerStock } from './controllers/locker.controller'
 import { createLockerBilling } from './controllers/locker.controller'
 import { createCostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling } from './controllers/costume.controller'
+import { billingHistories, recentBillingHistories } from './controllers/history.controller'
 
 function createWindow(): void {
   // Create the browser window.
@@ -164,6 +165,28 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error creating costume billing:', error)
       return { error: 'Failed to create costume billing' }
+    }
+  })
+
+  /// billing history handlers
+  ipcMain.handle('get-billing-histories', async (_event, args) => {
+    try {
+      return await billingHistories({from: args.from, to: args.to, type: args.type, searchStr: args.searchStr})
+    } catch (error) {
+      console.error('Error getting billing histories:', error)
+      return { error: 'Failed to fetch billing histories' }
+    }
+  })
+
+  ipcMain.handle('get-recent-billing-histories', async (_event, args) => {
+    try {
+      if(!args.limit) {
+        return { error: 'Limit is required' }
+      }
+      return await recentBillingHistories(args.limit)
+    } catch (error) {
+      console.error('Error getting recent billing histories:', error)
+      return { error: 'Failed to get recent billing histories' }
     }
   })
 

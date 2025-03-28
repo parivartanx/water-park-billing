@@ -84,22 +84,53 @@ export const createCostumeBilling = async (costumeBilling: CostumeBilling, acces
             return { error: 'Unauthorized to create costume billing' }
         }
 
-        console.log("Customer Name:",costumeBilling.customerName)
-        console.log("Customer Number:",costumeBilling.customerNumber)
-        console.log("Costumes:",costumeBilling.costumes)
-        console.log("Total:",costumeBilling.total)
-        console.log("Is Returned:",costumeBilling.isReturned)
-        console.log("Discount:",costumeBilling.discount)
-        console.log("Discount Type:",costumeBilling.discountType)
-        console.log("Payment Mode:",costumeBilling.paymentMode)
-        console.log("Subtotal:",costumeBilling.subtotal)
-        console.log("Discount Amount:",costumeBilling.discountAmount)
-        console.log("GST Amount:",costumeBilling.gstAmount)
+        // console.log("Customer Name:",costumeBilling.customerName)
+        // console.log("Customer Number:",costumeBilling.customerNumber)
+        // console.log("Costumes:",costumeBilling.costumes)
+        // console.log("Total:",costumeBilling.total)
+        // console.log("Is Returned:",costumeBilling.isReturned)
+        // console.log("Discount:",costumeBilling.discount)
+        // console.log("Discount Type:",costumeBilling.discountType)
+        // console.log("Payment Mode:",costumeBilling.paymentMode)
+        // console.log("Subtotal:",costumeBilling.subtotal)
+        // console.log("Discount Amount:",costumeBilling.discountAmount)
+        // console.log("GST Amount:",costumeBilling.gstAmount)
         
         /// validate the costume billing
-        if(!costumeBilling.customerName) {
-            return { error: 'Invalid costume billing' }
+        if(!costumeBilling.customerName || !costumeBilling.customerNumber || costumeBilling.costumes.length === 0 || !costumeBilling.total) {
+            return { error: 'Invalid costume billing Details' }
         }
+
+        /// update the costumes stock 
+        for(const costume of costumeBilling.costumes){
+           /// get the costume stock by id 
+           if(!costume._id) {
+            return { error: 'Invalid Costume Id ' }
+           }
+           const costumeStock = await costumeDB.find(
+            {
+                selector: {
+                    _id: costume._id
+                }
+            }
+           )as PouchDB.Find.FindResponse<CostumeStock>
+           if(costumeStock.docs.length === 0) {
+            return { error: 'Invalid Costume Stock' }
+           }
+           /// decrement the quantity
+           const updatedCostumeStock = {
+            ...costumeStock.docs[0],
+            quantity: costumeStock.docs[0].quantity - costume.quantity
+           }
+           await costumeDB.put({
+            ...updatedCostumeStock,
+            _id: costumeStock.docs[0]._id,
+            _rev: costumeStock.docs[0]._rev
+           })
+        }
+
+        /// save the costume billing
+        
 
         costumeBilling.createdBy = decoded.id
         costumeBilling.createdAt = new Date().toISOString()
