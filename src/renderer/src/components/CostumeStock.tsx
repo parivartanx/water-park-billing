@@ -262,6 +262,7 @@ const CostumeStock: React.FC = (): React.ReactElement => {
                   <option value={CostumeCategory.HALF_PANT}>HALF PANT</option>
                   <option value={CostumeCategory.FULL_PANT_LADIES}>FULL PANT LADIES</option>
                   <option value={CostumeCategory.LADIES_DRESS}>LADIES DRESS</option>
+                  <option value={CostumeCategory.TSHIRT}>TSHIRT</option>
                   <option value={CostumeCategory.KIDS_DRESS}>KIDS DRESS</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
