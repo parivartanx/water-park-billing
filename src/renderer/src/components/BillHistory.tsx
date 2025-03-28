@@ -8,7 +8,15 @@ interface Bill {
   quantity: number
   type: 'ticket' | 'locker' | 'costume'
   totalAmount: number
+  subtotal: number
+  gst: number
+  discount: number
+  paymentMode: 'cash' | 'card' | 'upi'
   returned: boolean
+  // Additional type-specific details
+  costumeSizes?: string[]
+  lockerNumbers?: string[]
+  ticketId?: string
 }
 
 const BillHistory: React.FC = (): React.ReactElement => {
@@ -19,11 +27,11 @@ const BillHistory: React.FC = (): React.ReactElement => {
     'ticket' | 'locker' | 'costume' | ''
   >('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
 
   useEffect(() => {
-    // Placeholder for fetching bill history
     console.log('Fetching bill history')
-    // Simulate fetching data
+    // Updated bill data with new fields
     setBills([
       {
         id: 1,
@@ -33,7 +41,12 @@ const BillHistory: React.FC = (): React.ReactElement => {
         quantity: 2,
         type: 'ticket',
         totalAmount: 100,
-        returned: false
+        subtotal: 90,
+        gst: 10,
+        discount: 5,
+        paymentMode: 'cash',
+        returned: false,
+        ticketId: 'TICK-001'
       },
       {
         id: 2,
@@ -43,7 +56,12 @@ const BillHistory: React.FC = (): React.ReactElement => {
         quantity: 1,
         type: 'locker',
         totalAmount: 150,
-        returned: true
+        subtotal: 140,
+        gst: 15,
+        discount: 10,
+        paymentMode: 'card',
+        returned: true,
+        lockerNumbers: ['A1', 'A2']
       },
       {
         id: 3,
@@ -53,7 +71,12 @@ const BillHistory: React.FC = (): React.ReactElement => {
         quantity: 3,
         type: 'costume',
         totalAmount: 200,
-        returned: true
+        subtotal: 180,
+        gst: 20,
+        discount: 15,
+        paymentMode: 'upi',
+        returned: true,
+        costumeSizes: ['L', 'XL', 'M']
       }
     ])
   }, [])
@@ -87,6 +110,42 @@ const BillHistory: React.FC = (): React.ReactElement => {
       costume: 'bg-pink-100 text-pink-800'
     }
     return colors[type]
+  }
+
+  const handleViewBillDetails = (bill: Bill) => {
+    setSelectedBill(bill)
+  }
+
+  const closeModal = () => {
+    setSelectedBill(null)
+  }
+
+  const renderTypeSpecificDetails = (bill: Bill) => {
+    switch (bill.type) {
+      case 'ticket':
+        return (
+          <div className="flex justify-between">
+            <span className="text-gray-600">Ticket ID:</span>
+            <span className="font-medium">{bill.ticketId}</span>
+          </div>
+        )
+      case 'locker':
+        return (
+          <div className="flex justify-between">
+            <span className="text-gray-600">Locker Numbers:</span>
+            <span className="font-medium">{bill.lockerNumbers?.join(', ')}</span>
+          </div>
+        )
+      case 'costume':
+        return (
+          <div className="flex justify-between">
+            <span className="text-gray-600">Costume Sizes:</span>
+            <span className="font-medium">{bill.costumeSizes?.join(', ')}</span>
+          </div>
+        )
+      default:
+        return null
+    }
   }
 
   return (
@@ -265,7 +324,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => console.log('Viewing bill ID:', bill.id)}
+                        onClick={() => handleViewBillDetails(bill)}
                         className="text-[#DC004E] hover:text-[#b0003e] font-medium flex items-center justify-end space-x-1"
                       >
                         <svg
@@ -320,6 +379,83 @@ const BillHistory: React.FC = (): React.ReactElement => {
             </div>
           )}
         </div>
+
+        {selectedBill && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+              <button
+                onClick={closeModal}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">Bill Details</h2>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Customer Name:</span>
+                  <span className="font-medium">{selectedBill.customerName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Phone Number:</span>
+                  <span className="font-medium">{selectedBill.phone}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="font-medium">{formatDate(selectedBill.date)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Type:</span>
+                  <span className={`font-medium capitalize ${getTypeColor(selectedBill.type)}`}>
+                    {selectedBill.type}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Quantity:</span>
+                  <span className="font-medium">{selectedBill.quantity}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium">₹{selectedBill.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Discount:</span>
+                  <span className="font-medium text-green-600">-₹{selectedBill.discount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">GST:</span>
+                  <span className="font-medium text-blue-600">+₹{selectedBill.gst.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total Amount:</span>
+                  <span className="font-bold text-[#DC004E]">₹{selectedBill.totalAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Mode:</span>
+                  <span className="font-medium capitalize">{selectedBill.paymentMode}</span>
+                </div>
+                {renderTypeSpecificDetails(selectedBill)}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status:</span>
+                  <span className={`font-medium ${selectedBill.returned ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {selectedBill.returned ? 'Returned' : 'Not Returned'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
