@@ -143,3 +143,115 @@ export const createCostumeBilling = async (costumeBilling: CostumeBilling, acces
         return { error: 'Failed to create costume billing' }
     }
 }
+
+/// get costume billing by customer phone no , sort by createdAt desc
+export const getCostumeBillingByCustomerPhone = async (customerPhone: string, access_token: string) => {
+    try {
+        /// check if the customer phone is valid
+        if(!customerPhone) {
+            return { error: 'Invalid Customer Phone' }
+        }
+
+        /// decode access token
+        const decode = decodeToken(access_token)
+        if(!decode) {
+            return { error: 'Invalid Access Token' }
+        }
+
+        // Query using the indexed field
+        const costumeBilling = await costumeBillingDB.find({
+            selector: {
+                customerNumber: customerPhone,
+                isReturned: false
+            },
+            // Limit to get only the most recent ones
+            limit: 10
+        }) as PouchDB.Find.FindResponse<CostumeBilling>
+        
+        // If no results, return null
+        if(!costumeBilling.docs.length) {
+            return { error: 'No Costume Billing Found' }
+        }
+
+        // Sort manually by createdAt since we can't use sort in the query
+        const sortedDocs = costumeBilling.docs.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA; // descending order (newest first)
+        });
+        let refundAmount = 0
+        /// get costume from stock by id and extract category, size, and refundPrice and update costume object 
+       const firstdoc = sortedDocs[0]
+       for(const costume of firstdoc.costumes) {
+        const costumeStock = await costumeDB.find({
+            selector: {
+                _id: costume._id
+            }
+        }) as PouchDB.Find.FindResponse<CostumeStock>
+        if(!costumeStock.docs.length) {
+            return { error: 'Invalid Costume Stock' }
+        }
+        costume.category = costumeStock.docs[0].category
+        costume.size = costumeStock.docs[0].size
+        costume.refundPrice = costumeStock.docs[0].refundPrice
+        refundAmount += costume.quantity * costume.refundPrice
+       }
+       firstdoc.refundAmount = refundAmount
+
+
+        // console.log(sortedDocs)
+        // Return the first (most recent) document
+        return sortedDocs[0];
+    } catch (error) {
+        console.error('Error getting costume billing by customer phone:', error)
+        return null
+    }
+}
+
+/// refund the costumes billing
+export const refundCostumeBilling = async (id: string, access_token: string) => {
+    try {
+        /// check access token
+        const token = decodeToken(access_token)
+        if(!token) {
+            return { error: 'Invalid Access Token' }
+        }
+        /// check if user is authorized
+        
+            /// get the latest billing
+            const billingDetails = await costumeBillingDB.find({
+                selector: {
+                    _id: id
+                }
+            }) as PouchDB.Find.FindResponse<CostumeBilling>
+            if(!billingDetails.docs.length) {
+                return { error: 'Invalid Billing' }
+            }
+            const billing = billingDetails.docs[0]
+            /// extract costumes 
+            const costumes = billing.costumes
+            /// update costumes stock
+            for(const costume of costumes) {
+                const costumeStock = await costumeDB.find({
+                    selector: {
+                        _id: costume._id
+                    }
+                }) as PouchDB.Find.FindResponse<CostumeStock>
+                if(!costumeStock.docs.length) {
+                    return { error: 'Invalid Costume Stock' }
+                }
+                const stock = costumeStock.docs[0]
+                stock.quantity += costume.quantity
+                await costumeDB.put(stock)
+            }
+            /// update billing
+            billing.isReturned = true
+            await costumeBillingDB.put(billing)
+            /// return success
+            return {id: id, success: 'Costume billing refunded successfully' }
+            
+       } catch (error) {
+        console.log(error)
+        return { error: 'Failed to refund costume billing' }
+    }
+}

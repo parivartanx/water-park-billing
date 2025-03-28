@@ -4,9 +4,9 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { login } from './controllers/auth.controller'
 import { getTickets, getTicketById, saveTicketBilling } from './controllers/ticket.controller'
-import { getLockers, getLockerStock } from './controllers/locker.controller'
+import { getLockerBillingByCustomerPhone, getLockers, getLockerStock, refundLockerBilling } from './controllers/locker.controller'
 import { createLockerBilling } from './controllers/locker.controller'
-import { createCostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling } from './controllers/costume.controller'
+import { createCostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling, getCostumeBillingByCustomerPhone, refundCostumeBilling } from './controllers/costume.controller'
 import { billingHistories, recentBillingHistories } from './controllers/history.controller'
 
 function createWindow(): void {
@@ -121,6 +121,15 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('get-locker-billing-by-customer-phone', async (_event, args) => {
+    try {
+      return await getLockerBillingByCustomerPhone(args.customerPhone, args.access_token)
+    } catch (error) {
+      console.error('Error getting locker billing by customer phone:', error)
+      return { error: 'Failed to get locker billing by customer phone' }
+    }
+  })
+
   ipcMain.handle('create-locker-billing', async (_event, args) => {
     try {
       return await createLockerBilling(args.lockerBilling, args.access_token)
@@ -128,7 +137,16 @@ app.whenReady().then(() => {
       console.error('Error creating locker billing:', error)
       return { error: 'Failed to create locker billing' }
     }
-  })  
+  })
+
+  ipcMain.handle('refund-locker-billing', async (_event, args) => {
+    try {
+      return await refundLockerBilling(args.lockerBillingId, args.access_token)
+    } catch (error) {
+      console.error('Error refunding locker billing:', error)
+      return { error: 'Failed to process locker refund' }
+    }
+  })
 
   /// costume handlers
   ipcMain.handle('get-costume-stock', async (_event, args) => {
@@ -168,6 +186,16 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('get-costume-billing-by-customer-phone', async (_event, args) => {
+    try {
+      // console.log('Get costume billing by customer phone handler called with args:', args)
+      return await getCostumeBillingByCustomerPhone(args.customerPhone, args.access_token)
+    } catch (error) {
+      console.error('Error getting costume billing by customer phone:', error)
+      return { error: 'Failed to get costume billing by customer phone' }
+    }
+  })
+
   /// billing history handlers
   ipcMain.handle('get-billing-histories', async (_event, args) => {
     try {
@@ -189,6 +217,18 @@ app.whenReady().then(() => {
       return { error: 'Failed to get recent billing histories' }
     }
   })
+
+  /// refund handlers
+  ipcMain.handle('refund-costume-billing', async (_event, args) => {
+    try {
+      return await refundCostumeBilling(args.id, args.access_token)
+    } catch (error) {
+      console.error('Error refunding costume billing:', error)
+      return { error: 'Failed to refund costume billing' }
+    }
+  })
+
+
 
   // 
   createWindow()

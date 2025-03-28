@@ -1,5 +1,5 @@
 
-export interface CostumeBill {
+export interface CostumeBill{
     _id?: string
     customerName: string
     customerNumber: string
@@ -7,10 +7,14 @@ export interface CostumeBill {
         _id?: string
         quantity: number
         amount: number
+        category?: string
+        size?: string
+        refundPrice?: number
     }[]
     discount: number
     discountType: 'flat' | 'percentage'
     paymentMode: 'cash' | 'card' | 'upi'
+    refundAmount?: number
 
     subtotal: number
     discountAmount: number

@@ -1,0 +1,5 @@
+2025/03/29-03:45:18.131454 6fff53dec6c0 Recovering log #340
+2025/03/29-03:45:18.131508 6fff53dec6c0 Level-0 table #343: started
+2025/03/29-03:45:18.134112 6fff53dec6c0 Level-0 table #343: 237 bytes OK
+2025/03/29-03:45:18.140587 6fff53dec6c0 Delete type=0 #340
+2025/03/29-03:45:18.140640 6fff53dec6c0 Delete type=3 #338

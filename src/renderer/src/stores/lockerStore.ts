@@ -95,5 +95,77 @@ export const useLockerBillingStore = create<LockerBillingStore>((set) => ({
     }
 }))
 
+// Locker Refund Store
+interface LockerRefundStore {
+    loading: boolean;
+    success: boolean;
+    error: string | null;
+    refundId: string | null;
+    refundAmount: number | null;
+    refundDate: string | null;
+    refundLockerBilling: (lockerBillingId: string, access_token: string) => Promise<void>;
+    reset: () => void;
+}
 
-/// 
+export const useLockerRefundStore = create<LockerRefundStore>((set) => ({
+    loading: false,
+    success: false,
+    error: null,
+    refundId: null,
+    refundAmount: null,
+    refundDate: null,
+    refundLockerBilling: async (lockerBillingId, access_token) => {
+        try {
+            set({ loading: true, error: null, success: false });
+            toast.loading('Processing locker refund...', { id: 'locker-refund' });
+            
+            const response = await window.electron.ipcRenderer.invoke('refund-locker-billing', { 
+                lockerBillingId, 
+                access_token 
+            }) as { success: boolean; refundAmount: number; error?: string };
+            
+            if (response.error) {
+                set({ 
+                    loading: false, 
+                    error: response.error, 
+                    success: false 
+                });
+                toast.error(response.error, { id: 'locker-refund' });
+                return;
+            }
+            
+            set({ 
+                loading: false, 
+                success: true, 
+                refundId: lockerBillingId,
+                refundAmount: response.refundAmount,
+                refundDate: new Date().toISOString(),
+                error: null 
+            });
+            
+            toast.success(`Locker returned successfully!`, { 
+                id: 'locker-refund',
+                duration: 5000
+            });
+        } catch (error) {
+            console.error('Error refunding locker billing:', error);
+            const errorMessage = 'Failed to process locker refund. Please try again.';
+            set({ 
+                loading: false, 
+                error: errorMessage, 
+                success: false 
+            });
+            toast.error(errorMessage, { id: 'locker-refund' });
+        }
+    },
+    reset: () => {
+        set({
+            loading: false,
+            success: false,
+            error: null,
+            refundId: null,
+            refundAmount: null,
+            refundDate: null
+        });
+    }
+}))

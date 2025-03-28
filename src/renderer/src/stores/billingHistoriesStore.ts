@@ -13,13 +13,17 @@ export interface BillingHistoryStore {
   error: string | null;
   billingHistories: BillingHistories;
   unifiedBills: UnifiedBill[];
+  billingHistory: CostumeBill | null;
+  lockerBilling: LockerBilling | null;
   getBillingHistories: (from: string, to: string, type: 'all' | 'ticket' | 'locker' | 'costume', searchStr: string) => Promise<void>;
   transformToUnifiedBills: (billingHistories: BillingHistories) => UnifiedBill[];
   clearHistories: () => void;
   getRecentBillingHistories: (limit: number) => Promise<void>;
+  getCostumeBillingByCustomerPhone: (customerPhone: string, access_token: string) => Promise<CostumeBill | null>;
+  getLockerBillingByCustomerPhone: (customerPhone: string, access_token: string) => Promise<LockerBilling | null>;
 }
 
-const initialState: Omit<BillingHistoryStore, 'getBillingHistories' | 'transformToUnifiedBills' | 'clearHistories' | 'getRecentBillingHistories'> = {
+const initialState: Omit<BillingHistoryStore, 'getBillingHistories' | 'transformToUnifiedBills' | 'clearHistories' | 'getRecentBillingHistories' | 'getCostumeBillingByCustomerPhone'> = {
   loading: false,
   error: null,
   billingHistories: {
@@ -27,7 +31,10 @@ const initialState: Omit<BillingHistoryStore, 'getBillingHistories' | 'transform
     lockerHistories: [],
     costumeHistories: []
   },
-  unifiedBills: []
+  unifiedBills: [],
+  billingHistory: null,
+  lockerBilling: null,
+  getLockerBillingByCustomerPhone: () => Promise.resolve(null)
 };
 
 // Helper function to transform ticket billings to unified bills
@@ -60,6 +67,7 @@ const transformLockerBillings = (lockers: LockerBilling[] = []): UnifiedBill[] =
   }));
 };
 
+
 // Helper function to transform costume billings to unified bills
 const transformCostumeBillings = (costumes: CostumeBill[] = []): UnifiedBill[] => {
   return costumes.map(costume => ({
@@ -73,6 +81,8 @@ const transformCostumeBillings = (costumes: CostumeBill[] = []): UnifiedBill[] =
     returned: costume.isReturned,
     originalData: costume
   }));
+
+
 };
 
 export const useBillingHistoryStore = create<BillingHistoryStore>()(
@@ -206,6 +216,75 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
             loading: false 
           });
           toast.error(errorMessage);
+        }
+      },
+      getCostumeBillingByCustomerPhone: async (customerPhone, access_token) => {
+        try {
+          set({
+            loading: true,
+            error: null
+          });
+          
+          
+          // pass access token to main process
+          const response = await window.electron.ipcRenderer.invoke('get-costume-billing-by-customer-phone', {customerPhone, access_token}) as CostumeBill | {error: string};
+          if('error' in response) {
+            set({
+              error: response.error,
+              loading: false
+            });
+            toast.error(response.error);
+            return null;
+          }
+          set({
+            loading: false,
+            error: null,
+            billingHistory: response || null
+          });
+          return response || null;
+        } catch (error) {
+          console.error('Error getting costume billing by customer phone:', error);
+          const errorMessage = 'Failed to fetch costume billing by customer phone';
+          set({
+            error: errorMessage,
+            loading: false
+          });
+          toast.error(errorMessage);
+          return null;
+        }
+      },
+      getLockerBillingByCustomerPhone: async (customerPhone, access_token) => {
+        try {
+          set({
+            loading: true,
+            error: null
+          });
+          
+          // pass access token to main process
+          const response = await window.electron.ipcRenderer.invoke('get-locker-billing-by-customer-phone', {customerPhone, access_token}) as LockerBilling | {error: string};
+          if('error' in response) {
+            set({
+              error: response.error,
+              loading: false
+            });
+            toast.error(response.error);
+            return null;
+          }
+          set({
+            loading: false,
+            error: null,
+            lockerBilling: response || null
+          });
+          return response || null;
+        } catch (error) {
+          console.error('Error getting locker billing by customer phone:', error);
+          const errorMessage = 'Failed to fetch locker billing by customer phone';
+          set({
+            error: errorMessage,
+            loading: false
+          });
+          toast.error(errorMessage);
+          return null;
         }
       }
     }),

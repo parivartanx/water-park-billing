@@ -13,7 +13,7 @@ export interface AuthState {
   employee: Employee | null
   loading: boolean
   error: string | null
-  login: (email: string, password: string, role: string) => Promise<void>
+  login: (email: string, password: string, role: string) => Promise<{ success: boolean, error?: string }>
   logout: () => void
 }
 
@@ -21,7 +21,7 @@ const initialAuthState: AuthState = {
   employee: null,
   loading: false,
   error: null,
-  login: async () => {},
+  login: async () => ({ success: false }),
   logout: () => {}
 }
 
@@ -34,7 +34,7 @@ const getInitialEmployee = (): Employee | null => {
 export const useAuthStore = create<AuthState>()((set) => ({
   ...initialAuthState,
   employee: getInitialEmployee(),
-  login: async (email: string, password: string, role: string) => {
+  login: async (email: string, password: string, role: string) =>   {
     set({ loading: true, error: null })
     try {
       const response = await window.electron.ipcRenderer.invoke('login', { 
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
       if (response.error) {
         set({ loading: false, error: response.error })
-        return
+        return { error: response.error, success: false }
       }
 
       // Store tokens and employee data in localStorage
@@ -55,12 +55,16 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
       // Update store state
       set({ employee: response.employee, loading: false, error: null })
+      return {success: true}
+
+      // Navigate to dashboard using window.location
     } catch (error) {
       console.error('Login error:', error)
       set({ 
         loading: false, 
         error: error instanceof Error ? error.message : 'Login failed'
       })
+      return { error: error instanceof Error ? error.message : 'Login failed', success: false }
     }
   },
   logout: () => {

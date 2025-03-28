@@ -23,6 +23,7 @@ export interface BillingHistoryResponse {
     error?: string
 }
 
+
 // Unified bill type for display in the UI
 export interface UnifiedBill {
     id: string

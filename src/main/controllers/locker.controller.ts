@@ -95,3 +95,112 @@ export const createLockerBilling = async (lockerBilling: LockerBilling, access_t
         return { error: 'Failed to create locker billing' }
     }
 }
+
+/// get locker billing by customer phone no , sort by createdAt desc
+export async function getLockerBillingByCustomerPhone(customerPhone: string, access_token: string) {
+    try {
+        const decoded = decodeToken(access_token);
+        if (!decoded) {
+            return { error: 'Invalid token' }
+        }
+
+        const lockerBilling = await lockerBillingDB.find({
+            selector: {
+                mobileNumber: customerPhone,
+            }
+        }) as PouchDB.Find.FindResponse<LockerBilling>;
+
+        if(!lockerBilling.docs.length) {
+            return { error: 'No locker billing found for this customer' }
+        }
+
+
+        /// sort by createdAt desc
+        lockerBilling.docs.sort((a, b) => {
+            return new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime();
+        });
+
+        /// get locker numbers  
+        const lockerIds = lockerBilling.docs[0].lockerIds;
+        
+        const lockers = await lockerDB.find({
+            selector: {
+                _id: { $in: lockerIds }
+            }
+        }) as PouchDB.Find.FindResponse<Locker>;
+        
+        if(!lockers.docs.length) {
+            return { error: 'Lockers not found' }
+        }
+        let refundAmount = 0;
+        lockers.docs.forEach(locker => {
+            if(locker.status === 'occupied') {
+                refundAmount += locker.refundAmount || 0;
+            }
+        })
+        lockerBilling.docs[0].lockerNames = lockers.docs.map(locker => locker.lockerNo);
+        lockerBilling.docs[0].lockerIds = lockerIds;
+        lockerBilling.docs[0].refundAmount = refundAmount;
+        
+        return lockerBilling.docs[0];
+    } catch (error) {
+        console.error('Error getting locker billing by customer phone:', error)
+        return { error: 'Failed to get locker billing by customer phone' }
+    }
+}
+
+/// refund locker billing
+export const refundLockerBilling = async (lockerBillingId: string, access_token: string) => {
+    try {
+        const decoded = decodeToken(access_token)
+        if(!decoded) {
+            return { error: 'Unauthorized to refund locker billing' }
+        }
+
+        
+        // Get the locker billing
+        const lockerBilling = await lockerBillingDB.get(lockerBillingId) as LockerBilling
+
+        /// change locker status to available
+        const lockers = await lockerDB.find({
+            selector: {
+                _id: { $in: lockerBilling.lockerIds }
+            }
+        }) as PouchDB.Find.FindResponse<Locker>;
+        
+        if(!lockers.docs.length) {
+            return { error: 'Lockers not found' }
+        }
+        
+        lockers.docs.forEach(locker => {
+            locker.status = 'available';
+            locker.updatedAt = new Date().toISOString();
+        })
+        
+        // Check if already returned
+        if (lockerBilling.isReturned) {
+            return { error: 'Locker has already been returned' }
+        }
+        
+        // Update locker billing
+        const updatedLockerBilling = {
+            ...lockerBilling,
+            isReturned: true,
+            updatedAt: new Date().toISOString(),
+            updatedBy: decoded.id
+        }
+        
+        // Save updated locker billing
+        await lockerBillingDB.put(updatedLockerBilling)
+        await lockerDB.bulkDocs(lockers.docs)
+        
+        // Return success with refund amount
+        return {
+            success: true,
+            message: 'Locker returned successfully'
+        }
+    } catch (error) {
+        console.log('Error refunding locker billing:', error)
+        return { error: `Failed to process locker refund: ${error}` }
+    }
+}

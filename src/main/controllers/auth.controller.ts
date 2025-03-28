@@ -36,6 +36,7 @@ interface LoginResponse {
 
 export const login = async (email: string, password: string, role: string) => {
     try {
+        // console.log(`Attempting login with email: ${email}, role: ${role}`)
         const response = await axios.post(`${apiEndPoint}/auth/login`, {
             email, 
             password, 
@@ -46,18 +47,58 @@ export const login = async (email: string, password: string, role: string) => {
             }
         })
         
+        // Log the complete response for debugging
+        // console.log('API Response:', JSON.stringify(response.data, null, 2))
+        
         // Format the response to match the expected LoginResponse structure
         const data = response.data;
         
+        // Check if the response has the expected structure
+        if (!data) {
+            console.error('Invalid response format: No data received')
+            return { 
+                error: 'Authentication failed: Invalid response format',
+                employee: {
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    role: '',
+                    isDeleted: false,
+                    password: '',
+                    status: 'inactive'
+                }
+            } as LoginResponse
+        }
+        
+        // Handle different possible response structures
+        const employeeData = data.employee || data.docs?.[0] || {};
+        
         // Return properly formatted response
         return {
-            employee: data.docs?.[0] || {},
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken,
+            employee: employeeData,
+            accessToken: data.accessToken || data.access_token,
+            refreshToken: data.refreshToken || data.refresh_token,
             error: data.error
         } as LoginResponse;
     } catch (error) {
         console.error('Error logging in:', error)
+        if (axios.isAxiosError(error)) {
+            console.error('API Error Response:', error.response?.data)
+            return { 
+                error: `Authentication failed: ${error.response?.data?.message || error.message}`,
+                employee: {
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    role: '',
+                    isDeleted: false,
+                    password: '',
+                    status: 'inactive'
+                }
+            } as LoginResponse
+        }
         return { 
             error: 'Authentication failed. Please try again.',
             employee: {

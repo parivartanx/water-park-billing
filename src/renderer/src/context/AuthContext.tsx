@@ -6,21 +6,33 @@ export const AuthProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('access_token') !== null)
 
   useEffect(() => {
     // Check if user is already logged in from localStorage
     const storedAuth = localStorage.getItem('access_token')
     const storedRefreshToken = localStorage.getItem('refresh_token')
 
+    console.log("Auth provider called with auth: ", storedAuth, " and refresh token: ", storedRefreshToken)
+
     if (storedAuth && storedRefreshToken) {
       setIsAuthenticated(true)
-
-      
     }
   }, [])
 
- 
+  // Validate authentication by checking for valid tokens
+  const validateAuth = (): boolean => {
+    const accessToken = localStorage.getItem('access_token')
+    const refreshToken = localStorage.getItem('refresh_token')
+    
+    if (accessToken && refreshToken) {
+      setIsAuthenticated(true)
+      return true
+    }
+    
+    setIsAuthenticated(false)
+    return false
+  }
 
   const logout = (): void => {
     setIsAuthenticated(false)
@@ -29,7 +41,7 @@ export const AuthProvider = ({
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout, validateAuth }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Lock, User, Ticket, Shirt, Key } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 
 type Role = 'ticket' | 'costume' | 'locker'
 
@@ -10,39 +11,23 @@ interface RoleConfig {
   title: string
   icon: JSX.Element
   color: string
-  credentials: {
-    username: string
-    password: string
-  }
 }
 
 const roleConfigs: Record<Role, RoleConfig> = {
   ticket: {
     title: 'Ticket Counter',
     icon: <Ticket className="h-6 w-6" />,
-    color: '#4CAF50',
-    credentials: {
-      username: 'ticket',
-      password: 'ticket123'
-    }
+    color: '#4CAF50'
   },
   costume: {
     title: 'Costume Counter',
     icon: <Shirt className="h-6 w-6" />,
-    color: '#2196F3',
-    credentials: {
-      username: 'costume',
-      password: 'costume123'
-    }
+    color: '#2196F3'
   },
   locker: {
     title: 'Locker Counter',
     icon: <Key className="h-6 w-6" />,
-    color: '#FF9800',
-    credentials: {
-      username: 'locker',
-      password: 'locker123'
-    }
+    color: '#FF9800'
   }
 }
 
@@ -51,28 +36,37 @@ const SignIn = (): JSX.Element => {
   const [password, setPassword] = useState('')
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [localError, setLocalError] = useState('')
-  const navigate = useNavigate()
   
   // Get auth store state and actions
-  const { login, employee, loading, error: authError } = useAuthStore()
-
+  const { login, loading, error: authError } = useAuthStore()
+  const navigate = useNavigate()
+  const { validateAuth } = useAuth()
+  
   /// use callback function for login
-  const handleLogin = useCallback(() => {
+  const handleLogin = useCallback(async () => {
     try {
       // Call the login function from auth store
       console.log('Logging in with:', { username, password, role: selectedRole })
-      login(username, password, selectedRole || '')
-    } catch {
+      const result = await login(username, password, selectedRole || '')
+      if (result.success) {
+        // Validate authentication after login
+        const isValid = validateAuth()
+        console.log('Authentication validated:', isValid)
+        
+        if (isValid) {
+          // Navigate to dashboard after successful login and validation
+          navigate('/')
+        } else {
+          setLocalError('Authentication failed. Please try again.')
+        }
+      } else {
+        setLocalError(result.error || 'Login failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
       setLocalError('Login failed. Please try again.')
     }
-  }, [username, password, selectedRole, login])
-
-  // Navigate to dashboard after successful login
-  useEffect(() => {
-    if (employee) {
-      navigate('/')
-    }
-  }, [employee, navigate])
+  }, [username, password, selectedRole, login, navigate, validateAuth])
 
   const handleSignIn =(e: React.FormEvent) => {
     e.preventDefault()
@@ -93,8 +87,6 @@ const SignIn = (): JSX.Element => {
 
   const handleRoleSelect = (role: Role) => {
     setSelectedRole(role)
-    // Auto-fill credentials for demo purposes
-   
     setLocalError('')
   }
 

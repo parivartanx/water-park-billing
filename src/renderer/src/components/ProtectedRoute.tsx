@@ -5,22 +5,27 @@ import Sidebar from './Sidebar'
 import { Loader2 } from 'lucide-react'
 
 const ProtectedRoute = (): JSX.Element => {
-  const { isAuthenticated } = useAuth()
+  const { validateAuth } = useAuth()
   const location = useLocation()
   const [shouldRedirect, setShouldRedirect] = useState(false)
+  const [isValidating, setIsValidating] = useState(true)
 
   useEffect(() => {
+    // Validate authentication on component mount
+    const isValid = validateAuth()
+    setIsValidating(false)
+    
     // Only update redirect state if not authenticated
-    if (!isAuthenticated) {
+    if (!isValid) {
       setShouldRedirect(true)
     }
-  }, [isAuthenticated])
+  }, [validateAuth])
 
   if (shouldRedirect) {
     return <Navigate to="/signin" state={{ from: location }} replace />
   }
 
-  if (!isAuthenticated) {
+  if (isValidating) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 text-[#DC004E] animate-spin" />
@@ -30,9 +35,9 @@ const ProtectedRoute = (): JSX.Element => {
   }
 
   return (
-    <div className="flex">
+    <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="ml-64 p-6 flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-auto">
         <Outlet />
       </div>
     </div>

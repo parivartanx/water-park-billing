@@ -1,6 +1,7 @@
 export interface LockerBilling {
     _id?: string;
     lockerIds: string[];
+    lockerNames?: string[];
     customerName: string;
     mobileNumber: string;
     paymentMode: string;
@@ -9,6 +10,7 @@ export interface LockerBilling {
     subtotal: number;
     discountAmount: number;
     gstAmount: number;
+    refundAmount?: number;
     total: number;
     isReturned: boolean;
     createdBy?: string;
