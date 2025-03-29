@@ -83,7 +83,7 @@ const TicketBilling: React.FC = () => {
   const discountAmount =
     discountType === 'percentage' ? (discount / 100) * subtotal : discount
   const gstAmount = (subtotal - discountAmount) * GST_RATE
-  const total = subtotal - discountAmount + gstAmount
+  const total = subtotal - discountAmount
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
@@ -222,55 +222,62 @@ const TicketBilling: React.FC = () => {
             Available Tickets
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tickets.map((ticket) => (
-              <div
-                key={ticket._id}
-                className={`p-4 rounded-lg border-2 transition-all duration-300 cursor-pointer ${
-                  selectedTickets.some((t) => t._id === ticket._id)
-                    ? 'border-[#DC004E] bg-pink-50'
-                    : 'border-gray-200 hover:border-[#DC004E] hover:shadow-md'
-                }`}
-                onClick={() => toggleTicketSelection(ticket)}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-gray-800">{ticket.ticketType}</h3>
-                  <span className="text-[#DC004E] font-bold">
-                    ₹{ticket.price}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  {ticket.status}
-                </p>
-                {selectedTickets.some((t) => t._id === ticket._id) && (
-                  <div className="flex items-center justify-end gap-3 mt-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        updateTicketQuantity(ticket._id!, false)
-                      }}
-                      className="p-1 rounded-full hover:bg-pink-100 text-[#DC004E] transition-colors duration-200"
-                    >
-                      <Minus size={20} />
-                    </button>
-                    <span className="font-medium text-gray-800">
-                      {selectedTickets.find((t) => t._id === ticket._id)
-                        ?.quantity || 0}
+            {tickets.map((ticket) => {
+              const isWeekend = ['Saturday', 'Sunday'].includes(new Date().toLocaleString('en-US', {weekday: 'long'}));
+              const isWeekendTicket = ticket.ticketType.toLowerCase().includes('weekend');
+              const isActive = (isWeekend && isWeekendTicket) || (!isWeekend && !isWeekendTicket);
+              return (
+                <div
+                  key={ticket._id}
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 ${
+                    isActive ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                  } ${
+                    selectedTickets.some((t) => t._id === ticket._id)
+                      ? 'border-[#DC004E] bg-pink-50'
+                      : 'border-gray-200 hover:border-[#DC004E] hover:shadow-md'
+                  }`}
+                  onClick={() => isActive && toggleTicketSelection(ticket)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-gray-800">{ticket.ticketType}</h3>
+                    <span className="text-[#DC004E] font-bold">
+                      ₹{ticket.price}
                     </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        updateTicketQuantity(ticket._id!, true)
-                      }}
-                      className="p-1 rounded-full hover:bg-pink-100 text-[#DC004E] transition-colors duration-200"
-                    >
-                      <Plus size={20} />
-                    </button>
                   </div>
-                )}
-              </div>
-            ))}
+                  <p className="text-sm text-gray-600 mb-3">
+                    {isActive ? ticket.status : 'Not Available'}
+                  </p>
+                  {selectedTickets.some((t) => t._id === ticket._id) && isActive && (
+                    <div className="flex items-center justify-end gap-3 mt-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateTicketQuantity(ticket._id!, false)
+                        }}
+                        className="p-1 rounded-full hover:bg-pink-100 text-[#DC004E] transition-colors duration-200"
+                      >
+                        <Minus size={20} />
+                      </button>
+                      <span className="font-medium text-gray-800">
+                        {selectedTickets.find((t) => t._id === ticket._id)
+                          ?.quantity || 0}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateTicketQuantity(ticket._id!, true)
+                        }}
+                        className="p-1 rounded-full hover:bg-pink-100 text-[#DC004E] transition-colors duration-200"
+                      >
+                        <Plus size={20} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -350,12 +357,12 @@ const TicketBilling: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">GST (18%)</span>
+                <span className="text-gray-600">GST (18%) Incl.</span>
                 <span className="font-medium">₹{gstAmount.toFixed(2)}</span>
               </div>
               <div className="h-px bg-gray-200 my-2"></div>
               <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total</span>
+                <span>Total (Incl. GST)</span>
                 <span>₹{total.toFixed(2)}</span>
               </div>
             </div>

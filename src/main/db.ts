@@ -4,8 +4,8 @@ import PouchDBFind from 'pouchdb-find'
 // Enable PouchDB query capabilities
 PouchDB.plugin(PouchDBFind)
 
-export const apiEndPoint = 'http://localhost:3004/api/v1'
-
+export const apiEndPoint = 'http://165.232.179.60/api/v1'
+// const remoteIp = '165.232.179.60'
 
 
 
@@ -20,14 +20,14 @@ const lockerBillingDB = new PouchDB('locker-billing')
 const costumeBillingDB = new PouchDB('costume-billing')
 
 /// remote dbs 
-const remoteEmployeeDB = new PouchDB('http://admin:password@127.0.0.1:5984/employees')
-const remoteCustomerDB = new PouchDB('http://admin:password@127.0.0.1:5984/customers')
-const remoteTicketDB = new PouchDB('http://admin:password@127.0.0.1:5984/tickets')
-const remoteCostumeDB = new PouchDB('http://admin:password@127.0.0.1:5984/costumes')
-const remoteLockerDB = new PouchDB('http://admin:password@127.0.0.1:5984/lockers')
-const remoteTicketBillingDB = new PouchDB('http://admin:password@127.0.0.1:5984/ticket-billing')
-const remoteLockerBillingDB = new PouchDB('http://admin:password@127.0.0.1:5984/locker-billing')
-const remoteCostumeBillingDB = new PouchDB('http://admin:password@127.0.0.1:5984/costume-billing')
+const remoteEmployeeDB = new PouchDB('http://admin:password@165.232.179.60:5984/employees')
+const remoteCustomerDB = new PouchDB('http://admin:password@165.232.179.60:5984/customers')
+const remoteTicketDB = new PouchDB('http://admin:password@165.232.179.60:5984/tickets')
+const remoteCostumeDB = new PouchDB('http://admin:password@165.232.179.60:5984/costumes')
+const remoteLockerDB = new PouchDB('http://admin:password@165.232.179.60:5984/lockers')
+const remoteTicketBillingDB = new PouchDB('http://admin:password@165.232.179.60:5984/ticket-billing')
+const remoteLockerBillingDB = new PouchDB('http://admin:password@165.232.179.60:5984/locker-billing')
+const remoteCostumeBillingDB = new PouchDB('http://admin:password@165.232.179.60:5984/costume-billing')
 
 /// sync dbs
 employeeDB.sync(remoteEmployeeDB, { live: true, retry: true })
