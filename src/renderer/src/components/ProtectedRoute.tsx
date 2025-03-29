@@ -35,9 +35,9 @@ const ProtectedRoute = (): JSX.Element => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex">
       <Sidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="ml-64 p-6 flex-1 overflow-y-auto">
         <Outlet />
       </div>
     </div>

@@ -8,6 +8,12 @@ import { getLockerBillingByCustomerPhone, getLockers, getLockerStock, refundLock
 import { createLockerBilling } from './controllers/locker.controller'
 import { createCostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling, getCostumeBillingByCustomerPhone, refundCostumeBilling } from './controllers/costume.controller'
 import { billingHistories, recentBillingHistories } from './controllers/history.controller'
+import { getEmployeeById } from './controllers/employee.controller'
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const escpos = require('escpos');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+escpos.USB = require('escpos-usb')
 
 function createWindow(): void {
   // Create the browser window.
@@ -225,6 +231,16 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error refunding costume billing:', error)
       return { error: 'Failed to refund costume billing' }
+    }
+  })
+
+  /// employee handlers
+  ipcMain.handle('get-employee-by-id', async (_event, args) => {
+    try {
+      return await getEmployeeById(args.access_token)
+    } catch (error) {
+      console.error('Error getting employee by id:', error)
+      return { error: 'Failed to get employee by id' }
     }
   })
 

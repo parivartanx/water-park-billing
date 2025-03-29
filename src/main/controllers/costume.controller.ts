@@ -4,6 +4,7 @@ import { CostumeStock } from "../types/costume.stock";
 import type PouchDB from 'pouchdb';
 import { decodeToken } from "./auth.controller";
 import { CostumeBilling } from "../types/costume.billing";
+import { printCostumeBill } from "./print-bill.controller";
 
 export const getCostumeStock = async () => {
     try {
@@ -136,6 +137,8 @@ export const createCostumeBilling = async (costumeBilling: CostumeBilling, acces
         costumeBilling.createdAt = new Date().toISOString()
         costumeBilling.updatedAt = new Date().toISOString()
         
+        /// print 
+        await printCostumeBill(costumeBilling)
         const response = await costumeBillingDB.post(costumeBilling) as PouchDB.Core.Response
         return { success: true, data: response }
     } catch (error) {
@@ -255,3 +258,5 @@ export const refundCostumeBilling = async (id: string, access_token: string) => 
         return { error: 'Failed to refund costume billing' }
     }
 }
+
+

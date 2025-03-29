@@ -8,3 +8,9 @@ out
 .env.*
 .env.local
 .env.local.*
+
+LOCK
+LOCK.*
+
+/costume-billing/LOCK
+

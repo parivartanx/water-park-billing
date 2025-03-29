@@ -60,11 +60,11 @@ const TicketBilling: React.FC = () => {
         if (ticket._id === ticketId) {
           const newQuantity = Math.max(0, ticket.quantity + (increment ? 1 : -1))
           if (increment && newQuantity > ticket.quantity) {
-            toast.success(`Increased ${ticket.ticketType} quantity to ${newQuantity}`)
+            // toast.success(`Increased ${ticket.ticketType} quantity to ${newQuantity}`)
           } else if (!increment && newQuantity < ticket.quantity) {
-            toast(`Decreased ${ticket.ticketType} quantity to ${newQuantity}`, {
-              icon: '↓',
-            })
+            // toast(`Decreased ${ticket.ticketType} quantity to ${newQuantity}`, {
+            //   icon: '↓',
+            // })
           }
           return {
             ...ticket,

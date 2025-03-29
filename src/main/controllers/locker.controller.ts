@@ -3,6 +3,7 @@ import { LockerBilling } from "../types/locker.billing";
 import { Locker } from "../types/locker";
 import { decodeToken } from "./auth.controller";
 import PouchDB from 'pouchdb';
+import { printLockerBill } from "./print-bill.controller";
 
 interface PouchResponse {
     ok?: boolean;
@@ -89,6 +90,8 @@ export const createLockerBilling = async (lockerBilling: LockerBilling, access_t
             return { error: 'Failed to update lockers' }
         }
 
+        /// print 
+        await printLockerBill(lockerBilling)
         return await lockerBillingDB.post(lockerBilling)
     } catch (error) {
         console.error('Error creating locker billing:', error)

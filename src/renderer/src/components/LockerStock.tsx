@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+// import { useNavigate } from 'react-router-dom'
 import { useLockerStockStore } from '../stores/lockerStore'
 
 const LockerStock: React.FC = (): React.ReactElement => {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
   const { lockerStock, loading, error, getLockerStock } = useLockerStockStore()
 
@@ -15,9 +15,9 @@ const LockerStock: React.FC = (): React.ReactElement => {
     getLockerStockFunc()
   }, [getLockerStockFunc])
 
-  const handleAddLocker = (): void => {
-    navigate('/add-locker')
-  }
+  // const handleAddLocker = (): void => {
+  //   navigate('/add-locker')
+  // }
 
   if (loading) {
     return <div>Loading...</div>
@@ -39,7 +39,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
               Monitor and manage your locker inventory
             </p>
           </div>
-          <button
+          {/* <button
             onClick={handleAddLocker}
             className="flex items-center px-4 py-2 bg-[#DC004E] text-white font-medium rounded-lg hover:bg-[#b0003e] transition-colors duration-200 shadow-md hover:shadow-lg"
           >
@@ -57,7 +57,7 @@ const LockerStock: React.FC = (): React.ReactElement => {
               />
             </svg>
             Add Locker
-          </button>
+          </button> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
