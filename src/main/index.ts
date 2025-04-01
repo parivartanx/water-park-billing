@@ -25,7 +25,8 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      devTools: true
     }
   })
 
@@ -38,12 +39,28 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  mainWindow.webContents.on('before-input-event', (_, input) => {
+    if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+      mainWindow.webContents.openDevTools()
+    }
+  })
+
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+      console.error('Failed to load:', errorCode, errorDescription)
+    })
+    
+    try {
+      const htmlPath = join(__dirname, '../renderer/index.html')
+      console.log('Loading HTML file from:', htmlPath)
+      mainWindow.loadFile(htmlPath)
+    } catch (error) {
+      console.error('Error loading HTML file:', error)
+    }
   }
 }
 

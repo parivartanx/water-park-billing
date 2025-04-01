@@ -16,9 +16,10 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "clean": "rimraf out dist costume-billing",
+    "build:win": "npm run clean && npm run build && electron-builder --win"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
@@ -66,6 +67,7 @@
     "prettier": "^3.5.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "vite": "^6.1.0"

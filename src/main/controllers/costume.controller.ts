@@ -1,7 +1,6 @@
 import { costumeDB, costumeBillingDB } from "../db";
 
 import { CostumeStock } from "../types/costume.stock";
-import type PouchDB from 'pouchdb';
 import { decodeToken } from "./auth.controller";
 import { CostumeBilling } from "../types/costume.billing";
 import { printCostumeBill } from "./print-bill.controller";

@@ -261,7 +261,7 @@ const CostumeBilling: React.FC = (): React.ReactElement => {
               Create New Billing
             </button>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/')}
               className="w-full px-6 py-3 border border-[#DC004E] text-[#DC004E] rounded-lg hover:bg-pink-50 transition-colors duration-200"
             >
               Go to Dashboard

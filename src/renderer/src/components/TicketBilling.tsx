@@ -225,7 +225,8 @@ const TicketBilling: React.FC = () => {
             {tickets.map((ticket) => {
               const isWeekend = ['Saturday', 'Sunday'].includes(new Date().toLocaleString('en-US', {weekday: 'long'}));
               const isWeekendTicket = ticket.ticketType.toLowerCase().includes('weekend');
-              const isActive = (isWeekend && isWeekendTicket) || (!isWeekend && !isWeekendTicket);
+              const isSingleEntry = ticket.ticketType.toLowerCase().includes('single entry');
+              const isActive = isSingleEntry || (isWeekend && isWeekendTicket) || (!isWeekend && !isWeekendTicket);
               return (
                 <div
                   key={ticket._id}

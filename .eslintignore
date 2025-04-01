@@ -1,0 +1,11 @@
+src/**
+src/renderer/src/**
+src/preload/**
+src/main/**
+src/renderer/src/components/**
+src/renderer/src/stores/**
+src/renderer/src/types/**
+src/renderer/src/hooks/**
+src/renderer/src/context/**
+
+

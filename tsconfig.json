@@ -3,7 +3,8 @@
 
     // other options
 
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "noUnusedLocals": false
 
   },
   "files": [],

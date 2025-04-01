@@ -1,4 +1,5 @@
-import React, { useState, useEffect, ReactNode } from 'react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState, useEffect, ReactNode } from 'react'
 import { AuthContext } from './AuthTypes'
 
 export const AuthProvider = ({

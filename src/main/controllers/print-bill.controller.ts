@@ -12,7 +12,7 @@ escpos.USB = require('escpos-usb')
 
 // Company information constants
 const COMPANY_NAME = 'LAGOON WATER PARK'
-const COMPANY_ADDRESS = 'Behind Annie Besant International School, Parsa Bazar,'
+const COMPANY_ADDRESS = 'Behind Annie Besant International School, Pa₹a Bazar,'
 const COMPANY_CITY = 'Patna, Bihar - 804453'
 const COMPANY_PHONE = '+91 82928 24876'
 const COMPANY_EMAIL = 'lagoonwaterpark25@gmail.com'
@@ -35,7 +35,7 @@ function getPrinterDevice() {
       return null
     }
 
-    // Use the first available printer
+    // Use the fi₹t available printer
     const device = new escpos.USB(devices[0])
     return device
   } catch (error) {
@@ -133,7 +133,7 @@ export const printTicket = async (ticket: TicketBilling): Promise<boolean> => {
       .align('lt')
       .size(0, 0)
       .text('------------------------------------------')
-      .text(' # | TICKET TYPE         | QTY  |  UNIT RS |   TOTAL ')
+      .text(' # | TICKET TYPE         | QTY  |  UNIT Rs |   TOTAL ')
       .text('------------------------------------------')
 
     // Add tickets in table format
@@ -398,7 +398,7 @@ export const printCostumeBill = async (costumeBill: CostumeBill): Promise<boolea
     printer
       .size(0, 0)
       .text('------------------------------------------')
-      .text(' # | CATEGORY/SIZE      | QTY |  AMOUNT  | REFUNDABLE')
+      .text(' # | CAT/SZE      | QTY |  AMT  | RFUND')
       .text('------------------------------------------')
 
     // Add costumes in table format
@@ -408,15 +408,16 @@ export const printCostumeBill = async (costumeBill: CostumeBill): Promise<boolea
       const category = costume.category || 'Costume';
       const size = costume.size || 'Standard';
       const description = `${category}/${size}`;
-      const formattedDesc = description.length > 16 
-        ? description.substring(0, 13) + '...' 
-        : description.padEnd(16, ' ');
+      const formattedDesc = description.length > 12 
+        ? description.substring(0, 12) + '...' 
+        : description.padEnd(12, ' ');
       
       // Format other columns
       const qty = String(costume.quantity).padStart(3, ' ');
-      const amount = `Rs.${costume.amount.toFixed(2)}`.padStart(8, ' ');
+      /// use Rs of rupees
+      const amount = `Rs${costume.amount.toFixed(2)}`.padStart(8, ' ');
       const refund = costume.refundPrice && costume.refundPrice > 0
-        ? `Rs.${costume.refundPrice.toFixed(2)}`.padStart(8, ' ')
+        ? `Rs${costume.refundPrice.toFixed(2)}`.padStart(8, ' ')
         : 'N/A'.padStart(8, ' ');
       
       // Print the table row
@@ -430,8 +431,6 @@ export const printCostumeBill = async (costumeBill: CostumeBill): Promise<boolea
 
     // Add payment details
     printer
-      .text('------------------------')
-      .align('rt')
       .text(`Subtotal: Rs. ${costumeBill.subtotal.toFixed(2)}`)
       
     if (costumeBill.discountAmount > 0) {
