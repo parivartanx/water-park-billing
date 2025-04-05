@@ -4,7 +4,8 @@ export type ValidChannel = 'login' | 'logout' | 'get-tickets' | 'get-ticket-by-i
    'get-recent-billing-histories' | 'get-costume-billing-by-customer-phone' | 'refund-costume-billing' |
     'get-locker-billing-by-customer-phone' | 'refund-locker-billing' | 'get-employee-by-id'
      | 'create-unified-billing' | 'get-unified-billing-by-customer-phone' | 'get-all-unified-billings' | 'refund-unified-billing'
- | 'set-cash-management' | 'get-cash-management-history' | 'get-last-unified-billing-by-customer-phone';
+ | 'set-cash-management' | 'get-cash-management-history' | 'get-last-unified-billing-by-customer-phone'
+ | 'refund-unified-billing-by-costume-and-locker-ids';
 declare global {
   interface Window {
     electron: {

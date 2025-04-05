@@ -5,6 +5,7 @@ type ValidChannel = 'login' | 'logout' | 'get-tickets' | 'get-ticket-by-id' | 'c
 | 'refund-costume-billing' | 'get-locker-billing-by-customer-phone' | 'refund-locker-billing' | 'get-employee-by-id'
 | 'create-unified-billing' | 'get-unified-billing-by-customer-phone' | 'refund-unified-billing' | 'get-all-unified-billings'
 | 'set-cash-management' | 'get-cash-management-history' | 'get-last-unified-billing-by-customer-phone'
+| 'refund-unified-billing-by-costume-and-locker-ids'
 
 // Define custom API interface
 interface CustomAPI {

@@ -279,3 +279,98 @@ export const getLastUnifiedBillingByCustomerPhoneForRefund = async (customerPhon
   }
 };
 
+/// refund unifiedBilling by costume and locker ids
+export const refundUnifiedBillingByCostumeAndLockerIds = async (billingId: string, costumeIds: string[], lockerIds: string[], access_token: string) => {
+  try {
+    // Verify access token
+    const token = decodeToken(access_token);
+    if (!token) {
+      return { error: 'Invalid access token' };
+    }
+
+    // fetch billing
+    const billing = await unifiedBillingDB.get(billingId) as UnifiedBilling;
+    
+    if (!billing) {
+      return { success: false, error: 'Billing not found' };
+    }
+
+    // extract costumeids and quantity
+    const costumeIds_qty: {id: string, quantity: number}[] = [];
+    for(const costume of billing.costumes) {
+      costumeIds_qty.push({id: costume._id ??"", quantity: costume.quantity});
+    }
+    
+    for(const costume of costumeIds_qty){
+      // check if id is in costumeIds
+      if(costumeIds.includes(costume.id)){
+        // update stock
+        const stock = await v2CostumeStockDB.find({
+          selector: {
+            _id: costume.id
+          }
+        }) as PouchDB.Find.FindResponse<CostumeV2Item>;
+        
+        if (!stock || stock.docs.length === 0) {
+          return { success: false, error: 'Costume not found' };
+        }
+        
+        const fetchedCostume = stock.docs[0];
+        const newStock = costume.quantity + fetchedCostume.quantity;
+        
+        await v2CostumeStockDB.put({
+          ...fetchedCostume,
+          _id: fetchedCostume._id,
+          _rev: fetchedCostume._rev,
+          quantity: newStock
+        })
+      }
+    }
+
+    /// update locker stock
+    for(const lockerId of lockerIds){
+      // update stock
+      const stock = await lockerDB.find({
+        selector: {
+          _id: lockerId
+        }
+      }) as PouchDB.Find.FindResponse<Locker>;
+      
+      if (!stock || stock.docs.length === 0) {
+        return { success: false, error: 'Locker not found' };
+      }
+      
+      const fetchedLocker = stock.docs[0];
+      
+      await lockerDB.put({
+        ...fetchedLocker,
+        _id: fetchedLocker._id,
+        _rev: fetchedLocker._rev,
+        status: 'available'
+      })
+    }
+   
+      
+     
+    /// update isReturned
+    billing.isReturned = true;
+    billing.updatedAt = new Date().toISOString();
+    billing.updatedBy = token.id;
+    
+    // Save to database
+    const result = await unifiedBillingDB.put(billing);
+    
+    return { 
+      success: true, 
+      data: result 
+    };
+  } catch (error) {
+    console.error('Error refunding unified billing:', error);
+    return { 
+      success: false, 
+      error: 'Failed to refund unified billing' 
+    };
+  }
+};
+
+
