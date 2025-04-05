@@ -4,7 +4,8 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Define allowed IPC channels for security
 const validChannels = ['login', 'logout', 'get-tickets', 'get-ticket-by-id', 'create-ticket-billing', 'get-lockers', 'create-locker-billing', 'get-locker-stock','create-costume-stock','get-costume-stock','delete-costume-stock','create-costume-billing',
   'get-billing-histories', 'get-recent-billing-histories', 'get-costume-billing-by-customer-phone', 'refund-costume-billing',
-  'get-locker-billing-by-customer-phone', 'refund-locker-billing', 'get-employee-by-id'
+  'get-locker-billing-by-customer-phone', 'refund-locker-billing', 'get-employee-by-id', 'create-unified-billing', 'get-unified-billing-by-customer-phone', 'refund-unified-billing',
+  'get-all-unified-billings', 'set-cash-management', 'get-cash-management-history'
 ] as const
 export type ValidChannel = typeof validChannels[number]
 

@@ -8,7 +8,7 @@ const ReturnLocker: React.FC = (): React.ReactElement => {
   const [customerPhone, setCustomerPhone] = useState('')
   const { getLockerBillingByCustomerPhone, lockerBilling, loading } = useBillingHistoryStore()
   const { 
-    refundLockerBilling, 
+    refundLockerBilling,
     loading: refundLoading, 
     success, 
     refundAmount,

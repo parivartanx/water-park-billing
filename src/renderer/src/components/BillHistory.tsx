@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useBillingHistoryStore } from '../stores/billingHistoriesStore'
-import { UnifiedBill } from '../types/billing-histories'
+import { UnifiedBilling } from '../types/unified-billing'
 import { format } from 'date-fns'
 import { Spinner } from '../components/ui/Spinner'
 import toast from 'react-hot-toast'
@@ -13,6 +13,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
     'ticket' | 'locker' | 'costume' | 'all'
   >('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [expandedBill, setExpandedBill] = useState<string | null>(null)
   
   // Get state and actions from the billing history store
   const { 
@@ -32,7 +33,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
   }, [startDate, endDate, filterType, searchQuery])
 
   // Format date for display
-  const formatDate = (dateString: string): string => {
+  const formatDate = (dateString: string | Date): string => {
     try {
       return format(new Date(dateString), 'MMM d, yyyy')
     } catch (error) {
@@ -51,51 +52,92 @@ const BillHistory: React.FC = (): React.ReactElement => {
   }
 
   // Filter bills based on type if needed (additional client-side filtering)
-  const filteredBills = filterType === 'all' 
-    ? unifiedBills 
-    : unifiedBills.filter(bill => bill.type === filterType)
+  const filteredBills = useMemo(() => {
+    if (filterType === 'all') {
+      return unifiedBills || []
+    }
+    
+    return (unifiedBills || []).filter(bill => {
+      if (filterType === 'ticket' && bill.tickets && bill.tickets.length > 0) {
+        return true
+      }
+      if (filterType === 'locker' && bill.lockers && bill.lockers.length > 0) {
+        return true
+      }
+      if (filterType === 'costume' && bill.costumes && bill.costumes.length > 0) {
+        return true
+      }
+      return false
+    })
+  }, [unifiedBills, filterType])
 
   // Calculate payment mode totals
   const paymentModeTotals = useMemo(() => {
     const totals = {
       cash: 0,
-      card: 0,
-      upi: 0,
+      online: 0,
       total: 0
     }
 
     filteredBills.forEach(bill => {
-      const paymentMode = bill.originalData.paymentMode?.toLowerCase() || 'cash'
-      
-      if (paymentMode === 'cash') {
-        totals.cash += bill.totalAmount
-      } else if (paymentMode === 'card') {
-        totals.card += bill.totalAmount
-      } else if (paymentMode === 'upi') {
-        totals.upi += bill.totalAmount
-      }
-      
-      totals.total += bill.totalAmount
+      totals.cash += bill.cashPaid || 0
+      totals.online += bill.onlinePaid || 0
+      totals.total += bill.total || 0
     })
 
     return totals
   }, [filteredBills])
 
-  // Get appropriate color for bill type
-  const getTypeColor = (type: 'ticket' | 'locker' | 'costume'): string => {
-    const colors = {
-      ticket: 'bg-blue-100 text-blue-800',
-      locker: 'bg-purple-100 text-purple-800',
-      costume: 'bg-pink-100 text-pink-800'
+  // Toggle expanded view for a bill
+  const toggleExpandBill = (billId: string | undefined) => {
+    if (!billId) return;
+    
+    if (expandedBill === billId) {
+      setExpandedBill(null);
+    } else {
+      setExpandedBill(billId);
     }
-    return colors[type]
+  };
+
+  // Get bill type color based on products
+  const getBillTypeColor = (bill: UnifiedBilling): string => {
+    if (bill.tickets && bill.tickets.length > 0) {
+      return 'bg-blue-100 text-blue-800'
+    } else if (bill.lockers && bill.lockers.length > 0) {
+      return 'bg-purple-100 text-purple-800'
+    } else if (bill.costumes && bill.costumes.length > 0) {
+      return 'bg-pink-100 text-pink-800'
+    }
+    return 'bg-gray-100 text-gray-800'
   }
 
-  // Handle view bill details
-  const handleViewBill = (bill: UnifiedBill) => {
-    toast.success(`Viewing bill details for ${bill.customerName}`)
-    console.log('Bill details:', bill.originalData)
-    // In a real implementation, you would navigate to a detail page or open a modal
+  // Get bill type label
+  const getBillTypeLabel = (bill: UnifiedBilling): string => {
+    const types: string[] = []
+    if (bill.tickets && bill.tickets.length > 0) types.push('Ticket')
+    if (bill.lockers && bill.lockers.length > 0) types.push('Locker')
+    if (bill.costumes && bill.costumes.length > 0) types.push('Costume')
+    
+    return types.join(', ') || 'Unknown'
+  }
+
+  // Calculate total quantity for a bill
+  const getBillQuantity = (bill: UnifiedBilling): number => {
+    let total = 0
+    
+    if (bill.tickets) {
+      total += bill.tickets.reduce((sum, ticket) => sum + (ticket.quantity || 0), 0)
+    }
+    
+    if (bill.lockers) {
+      total += bill.lockers.reduce((sum, locker) => sum + (locker.quantity || 0), 0)
+    }
+    
+    if (bill.costumes) {
+      total += bill.costumes.reduce((sum, costume) => sum + (costume.quantity || 0), 0)
+    }
+    
+    return total
   }
 
   return (
@@ -135,8 +177,8 @@ const BillHistory: React.FC = (): React.ReactElement => {
         </div>
 
         {/* Payment Mode Summary Cards */}
-        {!loading && !error && filteredBills.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {!loading && !error && (filteredBills || []).length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-green-500">
               <div className="flex items-center justify-between">
                 <div>
@@ -151,11 +193,11 @@ const BillHistory: React.FC = (): React.ReactElement => {
               </div>
             </div>
             
-            {/* <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
+            <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Card Payments</p>
-                  <p className="text-2xl font-bold text-gray-800">₹{paymentModeTotals.card.toFixed(2)}</p>
+                  <p className="text-sm text-gray-500">Online Payments</p>
+                  <p className="text-2xl font-bold text-gray-800">₹{paymentModeTotals.online.toFixed(2)}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-full">
                   <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,23 +205,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
                   </svg>
                 </div>
               </div>
-            </div> */}
+            </div>
             
-            {/* <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-purple-500">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">UPI Payments</p>
-                  <p className="text-2xl font-bold text-gray-800">₹{paymentModeTotals.upi.toFixed(2)}</p>
-                </div>
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                  </svg>
-                </div>
-              </div>
-            </div> */}
-            
-            {/* <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-[#DC004E]">
+            <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-[#DC004E]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Total Revenue</p>
@@ -191,7 +219,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
                   </svg>
                 </div>
               </div>
-            </div> */}
+            </div>
           </div>
         )}
 
@@ -298,6 +326,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
                 <thead>
                   <tr className="bg-gray-50">
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Customer
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -315,87 +346,180 @@ const BillHistory: React.FC = (): React.ReactElement => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredBills.map((bill) => (
-                    <tr
-                      key={bill.id}
-                      className="hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex flex-col">
+                  {(filteredBills || []).map((bill) => (
+                    <React.Fragment key={bill._id}>
+                      <tr
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <button 
+                            onClick={() => toggleExpandBill(bill._id)}
+                            className="text-gray-500 hover:text-[#DC004E] transition-colors"
+                          >
+                            {expandedBill === bill._id ? '▼' : '▶'}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 rounded-full bg-[#DC004E]/10 flex items-center justify-center mr-3">
+                              <span className="text-[#DC004E] font-bold">
+                                {bill.customerName.charAt(0)}
+                              </span>
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-gray-900">
+                                {bill.customerName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {bill.customerNumber}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(bill.createdAt || new Date())}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex space-x-1">
+                            {bill.tickets && bill.tickets.length > 0 && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                <span className="mr-1">🎫</span>
+                              </span>
+                            )}
+                            {bill.lockers && bill.lockers.length > 0 && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                <span className="mr-1">🔐</span>
+                              </span>
+                            )}
+                            {bill.costumes && bill.costumes.length > 0 && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+                                <span className="mr-1">👗</span>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {getBillQuantity(bill)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {bill.customerName}
+                            ₹{bill.total.toFixed(2)}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {bill.phone}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(bill.date)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getTypeColor(bill.type)}`}
-                        >
-                          {bill.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {bill.quantity}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          ₹{bill.totalAmount.toFixed(2)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {bill.type !== 'ticket' && (
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bill.returned ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bill.isReturned ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
                           >
-                            {bill.returned ? 'Returned' : 'Not Returned'}
+                            {bill.isReturned ? 'Returned' : 'Not Returned'}
                           </span>
-                        )}
-                        {bill.type === 'ticket' && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            N/A
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleViewBill(bill)}
-                          className="text-[#DC004E] hover:text-[#b0003e] font-medium flex items-center justify-end space-x-1"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                          <span>View</span>
-                        </button>
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
+
+                      {/* Expanded details row */}
+                      {expandedBill === bill._id && (
+                        <tr className="bg-gray-50">
+                          <td colSpan={7} className="py-4 px-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {/* Payment details */}
+                              <div className="bg-white p-4 rounded shadow-sm">
+                                <h4 className="font-semibold text-sm mb-2 text-gray-700 flex items-center">
+                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                  </svg>
+                                  Payment Details
+                                </h4>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span className="text-sm text-gray-600">Cash:</span>
+                                    <span className="text-sm font-medium">₹{bill.cashPaid.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-sm text-gray-600">Online:</span>
+                                    <span className="text-sm font-medium">₹{bill.onlinePaid.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between pt-1 border-t">
+                                    <span className="text-sm font-semibold">Total:</span>
+                                    <span className="text-sm font-semibold">₹{bill.total.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Ticket details */}
+                              {bill.tickets && bill.tickets.length > 0 && (
+                                <div className="bg-white p-4 rounded shadow-sm">
+                                  <h4 className="font-semibold text-sm mb-2 text-blue-700 flex items-center">
+                                    <span className="mr-2">🎫</span> Tickets
+                                  </h4>
+                                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                                    {bill.tickets.map((ticket, idx) => (
+                                      <div key={idx} className="text-sm border-b pb-1 last:border-b-0">
+                                        <div className="flex justify-between">
+                                          <span>{ticket.ticketType || 'Ticket'}</span>
+                                          <span>x{ticket.quantity}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-500">
+                                          <span>₹{ticket.price} each</span>
+                                          <span>₹{ticket.totalAmount}</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Locker details */}
+                              {bill.lockers && bill.lockers.length > 0 && (
+                                <div className="bg-white p-4 rounded shadow-sm">
+                                  <h4 className="font-semibold text-sm mb-2 text-green-700 flex items-center">
+                                    <span className="mr-2">🔐</span> Lockers
+                                  </h4>
+                                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                                    {bill.lockers.map((locker, idx) => (
+                                      <div key={idx} className="text-sm border-b pb-1 last:border-b-0">
+                                        <div className="flex justify-between">
+                                          <span>Locker {locker.lockerNames?.join(', ') || '#' + (idx + 1)}</span>
+                                          <span>x{locker.quantity}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-500">
+                                          <span>₹{locker.price} each</span>
+                                          <span>₹{locker.price * locker.quantity}</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Costume details */}
+                              {bill.costumes && bill.costumes.length > 0 && (
+                                <div className="bg-white p-4 rounded shadow-sm">
+                                  <h4 className="font-semibold text-sm mb-2 text-purple-700 flex items-center">
+                                    <span className="mr-2">👗</span> Costumes
+                                  </h4>
+                                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                                    {bill.costumes.map((costume, idx) => (
+                                      <div key={idx} className="text-sm border-b pb-1 last:border-b-0">
+                                        <div className="flex justify-between">
+                                          <span>{costume.category || 'Costume'}</span>
+                                          <span>x{costume.quantity}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-500">
+                                          <span>₹{costume.amount} each</span>
+                                          <span>₹{costume.amount * costume.quantity}</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
@@ -403,7 +527,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
           )}
 
           {/* Empty state */}
-          {!loading && !error && filteredBills.length === 0 && (
+          {!loading && !error && (filteredBills || []).length === 0 && (
             <div className="text-center py-12">
               <svg
                 className="mx-auto h-12 w-12 text-gray-400"
@@ -424,7 +548,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
               <p className="mt-1 text-sm text-gray-500">
                 {(startDate || endDate || searchQuery) 
                   ? 'Try adjusting your search or filter criteria'
-                  : 'Select a date range or enter a search term to find bills'}
+                  : 'Select a date range or search to find bills'}
               </p>
             </div>
           )}

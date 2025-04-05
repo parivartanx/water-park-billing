@@ -7,8 +7,8 @@
     "src/preload/*.d.ts",
     "src/renderer/src/components/**/*",
     "src/renderer/src/stores/**/*",
-    "src/renderer/src/types/**/*"
-
+    "src/renderer/src/types/**/*",
+    "src/main/types/**/*"
   ],
   "compilerOptions": {
     "composite": true,

@@ -1,5 +1,5 @@
 import { CostumeBill } from "@renderer/types/costume-billing"
-import { CostumeStock } from "@renderer/types/costume-stock"
+import { CostumeStock, V2CostumeStock } from "@renderer/types/costume-stock"
 import type { ValidChannel } from "../types/electron";
 
 import toast from "react-hot-toast"
@@ -13,8 +13,8 @@ interface CostumeStockResponse {
     id?: string
     ok?: boolean
     rev?: string
-  } | CostumeStock[]
-  costumeStock?: CostumeStock[]
+  } | V2CostumeStock[]
+  costumeStock?: V2CostumeStock[]
 }
 
 // Define response type for costume billing operations
@@ -25,16 +25,17 @@ interface CostumeBillingResponse {
     id?: string
     ok?: boolean
     rev?: string
-  }
+  } | V2CostumeStock[]
+  costumeStock?: V2CostumeStock[]
 }
 
 // costume store
 export interface CostumeStore {
   loading: boolean
   error: string | null
-  costumeStock: CostumeStock[]
+  costumeStock: V2CostumeStock[]
   getCostumeStock: () => Promise<void>
-  createCostumeStock: (costumeStock: CostumeStock, access_token: string) => Promise<void>
+  createCostumeStock: (costumeStock: V2CostumeStock, access_token: string) => Promise<void>
   createCostumeBilling: (costumeBilling: CostumeBill, access_token: string) => Promise<CostumeBillingResponse>
 }
 
@@ -52,28 +53,52 @@ export const useCostumeStockStore = create<CostumeStore>()((set) => ({
   getCostumeStock: async () => {
     try {
       set({ loading: true, error: null })
-      const response = await window.electron.ipcRenderer.invoke('get-costume-stock',{}) as CostumeStockResponse
       
-      if (response.error) {
-        set({ error: response.error, loading: false })
-        return
-      }
       
-      // Handle the response data which could be in different formats
-      const stockData = response.data && Array.isArray(response.data) 
-        ? response.data 
-        : response.costumeStock || []
+      // Try to fetch from backend, but use static data if it fails
+      try {
+        const response = await window.electron.ipcRenderer.invoke('get-costume-stock',{}) as CostumeStockResponse
         
-      set({ 
-        costumeStock: stockData, 
-        loading: false 
-      })
+        if (response.error) {
+          console.log('Using static costume data due to error:', response.error);
+          set({ 
+            costumeStock: [], 
+            loading: false 
+          });
+          return;
+        }
+        
+        // Handle the response data which could be in different formats
+        const stockData = response.data && Array.isArray(response.data) 
+          ? response.data 
+          : response.costumeStock || []
+          
+        if (stockData.length === 0) {
+          // Use static data if no data returned from backend
+          set({ 
+            costumeStock: [], 
+            loading: false 
+          });
+        } else {
+          set({ 
+            costumeStock: stockData, 
+            loading: false 
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching costume stock, using static data:', error);
+        set({ 
+          costumeStock: [], 
+          loading: false 
+        });
+      }
     } catch (error) {
-      console.error('Error fetching costume stock:', error)
+      console.error('Error in getCostumeStock:', error);
       set({ 
         error: 'Failed to fetch costume stock data', 
-        loading: false 
-      })
+        loading: false,
+        costumeStock: [] 
+      });
     }
   },
   createCostumeStock: async (costumeStock, access_token) => {

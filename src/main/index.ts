@@ -6,9 +6,11 @@ import { login } from './controllers/auth.controller'
 import { getTickets, getTicketById, saveTicketBilling } from './controllers/ticket.controller'
 import { getLockerBillingByCustomerPhone, getLockers, getLockerStock, refundLockerBilling } from './controllers/locker.controller'
 import { createLockerBilling } from './controllers/locker.controller'
-import { createCostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling, getCostumeBillingByCustomerPhone, refundCostumeBilling } from './controllers/costume.controller'
+import { createV2CostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling, getCostumeBillingByCustomerPhone, refundCostumeBilling } from './controllers/costume.controller'
 import { billingHistories, recentBillingHistories } from './controllers/history.controller'
 import { getEmployeeById } from './controllers/employee.controller'
+import { createUnifiedBilling, getUnifiedBillingByCustomerPhone, getAllUnifiedBillings, refundUnifiedBilling } from './controllers/unified-billing.controller'
+import { setCashManagement, getCashManagementHistory } from './controllers/cash-management-controller'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const escpos = require('escpos');
@@ -184,7 +186,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('create-costume-stock', async (_event, args) => {
     try {
-      return await createCostumeStock(args.costumeStock, args.access_token)
+      return await createV2CostumeStock(args.costumeStock, args.access_token)
     } catch (error) {
       console.error('Error creating costume stock:', error)
       return { error: 'Failed to create costume stock' }  
@@ -261,7 +263,61 @@ app.whenReady().then(() => {
     }
   })
 
+  /// unified billing handlers
+  ipcMain.handle('create-unified-billing', async (_event, args) => {
+    try {
+      return await createUnifiedBilling(args.billingData, args.access_token)
+    } catch (error) {
+      console.error('Error creating unified billing:', error)
+      return { error: 'Failed to create unified billing' }
+    }
+  })
 
+  ipcMain.handle('get-unified-billing-by-customer-phone', async (_event, args) => {
+    try {
+      return await getUnifiedBillingByCustomerPhone(args.customerPhone, args.access_token)
+    } catch (error) {
+      console.error('Error getting unified billing by customer phone:', error)
+      return { error: 'Failed to get unified billing by customer phone' }
+    }
+  })
+
+  ipcMain.handle('get-all-unified-billings', async (_event, args) => {
+    try {
+      return await getAllUnifiedBillings(args.access_token)
+    } catch (error) {
+      console.error('Error getting all unified billings:', error)
+      return { error: 'Failed to get all unified billings' }
+    }
+  })
+
+  ipcMain.handle('refund-unified-billing', async (_event, args) => {
+    try {
+      return await refundUnifiedBilling(args.billingId, args.access_token)
+    } catch (error) {
+      console.error('Error refunding unified billing:', error)
+      return { error: 'Failed to refund unified billing' }
+    }
+  })
+
+  /// cash management handlers
+  ipcMain.handle('set-cash-management', async (_event, args) => {
+    try {
+      return await setCashManagement(args.data, args.access_token)
+    } catch (error) {
+      console.error('Error setting cash management:', error)
+      return { error: 'Failed to set cash management' }
+    }
+  })
+
+  ipcMain.handle('get-cash-management-history', async (_event, args) => {
+    try {
+      return await getCashManagementHistory(args.from, args.to, args.access_token)
+    } catch (error) {
+      console.error('Error getting cash management history:', error)
+      return { error: 'Failed to get cash management history' }
+    }
+  })
 
   // 
   createWindow()

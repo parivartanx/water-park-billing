@@ -1,11 +1,10 @@
-import { CostumeCategory, CostumeSize } from '@renderer/utils/enums'
+import { CostumeCategory } from '@renderer/utils/enums'
 import React, { useState, useEffect } from 'react'
 import { useCostumeStockStore } from '../stores/costumeStore'
 import { toast } from 'react-hot-toast'
 
 const CostumeStock: React.FC = (): React.ReactElement => {
-  const [category, setCategory] = useState<CostumeCategory>(CostumeCategory.HALF_PANT)
-  const [size, setSize] = useState<CostumeSize>(CostumeSize.M)
+  const [category, setCategory] = useState<CostumeCategory>(CostumeCategory.MALE)
   const [quantity, setQuantity] = useState<number | null>(null)
   const [pricePerUnit, setPricePerUnit] = useState<number | null>(null)
   const [refundPrice, setRefundPrice] = useState<number | null>(null)
@@ -41,7 +40,6 @@ const CostumeStock: React.FC = (): React.ReactElement => {
     try {
       await createCostumeStock({
         category,
-        size,
         quantity,
         pricePerUnit,
         refundPrice
@@ -58,6 +56,9 @@ const CostumeStock: React.FC = (): React.ReactElement => {
       setPricePerUnit(null)
       setRefundPrice(null)
             
+      // Show success message
+      toast.success('Stock updated successfully!')
+      
       // Refresh costume stock data
       await fetchCostumeStock()
     } catch {
@@ -65,19 +66,18 @@ const CostumeStock: React.FC = (): React.ReactElement => {
     }
   }
 
-  // Find stock quantity for a specific category and size
-  const getStockQuantity = (categoryType: CostumeCategory, sizeOption: CostumeSize): number => {
+  // Find stock quantity for a specific category
+  const getStockQuantity = (categoryType: CostumeCategory): number => {
     const stockItem = costumeStock.find(
-      item => item.category === categoryType && item.size === sizeOption
+      item => item.category === categoryType
     )
     return stockItem ? stockItem.quantity : 0
   }
 
-  const renderSizeCard = (
-    sizeOption: CostumeSize,
+  const renderCategoryCard = (
     categoryType: CostumeCategory
   ): React.ReactElement => {
-    const stockQuantity = getStockQuantity(categoryType, sizeOption)
+    const stockQuantity = getStockQuantity(categoryType)
     
     return (
       <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -101,11 +101,8 @@ const CostumeStock: React.FC = (): React.ReactElement => {
               </div>
               <div className="ml-4">
                 <h3 className="text-lg font-semibold text-gray-900 capitalize">
-                  Size {sizeOption}
+                  {categoryType} Costume
                 </h3>
-                <p className="text-sm text-gray-500 capitalize">
-                  {categoryType} Category
-                </p>
               </div>
             </div>
             <div className="text-right">
@@ -156,30 +153,10 @@ const CostumeStock: React.FC = (): React.ReactElement => {
           )}
         </div>
 
-        <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {Object.values(CostumeCategory).map((categoryType) => (
-            <div key={categoryType} className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center capitalize">
-                <svg
-                  className="w-6 h-6 mr-2 text-[#DC004E]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                {categoryType} Category
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.values(CostumeSize).map((sizeOption) =>
-                  renderSizeCard(sizeOption, categoryType as CostumeCategory)
-                )}
-              </div>
+            <div key={categoryType}>
+              {renderCategoryCard(categoryType as CostumeCategory)}
             </div>
           ))}
         </div>
@@ -259,41 +236,8 @@ const CostumeStock: React.FC = (): React.ReactElement => {
                   className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent appearance-none"
                   disabled={loading}
                 >
-                  <option value={CostumeCategory.HALF_PANT}>HALF PANT</option>
-                  <option value={CostumeCategory.FULL_PANT_LADIES}>FULL PANT LADIES</option>
-                  <option value={CostumeCategory.LADIES_DRESS}>LADIES DRESS</option>
-                  <option value={CostumeCategory.TSHIRT}>TSHIRT</option>
-                  <option value={CostumeCategory.KIDS_DRESS}>KIDS DRESS</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg 
-                    className="fill-current h-4 w-4" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 20 20"
-                  >
-                    <path 
-                      d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" 
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Size Selection */}
-            <div className="group relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
-              <div className="relative">
-                <select
-                  value={size}
-                  onChange={(e) => setSize(e.target.value as CostumeSize)}
-                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent appearance-none"
-                  disabled={loading}
-                >
-                  <option value={CostumeSize.S}>S</option>
-                  <option value={CostumeSize.M}>M</option>
-                  <option value={CostumeSize.L}>L</option>
-                  <option value={CostumeSize.XL}>XL</option>
-                  <option value={CostumeSize.XXL}>XXL</option>
+                  <option value={CostumeCategory.MALE}>MALE</option>
+                  <option value={CostumeCategory.FEMALE}>FEMALE</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                   <svg 
@@ -312,45 +256,90 @@ const CostumeStock: React.FC = (): React.ReactElement => {
             {/* Quantity Input */}
             <div className="group relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-              <input
-                type="number"
-                value={quantity === null ? '' : quantity}
-                onChange={(e) => setQuantity(e.target.value ? parseInt(e.target.value) : null)}
-                placeholder="Enter quantity"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
-                disabled={loading}
-                min="1"
-              />
+              <div className="flex items-center">
+                <button 
+                  type="button"
+                  onClick={() => setQuantity(prev => prev !== null && prev > 0 ? prev - 1 : 0)}
+                  className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-l-lg text-gray-700"
+                  disabled={loading}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <input
+                  type="number"
+                  value={quantity === null ? '' : quantity}
+                  onChange={(e) => setQuantity(e.target.value ? parseInt(e.target.value) : null)}
+                  placeholder="Enter quantity"
+                  className="w-full px-4 py-3 border-y border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent text-center"
+                  disabled={loading}
+                  min="0"
+                />
+                <button 
+                  type="button"
+                  onClick={() => setQuantity(prev => prev !== null ? prev + 1 : 1)}
+                  className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-r-lg text-gray-700"
+                  disabled={loading}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Price Per Unit Input */}
             <div className="group relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Unit (₹)</label>
-              <input
-                type="number"
-                value={pricePerUnit === null ? '' : pricePerUnit}
-                onChange={(e) => setPricePerUnit(e.target.value ? parseFloat(e.target.value) : null)}
-                placeholder="Enter price per unit"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
-                disabled={loading}
-                min="0"
-                step="0.01"
-              />
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₹</span>
+                <input
+                  type="number"
+                  value={pricePerUnit === null ? '' : pricePerUnit}
+                  onChange={(e) => setPricePerUnit(e.target.value ? parseFloat(e.target.value) : null)}
+                  placeholder="Enter price per unit"
+                  className="w-full px-4 py-3 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
+                  disabled={loading}
+                  min="0"
+                  step="1"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Amount charged per costume</p>
             </div>
 
             {/* Refund Price Input */}
             <div className="group relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Refund Price (₹)</label>
-              <input
-                type="number"
-                value={refundPrice === null ? '' : refundPrice}
-                onChange={(e) => setRefundPrice(e.target.value ? parseFloat(e.target.value) : null)}
-                placeholder="Enter refund price"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
-                disabled={loading}
-                min="0"
-                step="0.01"
-              />
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₹</span>
+                <input
+                  type="number"
+                  value={refundPrice === null ? '' : refundPrice}
+                  onChange={(e) => setRefundPrice(e.target.value ? parseFloat(e.target.value) : null)}
+                  placeholder="Enter refund price"
+                  className="w-full px-4 py-3 pl-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DC004E] focus:border-transparent"
+                  disabled={loading}
+                  min="0"
+                  step="1"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Amount refunded when costume is returned</p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <div className="bg-blue-50 text-blue-700 p-4 rounded-lg max-w-md">
+              <h3 className="font-semibold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Stock Management Tip
+              </h3>
+              <p className="text-sm mt-1">
+                Adding stock for a category that already exists will update the existing stock quantity.
+                Make sure to check current stock levels before making changes.
+              </p>
             </div>
           </div>
         </div>

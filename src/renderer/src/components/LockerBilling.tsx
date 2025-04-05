@@ -3,7 +3,6 @@ import {
   Lock,
   User,
   CreditCard,
-  QrCode,
   Calculator,
   Search
 } from 'lucide-react'
@@ -12,12 +11,13 @@ import { useLockerStore } from '@renderer/stores/lockerStore'
 import type { Locker } from '@renderer/types/locker'
 import { useLockerBillingStore } from '@renderer/stores/lockerStore'
 import { toast } from 'react-hot-toast'
+import PaymentDetail from './PaymentDetail'
+import { PhoneOutlined } from '@ant-design/icons'
 
 const LockerBilling: React.FC = (): React.ReactElement => {
   const navigate = useNavigate()
   const [customerName, setCustomerName] = useState<string>('')
   const [mobileNumber, setMobileNumber] = useState<string>('')
-  const [paymentMode, setPaymentMode] = useState<string>('cash')
   const [discount, setDiscount] = useState<number>(0)
   const [discountType, setDiscountType] = useState<'flat' | 'percentage'>('percentage')
   const [savedLockers, setSavedLockers] = useState<Locker[]>([])
@@ -26,16 +26,15 @@ const LockerBilling: React.FC = (): React.ReactElement => {
   const [selectedLockers, setSelectedLockers] = useState<string[]>([])
   const { lockers, loading, error, getLockers } = useLockerStore()
   const { createLockerBilling, } = useLockerBillingStore()
+  
+  // Payment State
+  const [cashAmount, setCashAmount] = useState<number | null>(null)
+  const [onlineAmount, setOnlineAmount] = useState<number | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   useEffect(() => {
     getLockers()
   }, [])
-
-  const paymentModeIcons = {
-    cash: <User className="w-5 h-5 text-[#DC004E]" />,
-    card: <CreditCard className="w-5 h-5 text-[#DC004E]" />,
-    upi: <QrCode className="w-5 h-5 text-[#DC004E]" />
-  }
 
   const filteredLockers = useMemo(() => {
     return lockers.filter(
@@ -81,25 +80,33 @@ const LockerBilling: React.FC = (): React.ReactElement => {
   const discountAmount =
     discountType === 'percentage' ? (discount / 100) * subtotal : discount
   const total = subtotal - discountAmount
+  
+  // Calculate total payment amount from all payment methods
+  const totalPaymentAmount = (cashAmount || 0) + (onlineAmount || 0)
+  
+  // Check if payment amounts match the total bill
+  const isPaymentValid = Math.abs(totalPaymentAmount - total) < 0.01 // Using small epsilon for floating point comparison
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault()
-    console.log({
-      customerName,
-      mobileNumber,
-      lockers: savedLockers,
-      paymentMode,
-      discount,
-      discountType,
-      subtotal,
-      discountAmount,
-      total
-    })
+    
+    // Validate payment amounts
+    if (!isPaymentValid) {
+      toast.error('Payment amounts must equal the total bill amount')
+      return
+    }
+    
+    // Determine the primary payment mode (the one with the highest amount)
+    let primaryPaymentMode: 'cash' | 'card' = 'cash';
+    if ((onlineAmount || 0) > (cashAmount || 0)) {
+      primaryPaymentMode = 'card'; // For backward compatibility, we use 'card' for online payments
+    }
+    
     const lockerBilling = {
       lockerIds: savedLockers.map((locker) => locker._id!).filter((id): id is string => id !== undefined),
       customerName,
       mobileNumber,
-      paymentMode,
+      paymentMode: primaryPaymentMode,
       discount,
       discountType,
       subtotal,
@@ -108,25 +115,35 @@ const LockerBilling: React.FC = (): React.ReactElement => {
       total,
       isReturned: false
     }
+    
     const access_token = localStorage.getItem('access_token')
     if (!access_token) {
-      /// show toast
       toast.error('Unauthorized to create locker billing')
       return;
     }
-    createLockerBilling(lockerBilling, access_token).then(() => {
-      /// clear form
-      setCustomerName('')
-      setMobileNumber('')
-      setPaymentMode('cash')
-      setDiscount(0)
-      setDiscountType('percentage')
-      setSavedLockers([])
-      setSelectedLockers([])
-      setIsModalOpen(false)
-    }).catch((error) => {
-      console.log(error)
-    })
+    
+    setIsSubmitting(true)
+    
+    createLockerBilling(lockerBilling, access_token)
+      .then(() => {
+        // clear form
+        setCustomerName('')
+        setMobileNumber('')
+        setCashAmount(null)
+        setOnlineAmount(null)
+        setDiscount(0)
+        setDiscountType('percentage')
+        setSavedLockers([])
+        setSelectedLockers([])
+        setIsModalOpen(false)
+        setIsSubmitting(false)
+        toast.success('Locker billing created successfully!')
+      })
+      .catch((error) => {
+        console.log(error)
+        setIsSubmitting(false)
+        toast.error('Failed to create locker billing')
+      })
   }
 
   return (
@@ -185,7 +202,7 @@ const LockerBilling: React.FC = (): React.ReactElement => {
               <div className="absolute -inset-0.5 bg-[#DC004E] rounded-xl opacity-25 group-hover:opacity-50 transition duration-300 blur-sm group-hover:blur-md"></div>
               <div className="relative bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all duration-300 group-hover:border-[#DC004E] group-hover:shadow-lg">
                 <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <CreditCard className="h-4 w-4 mr-2 text-[#DC004E]" />
+                  <PhoneOutlined className="h-4 w-4 mr-2 text-[#DC004E]" />
                   Mobile Number
                 </label>
                 <input
@@ -330,96 +347,36 @@ const LockerBilling: React.FC = (): React.ReactElement => {
 
         {/* Billing Details */}
         {savedLockers.length > 0 && (
-          <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#DC004E]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              Billing Details
-            </h2>
+          <PaymentDetail
+            subtotal={subtotal}
+            discount={discount}
+            discountType={discountType}
+            total={total}
+            isSubmitting={isSubmitting}
+            onDiscountTypeChange={(type) => setDiscountType(type)}
+            onDiscountChange={(amount) => setDiscount(amount || 0)}
+            onPaymentChange={(mode, amount) => {
+              if (mode === 'cash') setCashAmount(amount || 0);
+              if (mode === 'card') setOnlineAmount(amount || 0);
+            }}
+          />
+        )}
 
-            {/* Payment Mode */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Mode
-              </label>
-              <div className="flex items-center space-x-2">
-                <select
-                  value={paymentMode}
-                  onChange={(e) => setPaymentMode(e.target.value)}
-                  className="w-full md:w-1/3 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-gray-50"
-                >
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
-                  <option value="upi">UPI</option>
-                </select>
-                <div className="ml-2">
-                  {
-                    paymentModeIcons[
-                      paymentMode as keyof typeof paymentModeIcons
-                    ]
-                  }
-                </div>
-              </div>
-            </div>
-
-            {/* Discount Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Discount Type
-                </label>
-                <select
-                  value={discountType}
-                  onChange={(e) =>
-                    setDiscountType(e.target.value as 'flat' | 'percentage')
-                  }
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-gray-50"
-                >
-                  <option value="percentage">Percentage</option>
-                  <option value="flat">Flat</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Discount {discountType === 'percentage' ? '(%)' : '(₹)'}
-                </label>
-                <input
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value))}
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] bg-gray-50"
-                  min="0"
-                />
-              </div>
-            </div>
-
-            {/* Bill Summary */}
-            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">₹{subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Discount</span>
-                <span className="font-medium text-[#DC004E]">
-                  -₹{discountAmount.toFixed(2)}
-                </span>
-              </div>
-              <div className="h-px bg-gray-200 my-2"></div>
-              <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total</span>
-                <span>₹{total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mt-6">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-[#DC004E] text-white rounded-lg hover:bg-[#b0003e] transition-colors duration-200 flex items-center gap-2"
-              >
-                <Calculator size={20} />
-                Generate Bill
-              </button>
-            </div>
+        {/* Action Buttons */}
+        {savedLockers.length > 0 && (
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              type="submit"
+              disabled={!isPaymentValid || isSubmitting}
+              className={`px-6 py-2 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 ${
+                isPaymentValid && !isSubmitting
+                  ? 'bg-[#DC004E] hover:bg-[#b0003e]'
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <Calculator size={20} />
+              {isSubmitting ? 'Processing...' : 'Generate Bill'}
+            </button>
           </div>
         )}
       </form>

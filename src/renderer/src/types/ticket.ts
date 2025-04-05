@@ -2,6 +2,7 @@ export interface Ticket {
     _id?: string;
     ticketType: string; // "General", "VIP", "Combo", etc.
     price: number;
+    description: string;
     status: string; // "Active","Inactive"
     isRefundable: boolean;
     refundPercentage?: number; // % of refund amount

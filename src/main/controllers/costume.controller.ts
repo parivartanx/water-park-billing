@@ -1,13 +1,14 @@
 import { costumeDB, costumeBillingDB } from "../db";
 
-import { CostumeStock } from "../types/costume.stock";
+import { CostumeStock, V2CostumeStock } from "../types/costume.stock";
 import { decodeToken } from "./auth.controller";
 import { CostumeBilling } from "../types/costume.billing";
 import { printCostumeBill } from "./print-bill.controller";
+import { v2CostumeStockDB } from "../db";
 
 export const getCostumeStock = async () => {
     try {
-        const response = await costumeDB.find({
+        const response = await v2CostumeStockDB.find({
             selector: {}
         }) as PouchDB.Find.FindResponse<CostumeStock>
         return { success: true, data: response.docs }
@@ -257,5 +258,43 @@ export const refundCostumeBilling = async (id: string, access_token: string) => 
         return { error: 'Failed to refund costume billing' }
     }
 }
+
+
+// create v2CostumeStock
+export const createV2CostumeStock = async (costumeStock: V2CostumeStock, access_token: string) => {
+    try {
+        /// check access token
+        const token = decodeToken(access_token)
+        if(!token) {
+            return { error: 'Invalid Access Token' }
+        }
+        /// check if costume stock already exists update the 
+        /// stock quantity
+        const existingCostumeStock = await v2CostumeStockDB.find({
+            selector: {
+                category: costumeStock.category,
+            }
+        }) as PouchDB.Find.FindResponse<V2CostumeStock>
+        if(existingCostumeStock.docs.length) {
+            const stock = existingCostumeStock.docs[0]
+            stock.quantity += costumeStock.quantity
+            stock.pricePerUnit = costumeStock.pricePerUnit
+            stock.refundPrice = costumeStock.refundPrice
+            stock.updatedAt = new Date().toISOString()
+            stock.updatedBy = token.id
+            await v2CostumeStockDB.put(stock)
+            return stock
+        }
+        /// create v2CostumeStock
+        costumeStock.createdAt = new Date().toISOString()
+        costumeStock.createdBy = token.id
+        const v2CostumeStock = await v2CostumeStockDB.post(costumeStock)
+        return v2CostumeStock
+    } catch (error) {
+        console.log(error)
+        return { error: 'Failed to create v2CostumeStock' }
+    }
+}
+
 
 

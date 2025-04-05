@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../assets/logo.png'
 import {
   LayoutDashboard,
-  Ticket,
   Lock,
   Shirt,
   FileText,
@@ -11,7 +10,8 @@ import {
   Box,
   LogOut,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  PackageCheck
 } from 'lucide-react'
 
 import { useAuthStore } from '../stores/authStore'
@@ -25,18 +25,20 @@ const Sidebar = (): JSX.Element => {
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: Ticket, label: 'Ticket Billing', path: '/ticket-billing' },
-    { icon: Lock, label: 'Locker Billing', path: '/locker-billing' },
-    { icon: Shirt, label: 'Costume Billing', path: '/costume-billing' },
+    { icon: Box, label: 'All Billing', path: '/all-billing' },
+    { icon: PackageCheck, label: 'Return Items', path: '/return-items' },
+    // { icon: Ticket, label: 'Ticket Billing', path: '/ticket-billing' },
+    // { icon: Lock, label: 'Locker Billing', path: '/locker-billing' },
+    // { icon: Shirt, label: 'Costume Billing', path: '/costume-billing' },
     { icon: FileText, label: 'Bill History', path: '/bill-history' },
-    { icon: User, label: 'Profile', path: '/profile' }
+    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: Box, label: 'Cash Store', path: '/cash-store' },
   ]
 
   const stockItems = [
     { icon: Lock, label: 'Locker', path: '/locker' },
     { icon: Shirt, label: 'Costume', path: '/costume' }
   ]
-
   const MenuItem = ({
     item,
     isActive

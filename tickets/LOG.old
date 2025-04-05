@@ -1,5 +1,5 @@
-2025/03/30-14:56:57.432 5ae4 Recovering log #110
-2025/03/30-14:56:57.437 5ae4 Level-0 table #112: started
-2025/03/30-14:56:57.445 5ae4 Level-0 table #112: 1378 bytes OK
-2025/03/30-14:56:57.459 5ae4 Delete type=0 #110
-2025/03/30-14:56:57.459 5ae4 Delete type=3 #108
+2025/04/05-22:58:11.785 6b1c Recovering log #262
+2025/04/05-22:58:11.785 6b1c Level-0 table #265: started
+2025/04/05-22:58:11.794 6b1c Level-0 table #265: 237 bytes OK
+2025/04/05-22:58:11.803 6b1c Delete type=0 #262
+2025/04/05-22:58:11.804 6b1c Delete type=3 #260

@@ -1,3 +1,4 @@
+import { UnifiedBilling } from "@renderer/types/unified-billing";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
@@ -101,3 +102,81 @@ export const useCostumeRefundStore = create<RefundState>((set) => ({
         }
     }
 }))
+
+/// create separate store for unified billing
+export interface UnifiedBillingState {
+    loading: boolean
+    error: string | null
+    success: boolean
+    unifiedBilling: UnifiedBilling | null
+    reset: () => void
+    createUnifiedBilling: (billingData: UnifiedBilling, access_token: string) => Promise<UnifiedBilling | null>
+}
+
+export const useUnifiedBillingStore = create<UnifiedBillingState>((set)=>{
+   return {
+    loading: false,
+    error: null,
+    success: false,
+    unifiedBilling: null,
+    reset: () => {
+        set({
+            loading: false,
+            error: null,
+            success: false,
+            unifiedBilling: null
+        })
+    },
+    createUnifiedBilling: async (billingData: UnifiedBilling, access_token: string) => {
+        try {
+            set({ loading: true, error: null, success: false })
+            
+            // Add timestamps
+            billingData.createdAt = new Date().toISOString()
+            billingData.updatedAt = new Date().toISOString()
+            
+            // Set default values for some fields if not provided
+            if (billingData.gstAmount === undefined) billingData.gstAmount = 0
+            if (billingData.isReturned === undefined) billingData.isReturned = false
+            
+            // Define response type
+            interface UnifiedBillingResponse {
+                success?: boolean;
+                error?: string;
+                data?: {
+                    id?: string;
+                    ok?: boolean;
+                    rev?: string;
+                };
+            }
+            
+            const response = await window.electron.ipcRenderer.invoke('create-unified-billing', { billingData, access_token }) as UnifiedBillingResponse
+            
+            if (response.error) {
+                set({ error: response.error, loading: false, success: false })
+                toast.error(`Failed to create billing: ${response.error}`)
+                return null
+            }
+            
+            // Handle successful response
+            set({ 
+                unifiedBilling: billingData, 
+                loading: false, 
+                success: true 
+            })
+            
+            toast.success('Billing created successfully!')
+            return billingData
+        } catch (error) {
+            console.error('Error creating unified billing:', error)
+            set({ 
+                error: 'Failed to create unified billing', 
+                loading: false, 
+                success: false 
+            })
+            toast.error('Failed to create unified billing')
+            return null
+        }
+    }
+   }
+})
