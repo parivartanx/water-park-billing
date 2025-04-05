@@ -11,19 +11,22 @@ export interface BillingHistoryStore {
   error: string | null;
   billingHistories: BillingHistories;
   unifiedBills: UnifiedBilling[];
+  lastUnifiedBilling: UnifiedBilling | null;
   getBillingHistories: (from: string, to: string, type: 'all' | 'ticket' | 'locker' | 'costume', searchStr: string) => Promise<void>;
   clearHistories: () => void;
   getRecentBillingHistories: (limit: number) => Promise<void>;
+  getLastUnifiedBilling: (customerPhone: string, accessToken: string) => Promise<void>;
 }
 
-const initialState: Omit<BillingHistoryStore, 'getBillingHistories' | 'clearHistories' | 'getRecentBillingHistories'> = {
+const initialState: Omit<BillingHistoryStore, 'getBillingHistories' | 'clearHistories' | 'getRecentBillingHistories' | 'getLastUnifiedBilling'> = {
   loading: false,
   error: null,
   billingHistories: {
     unifiedBills: [],
     error: undefined
   },
-  unifiedBills: []
+  unifiedBills: [],
+  lastUnifiedBilling: null
 };
 
 export const useBillingHistoryStore = create<BillingHistoryStore>()(
@@ -125,6 +128,34 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
         } catch (error) {
           console.error('Error getting billing histories:', error);
           const errorMessage = error instanceof Error ? error.message : 'Failed to get billing histories';
+          set({ error: errorMessage, loading: false });
+          toast.error(errorMessage);
+        }
+      },
+      getLastUnifiedBilling: async (customerPhone: string, accessToken: string) => {
+        try {
+          set({ loading: true, error: null });
+          const response = await window.electron.ipcRenderer.invoke(
+            'get-last-unified-billing-by-customer-phone',
+            { customerPhone, access_token: accessToken   }
+          ) as { data: UnifiedBilling } | { error: string };
+
+          console.log("Getting last unified billing for customer:", response)
+
+          
+          if ('error' in response) {
+            set({ error: response.error, loading: false });
+            toast.error(response.error);
+            return;
+          }
+          
+          set({
+            lastUnifiedBilling: response.data || null,
+            loading: false
+          });
+        } catch (error) {
+          console.error('Error getting last unified billing:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Failed to get last unified billing';
           set({ error: errorMessage, loading: false });
           toast.error(errorMessage);
         }

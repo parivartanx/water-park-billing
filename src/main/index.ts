@@ -11,6 +11,7 @@ import { billingHistories, recentBillingHistories } from './controllers/history.
 import { getEmployeeById } from './controllers/employee.controller'
 import { createUnifiedBilling, getUnifiedBillingByCustomerPhone, getAllUnifiedBillings, refundUnifiedBilling } from './controllers/unified-billing.controller'
 import { setCashManagement, getCashManagementHistory } from './controllers/cash-management-controller'
+import { getLastUnifiedBillingByCustomerPhoneForRefund } from './controllers/unified-billing.controller'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const escpos = require('escpos');
@@ -316,6 +317,15 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error getting cash management history:', error)
       return { error: 'Failed to get cash management history' }
+    }
+  })
+
+  ipcMain.handle('get-last-unified-billing-by-customer-phone', async (_event, args) => {
+    try {
+      return await getLastUnifiedBillingByCustomerPhoneForRefund(args.customerPhone, args.access_token)
+    } catch (error) {
+      console.error('Error getting last unified billing by customer phone:', error)
+      return { error: 'Failed to get last unified billing by customer phone' }
     }
   })
 

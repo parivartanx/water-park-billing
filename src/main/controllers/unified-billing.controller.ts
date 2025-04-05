@@ -4,6 +4,7 @@ import PouchDBFind from 'pouchdb-find';
 import PouchDB from 'pouchdb';
 
 import { unifiedBillingDB, v2CostumeStockDB, lockerDB } from '../db';
+import { Locker } from '../types/locker';
 
 // Initialize PouchDB with the find plugin
 PouchDB.plugin(PouchDBFind);
@@ -220,4 +221,61 @@ export const refundUnifiedBilling = async (billingId: string, access_token: stri
   }
 };
 
-/// fetch recent billing history
+/// fetch customer bill by phone no for refund 
+export const getLastUnifiedBillingByCustomerPhoneForRefund = async (customerPhone: string, access_token: string) => {
+  try {
+    // Verify access token
+    const token = decodeToken(access_token);
+    if (!token) {
+      return { error: 'Invalid access token' };
+    }
+    
+    // Query database
+    const result = await unifiedBillingDB.find({
+      selector: {
+        customerNumber: customerPhone,
+        isReturned: false
+      }
+    }) as PouchDB.Find.FindResponse<UnifiedBilling>;
+
+    if (!result || result.docs.length === 0) {
+      return { success: false, error: 'No unified billing found' };
+    }
+    
+    const billingHistory = result.docs[0];
+    for(const item of billingHistory.costumes) {
+      // fetch costume stock
+      const stock = await v2CostumeStockDB.find({
+        selector: {
+          _id: item._id
+        }
+      }) as PouchDB.Find.FindResponse<CostumeV2Item>;
+
+      item.refundPrice = (stock.docs[0].refundPrice || 0) * item.quantity;
+    }
+    
+    for(const item of billingHistory.lockers) {
+      // fetch locker stock
+      const stock = await lockerDB.find({
+        selector: {
+          _id: item._id
+        }
+      }) as PouchDB.Find.FindResponse<Locker>;
+      /// quantity * refundPrice
+      item.refundPrice =  (stock.docs[0].refundAmount || 0) * item.quantity;
+    }
+
+
+    return { 
+      success: true, 
+      data: billingHistory
+    };
+  } catch (error) {
+    console.error('Error getting unified billing by customer phone:', error);
+    return { 
+      success: false, 
+      error: 'Failed to get unified billing by customer phone' 
+    };
+  }
+};
+
