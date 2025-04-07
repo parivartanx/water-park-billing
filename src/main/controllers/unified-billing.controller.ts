@@ -1,10 +1,11 @@
-import { CostumeV2Item, LockerV2Item, UnifiedBilling } from '../types/billing.types';
+import { CostumeV2Item, UnifiedBilling } from '../types/billing.types';
 import { decodeToken } from './auth.controller';
 import PouchDBFind from 'pouchdb-find';
 import PouchDB from 'pouchdb';
 
 import { unifiedBillingDB, v2CostumeStockDB, lockerDB } from '../db';
 import { Locker } from '../types/locker';
+import { printUnifiedBilling } from './print-bill.controller';
 
 // Initialize PouchDB with the find plugin
 PouchDB.plugin(PouchDBFind);
@@ -45,9 +46,10 @@ export const createUnifiedBilling = async (billingData: UnifiedBilling, access_t
       const newStock = stockDoc.quantity - item.quantity;
       
       if (newStock < 0) {
-        return { success: false, error: 'Not enough stock' };
+        return { success: false, error: 'Costume - Not enough stock' };
       }
       
+      item.refundPrice = (stockDoc.refundPrice || 0) * item.quantity;
       await v2CostumeStockDB.put({
         ...stockDoc,
         _id: stockDoc._id,
@@ -62,23 +64,19 @@ export const createUnifiedBilling = async (billingData: UnifiedBilling, access_t
         selector: {
           _id: item._id
         }
-      }) as PouchDB.Find.FindResponse<LockerV2Item>;
+      }) as PouchDB.Find.FindResponse<Locker>;
       
       if (!locker || locker.docs.length === 0) {
         return { success: false, error: 'Locker not found' };
       }
-      
-      const lockerDoc = locker.docs[0];
-      const newStock = lockerDoc.quantity - item.quantity;
-      
-      if (newStock < 0) {
-        return { success: false, error: 'Not enough stock' };
-      }
+
+      item.refundPrice = (locker.docs[0].refundAmount || 0);
+
       
       await lockerDB.put({
-        ...lockerDoc,
-        _id: lockerDoc._id,
-        _rev: lockerDoc._rev,
+        ...locker.docs[0],
+        _id: locker.docs[0]._id,
+        _rev: locker.docs[0]._rev,
         status:"occupied"
       })
     }
@@ -89,8 +87,7 @@ export const createUnifiedBilling = async (billingData: UnifiedBilling, access_t
     
     // Attempt to print receipt (optional)
     try {
-      // TODO: Implement unified bill printing if needed
-      // printUnifiedBill(billingData);
+      printUnifiedBilling(billingData, token.id);
     } catch (printError) {
       console.error('Error printing unified bill:', printError);
       // Continue even if printing fails
@@ -326,6 +323,9 @@ export const refundUnifiedBillingByCostumeAndLockerIds = async (billingId: strin
         })
       }
     }
+
+    console.log("Locker Ids", lockerIds)
+    console.log("Costume ids",costumeIds)
 
     /// update locker stock
     for(const lockerId of lockerIds){

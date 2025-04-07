@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { FaTshirt } from 'react-icons/fa'
-import { Lock, Calculator, User, CreditCard, CheckCircle } from 'lucide-react'
+import { Lock, Calculator, User, CheckCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CostumeCategory } from '../utils/enums'
 import { useCostumeStockStore } from '../stores/costumeStore'
@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 import { CostumeStock } from '@renderer/types/costume-stock'
 import { CostumeBill } from '@renderer/types/costume-billing'
 import PaymentDetail from './PaymentDetail'
-import { MobileOutlined, PhoneOutlined } from '@ant-design/icons'
+import { PhoneOutlined } from '@ant-design/icons'
 
 const CostumeBilling: React.FC = (): React.ReactElement => {
   const navigate = useNavigate()

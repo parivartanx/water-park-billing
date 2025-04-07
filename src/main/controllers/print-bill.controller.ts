@@ -1,9 +1,10 @@
-import type { TicketBilling, LockerBilling, CostumeBill } from '../types/billing.types'
+import type { TicketBilling, LockerBilling, CostumeBill, UnifiedBilling } from '../types/billing.types'
 import { getTicketById } from './ticket.controller'
-import { lockerDB } from '../db'
+import { employeeDB, lockerDB } from '../db'
 import { Locker } from '../types/locker'
 import { CostumeStock } from '../types/costume.stock'
 import { costumeDB } from '../db'
+import { Employee } from './employee.controller'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const escpos = require('escpos')
@@ -12,7 +13,7 @@ escpos.USB = require('escpos-usb')
 
 // Company information constants
 const COMPANY_NAME = 'LAGOON WATER PARK'
-const COMPANY_ADDRESS = 'Behind Annie Besant International School, Pa₹a Bazar,'
+const COMPANY_ADDRESS = 'Behind Annie Besant International School, Parsa Bazar,'
 const COMPANY_CITY = 'Patna, Bihar - 804453'
 const COMPANY_PHONE = '+91 82928 24876'
 const COMPANY_EMAIL = 'lagoonwaterpark25@gmail.com'
@@ -566,3 +567,198 @@ export const printRefundReceipt = async (
     return false
   }
 }
+
+export const printUnifiedBilling = async (unifiedBilling: UnifiedBilling, employeeId: string): Promise<boolean> => {
+  const device = getPrinterDevice();
+  if (!device) return false;
+
+  try {
+    const printer = new escpos.Printer(device);
+    // const qrcodeUrl = 'https://parivartanx.com';
+
+    const randomNo = (length: number) => {
+      const min = Math.pow(10, length - 1);
+      const max = Math.pow(10, length) - 1;
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+ 
+    await new Promise<void>((resolve, reject) => {
+      device.open((error) => {
+        if (error) {
+          console.error('Error opening device:', error);
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    // HEADER
+    printer
+      .align('ct')
+      .style('b')
+      .size(1, 1)
+      .text(COMPANY_NAME)
+      .size(0, 0)
+      .text(COMPANY_ADDRESS)
+      .text(COMPANY_CITY)
+      .text(`Tel: ${COMPANY_PHONE}`)
+      .text(COMPANY_EMAIL)
+      .text(COMPANY_GST)
+      .text(' ')
+      .style('b')
+      .size(1, 0)
+      // .text('--- UNIFIED RECEIPT ---')
+      .text(' ')
+      .style('normal')
+      .align('lt')
+      .size(0, 0)
+      .text(`Date        : ${formatDate()}`)
+      .text(`Receipt No  : ${randomNo(8)}`)
+      .text(`Customer    : ${unifiedBilling.customerName}`)
+      .text(`Mobile      : ${unifiedBilling.customerNumber}`)
+      .text(`Cash Paid   : Rs. ${unifiedBilling.cashPaid || 0}`)
+      .text(`Online Paid : Rs. ${unifiedBilling.onlinePaid || 0}`)
+      .text('------------------------------------------');
+
+    // TICKETS
+    if (unifiedBilling.tickets?.length > 0) {
+      printer
+        .align('ct')
+        .style('b')
+        .text('TICKET DETAILS')
+        .style('normal')
+        .align('lt')
+        .text('----------------------------------------')
+        .text(' # | TYPE         | QTY | AMT')
+        .text('----------------------------------------');
+
+      unifiedBilling.tickets.forEach((ticket, index) => {
+        const no = String(index + 1).padStart(2, '0');
+        const type = (ticket.ticketType || 'NA').padEnd(12, ' ');
+        const qty = String(ticket.quantity).padStart(3, ' ');
+        const amt = `Rs${ticket.totalAmount.toFixed(2)}`.padStart(7, ' ');
+        printer.text(` ${no}| ${type} | ${qty} | ${amt}`);
+      });
+
+      printer.text('----------------------------------');
+    }
+
+    // LOCKERS
+    if (unifiedBilling.lockers?.length > 0) {
+     
+
+      printer
+        .align('ct')
+        .style('b')
+        .text('LOCKER DETAILS')
+        .style('normal')
+        .align('lt')
+        .text('------------------------------------------')
+        .text(' # | Locker No. | QTY | AMT   | REFUND')
+        .text('------------------------------------------');
+
+      unifiedBilling.lockers.forEach((locker, index) => {
+
+
+        const no = String(index + 1).padStart(2, '0');
+        const str = (locker.lockerNames?.join(', ') || 'Locker').slice(0, 5).padEnd(5, ' ');
+        const qty = String(locker.quantity).padStart(3, ' ');
+        const amt = `Rs ${locker.price.toFixed(2)}`.padStart(6, ' ');
+        const refund = locker.refundPrice ? `Rs ${locker.refundPrice.toFixed(1)}`.padStart(7, ' ') : '  N/A';
+        printer.text(`${no}| No - ${str}| ${qty} | ${amt} | ${refund}`);
+      });
+
+      printer.text('------------------------------------------');
+    }
+
+    // COSTUMES
+    if (unifiedBilling.costumes?.length > 0) {
+      printer
+        .align('ct')
+        .style('b')
+        .text('COSTUME DETAILS')
+        .style('normal')
+        .align('lt')
+        .text('------------------------------------------')
+        .text(' # | CATEGORY     | QTY | AMT   | REFUND')
+        .text('------------------------------------------');
+
+      unifiedBilling.costumes.forEach( (item, index) => {
+
+        const no = String(index + 1).padStart(2, '0');
+        //if category length more than 10 after 10 char use ...
+        const category = (item.category || 'Costume').slice(0, 10).padEnd(12, '..');
+        const qty = String(item.quantity).padStart(3, ' ');
+        const amt = `Rs${item.amount.toFixed(2)}`.padStart(6, ' ');
+        const refund = item.refundPrice ? `Rs${item.refundPrice.toFixed(2)}`.padStart(7, ' ') : '  N/A';
+        printer.text(` ${no}| ${category} | ${qty} | ${amt} | ${refund}`);
+      });
+
+      printer.text('------------------------------------------');
+    }
+
+    // TOTALS
+    printer
+      .text(`Subtotal        : Rs. ${unifiedBilling.subtotal.toFixed(2)}`)
+      .text(`Discount (${unifiedBilling.discountType}) : Rs. ${unifiedBilling.discountAmount.toFixed(2)}`)
+      .text(`GST             : Rs. ${((unifiedBilling.subtotal - unifiedBilling.discountAmount) * 0.18).toFixed(2)}`)
+      .style('b')
+      .text(`Total (Incl GST): Rs. ${unifiedBilling.total.toFixed(2)}`)
+      .style('normal');
+
+      // calculate refundable amount from locker and costumes
+      let refundableAmount = 0;
+      if (unifiedBilling.lockers?.length > 0) {
+        refundableAmount += unifiedBilling.lockers.reduce((total, locker) => total + (locker.refundPrice || 0), 0);
+      }
+      if (unifiedBilling.costumes?.length > 0) {
+        refundableAmount += unifiedBilling.costumes.reduce((total, costume) => total + (costume.refundPrice || 0), 0);
+      }
+      printer.text(`Refundable Amt  : Rs. ${refundableAmount.toFixed(2)}`);
+  
+
+    /// fetch employee name from employee db 
+    const employee = await employeeDB.find({
+      selector: {
+        _id: employeeId
+      }
+    }) as PouchDB.Find.FindResponse<Employee>;
+    
+    if (!employee || employee.docs.length === 0) {
+      return false;
+    }
+
+    /// add a field billed by 
+    printer.text(`Billed By       : ${employee.docs[0].name}`);
+
+    // FOOTER
+    printer
+      .text(' ')
+      .align('ct')
+      .text('------------------------')
+      .style('b')
+      .text('**IMPORTANT**')
+      .style('normal')
+      .text('Return lockers & costumes in')
+      .text('good condition to get refund')
+      .text('------------------------')
+      .text('Thank you for visiting!')
+      .text('Have a great day!')
+      .text(' ')
+      .text('Developed By')
+      .style('b')
+      .text('ParivartanX.com')
+      .style('normal')
+      .cut()
+      .close();
+
+  
+
+    return true;
+  } catch (error) {
+    console.error('Error printing unified billing:', error);
+    return false;
+  }
+};
+

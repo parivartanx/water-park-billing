@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Ticket,
   Lock,
@@ -22,7 +22,6 @@ import PaymentDetail from './PaymentDetail'
 import type { Ticket as TicketType } from '../types/ticket'
 import type { Locker } from '../types/locker'
 import type { CostumeStock } from '../types/costume-stock'
-import { PhoneOutlined } from '@ant-design/icons'
 import { useUnifiedBillingStore } from '../stores/billingStore'
 
 // Define type for cart items
@@ -468,7 +467,7 @@ const AllBilling: React.FC = () => {
                           </div>
                           
                           <div className="mt-4 flex items-center justify-between">
-                            <div className="flex items-center">
+                            {/* <div className="flex items-center">
                               <button 
                                 onClick={() => {
                                   if (ticketQuantity > 1) {
@@ -488,7 +487,7 @@ const AllBilling: React.FC = () => {
                               >
                                 +
                               </button>
-                            </div>
+                            </div> */}
                             <button
                               onClick={() => {
                                 for (let i = 0; i < ticketQuantity; i++) {
@@ -644,6 +643,28 @@ const AllBilling: React.FC = () => {
                       >
                         FEMALE
                       </button>
+
+                      <button
+                        onClick={() => setSelectedCostumeCategory(CostumeCategory.FEMALE_DRESS)}
+                        className={`py-3 rounded-md text-center font-medium ${
+                          selectedCostumeCategory === CostumeCategory.FEMALE_DRESS
+                            ? 'bg-[#DC004E] text-white'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        FEMALE_DRESS
+                      </button>
+                      <button
+                        onClick={() => setSelectedCostumeCategory(CostumeCategory.FEMALE_FULLPANT)}
+                        className={`py-3 rounded-md text-center font-medium ${
+                          selectedCostumeCategory === CostumeCategory.FEMALE_FULLPANT
+                            ? 'bg-[#DC004E] text-white'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        FEMALE_FULLPANT
+                      </button>
+
                     </div>
                   </div>
 

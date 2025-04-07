@@ -12,9 +12,9 @@ export interface BillingHistoryStore {
   billingHistories: BillingHistories;
   unifiedBills: UnifiedBilling[];
   lastUnifiedBilling: UnifiedBilling | null;
-  getBillingHistories: (from: string, to: string, type: 'all' | 'ticket' | 'locker' | 'costume', searchStr: string) => Promise<void>;
+  getBillingHistories: (from: string, to: string, type: 'all' | 'ticket' | 'locker' | 'costume', searchStr: string, access_token: string) => Promise<void>;
   clearHistories: () => void;
-  getRecentBillingHistories: (limit: number) => Promise<void>;
+  getRecentBillingHistories: (limit: number, access_token: string) => Promise<void>;
   getLastUnifiedBilling: (customerPhone: string, accessToken: string) => Promise<void>;
 }
 
@@ -47,10 +47,10 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
       },
 
       // Fetch recent billing histories from the main process
-      getRecentBillingHistories: async (limit: number) => {
+      getRecentBillingHistories: async (limit: number, access_token: string) => {
         try {
           set({ loading: true, error: null });
-          const response = await window.electron.ipcRenderer.invoke('get-recent-billing-histories', { limit });
+          const response = await window.electron.ipcRenderer.invoke('get-recent-billing-histories', { limit, access_token });
           console.log("Recent booking response ", response);
           
           // Type guard to ensure response has the correct structure
@@ -87,7 +87,7 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
       },
       
       // Fetch billing histories from the main process
-      getBillingHistories: async (from: string, to: string, type: 'all' | 'ticket' | 'locker' | 'costume', searchStr: string) => {
+      getBillingHistories: async (from: string, to: string, type: 'all' | 'ticket' | 'locker' | 'costume', searchStr: string, access_token: string) => {
         try {
           set({ loading: true, error: null });
           
@@ -96,7 +96,8 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
             type,
             searchStr: searchStr || undefined,
             from: from || undefined,
-            to: to || undefined
+            to: to || undefined,
+            access_token: access_token
           };
           
           // Call the IPC channel to get billing histories

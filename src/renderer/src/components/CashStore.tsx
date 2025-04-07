@@ -6,7 +6,7 @@ import { CashManagement } from '../../../main/types/cash-management'
 type WithdrawalFormData = Pick<CashManagement, 'withdrawBy' | 'amount' | 'date' | 'description'>
 
 const CashStore: React.FC = () => {
-  const { cashHistory, loading, error, setCashManagement, getCashHistory } = useCashManagementStore()
+  const { cashHistory, loading, setCashManagement, getCashHistory } = useCashManagementStore()
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalFormData>({
     withdrawBy: '',
     amount: 0,

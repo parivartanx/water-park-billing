@@ -1,5 +1,5 @@
-2025/04/06-01:19:57.288 5bf0 Recovering log #214
-2025/04/06-01:19:57.288 5bf0 Level-0 table #216: started
-2025/04/06-01:19:57.297 5bf0 Level-0 table #216: 237 bytes OK
-2025/04/06-01:19:57.309 5bf0 Delete type=0 #214
-2025/04/06-01:19:57.310 5bf0 Delete type=3 #212
+2025/04/08-01:32:50.789 7dac Recovering log #305
+2025/04/08-01:32:50.789 7dac Level-0 table #307: started
+2025/04/08-01:32:50.798 7dac Level-0 table #307: 237 bytes OK
+2025/04/08-01:32:50.809 7dac Delete type=0 #305
+2025/04/08-01:32:50.810 7dac Delete type=3 #303

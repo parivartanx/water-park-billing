@@ -216,27 +216,27 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
     }
   };
 
-  // Distribute remaining amount to a specific payment mode
-  const distributeRemainingAmount = (mode: string) => {
-    const safeTotal = total || 0;
-    const safeCashAmount = cashAmount || 0;
-    const safeOnlineAmount = onlineAmount || 0;
-    const currentTotal = safeCashAmount + safeOnlineAmount;
-    const remaining = safeTotal - currentTotal;
+  // // Distribute remaining amount to a specific payment mode
+  // const distributeRemainingAmount = (mode: string) => {
+  //   const safeTotal = total || 0;
+  //   const safeCashAmount = cashAmount || 0;
+  //   const safeOnlineAmount = onlineAmount || 0;
+  //   const currentTotal = safeCashAmount + safeOnlineAmount;
+  //   const remaining = safeTotal - currentTotal;
     
-    if (remaining <= 0) return;
+  //   if (remaining <= 0) return;
     
-    if (mode === 'cash') {
-      const newCashAmount = safeCashAmount + remaining;
-      setCashAmount(newCashAmount);
-      onPaymentChange('cash', newCashAmount);
-    } else if (mode === 'online') {
-      const newOnlineAmount = safeOnlineAmount + remaining;
-      setOnlineAmount(newOnlineAmount);
-      onPaymentChange('card', newOnlineAmount);
-      onPaymentChange('upi', 0);
-    }
-  };
+  //   if (mode === 'cash') {
+  //     const newCashAmount = safeCashAmount + remaining;
+  //     setCashAmount(newCashAmount);
+  //     onPaymentChange('cash', newCashAmount);
+  //   } else if (mode === 'online') {
+  //     const newOnlineAmount = safeOnlineAmount + remaining;
+  //     setOnlineAmount(newOnlineAmount);
+  //     onPaymentChange('card', newOnlineAmount);
+  //     onPaymentChange('upi', 0);
+  //   }
+  // };
 
   // Handle input changes
   const handleCashAmountChange = (value: number | null) => {

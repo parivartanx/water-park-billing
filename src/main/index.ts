@@ -11,7 +11,7 @@ import { billingHistories, recentBillingHistories } from './controllers/history.
 import { getEmployeeById } from './controllers/employee.controller'
 import { createUnifiedBilling, getUnifiedBillingByCustomerPhone, getAllUnifiedBillings, refundUnifiedBilling } from './controllers/unified-billing.controller'
 import { setCashManagement, getCashManagementHistory } from './controllers/cash-management-controller'
-import { getLastUnifiedBillingByCustomerPhoneForRefund } from './controllers/unified-billing.controller'
+import { getLastUnifiedBillingByCustomerPhoneForRefund, refundUnifiedBillingByCostumeAndLockerIds } from './controllers/unified-billing.controller'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const escpos = require('escpos');
@@ -225,7 +225,7 @@ app.whenReady().then(() => {
   /// billing history handlers
   ipcMain.handle('get-billing-histories', async (_event, args) => {
     try {
-      return await billingHistories({from: args.from, to: args.to, type: args.type, searchStr: args.searchStr})
+      return await billingHistories({from: args.from, to: args.to, type: args.type, searchStr: args.searchStr, access_token: args.access_token})
     } catch (error) {
       console.error('Error getting billing histories:', error)
       return { error: 'Failed to fetch billing histories' }
@@ -237,7 +237,7 @@ app.whenReady().then(() => {
       if(!args.limit) {
         return { error: 'Limit is required' }
       }
-      return await recentBillingHistories(args.limit)
+      return await recentBillingHistories(args.limit, args.access_token)
     } catch (error) {
       console.error('Error getting recent billing histories:', error)
       return { error: 'Failed to get recent billing histories' }
@@ -326,6 +326,15 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error getting last unified billing by customer phone:', error)
       return { error: 'Failed to get last unified billing by customer phone' }
+    }
+  })
+
+  ipcMain.handle('refund-unified-billing-by-costume-and-locker-ids', async (_event, args) => {
+    try {
+      return await refundUnifiedBillingByCostumeAndLockerIds(args.billingId, args.lockerIds, args.costumeIds, args.access_token)
+    } catch (error) {
+      console.error('Error refunding unified billing by costume and locker ids:', error)
+      return { error: 'Failed to refund unified billing by costume and locker ids' }
     }
   })
 

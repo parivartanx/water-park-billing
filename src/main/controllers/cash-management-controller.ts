@@ -26,8 +26,6 @@ export const getCashManagementHistory = async (from:string, to:string, access_to
             throw new Error('Invalid access token')
         }
 
-        console.log("Detailed from and to request", {from,to})
-
         // Create index for better querying
         await cashManagementDB.createIndex({
             index: {
@@ -35,7 +33,6 @@ export const getCashManagementHistory = async (from:string, to:string, access_to
             }
         })
 
-        console.log("Querying with dates:", { from, to })
         
         const response = await cashManagementDB.find({
             selector: {
@@ -48,7 +45,6 @@ export const getCashManagementHistory = async (from:string, to:string, access_to
             sort: [{ date: 'desc' }]
         })
         
-        console.log("Query response:", response)
         return response
     } catch (error) {
         console.error('Error getting cash management history:', error)

@@ -8,9 +8,9 @@ import {
 import Dashboard from './components/Dashboard'
 // import TicketBilling from './components/TicketBilling'
 // import LockerBilling from './components/LockerBilling'
-import ReturnLocker from './components/ReturnLocker'
+// import ReturnLocker from './components/ReturnLocker'
 // import CostumeBilling from './components/CostumeBilling'
-import ReturnCostume from './components/ReturnCostume'
+// import ReturnCostume from './components/ReturnCostume'
 import BillHistory from './components/BillHistory'
 import Profile from './components/Profile'
 import LockerStock from './components/LockerStock'
@@ -63,9 +63,9 @@ const App = (): JSX.Element => {
             <Route path="/all-billing" element={<AllBilling />} />
             {/* <Route path="/ticket-billing" element={<TicketBilling />} /> */}
             {/* <Route path="/locker-billing" element={<LockerBilling />} /> */}
-            <Route path="/return-locker" element={<ReturnLocker />} />
+            {/* <Route path="/return-locker" element={<ReturnLocker />} /> */}
             {/* <Route path="/costume-billing" element={<CostumeBilling />} /> */}
-            <Route path="/return-costume" element={<ReturnCostume />} />
+            {/* <Route path="/return-costume" element={<ReturnCostume />} /> */}
             <Route path="/bill-history" element={<BillHistory />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/locker" element={<LockerStock />} />

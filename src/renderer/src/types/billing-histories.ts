@@ -10,6 +10,7 @@ export interface BillingHistoryParams {
     to?: string
     type: 'all' | 'ticket' | 'locker' | 'costume'
     searchStr?: string
+    access_token?: string
 }
 
 export interface BillingHistoryResponse {

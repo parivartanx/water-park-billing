@@ -14,6 +14,7 @@ import {
   Legend,
   ArcElement
 } from 'chart.js'
+import toast from 'react-hot-toast'
 
 ChartJS.register(
   CategoryScale,
@@ -41,7 +42,7 @@ ChartJS.register(
 //   totalAmount: number
 // }
 
-type ProductType = 'ticket' | 'locker' | 'costume' | 'Other'
+// type ProductType = 'ticket' | 'locker' | 'costume' | 'Other'
 
 // const StockCard = ({
 //   title,
@@ -105,8 +106,13 @@ const Dashboard: React.FC = () => {
   const [expandedBill, setExpandedBill] = useState<string | null>(null);
 
   useEffect(() => {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      toast.error('Unauthorized: Access token not found');
+      return;
+    }
     // Fetch recent billing histories when component mounts
-    getRecentBillingHistories(10);
+    getRecentBillingHistories(10, accessToken);
   }, [getRecentBillingHistories]);
 
   // // Calculate revenue metrics from real data
@@ -232,19 +238,19 @@ const Dashboard: React.FC = () => {
   //   }
   // }
 
-  const productIcons: Record<string, string> = {
-    ticket: '🎫',
-    locker: '🔐',
-    costume: '👗',
-    all: '📋'
-  }
+  // const productIcons: Record<string, string> = {
+  //   ticket: '🎫',
+  //   locker: '🔐',
+  //   costume: '👗',
+  //   all: '📋'
+  // }
 
-  const productColors: Record<string, string> = {
-    ticket: 'blue',
-    locker: 'green',
-    costume: 'purple',
-    all: 'gray'
-  }
+  // const productColors: Record<string, string> = {
+  //   ticket: 'blue',
+  //   locker: 'green',
+  //   costume: 'purple',
+  //   all: 'gray'
+  // }
 
   // Format date for display
   const formatDate = (dateString: string | Date | undefined): string => {
@@ -403,7 +409,14 @@ const Dashboard: React.FC = () => {
           <div className="text-center py-6 text-red-500">
             <p>{error}</p>
             <button 
-              onClick={() => getRecentBillingHistories(10)}
+              onClick={() => {
+                const accessToken = localStorage.getItem('access_token');
+                if (!accessToken) {
+                  toast.error('Unauthorized: Access token not found');
+                  return;
+                }
+                getRecentBillingHistories(10, accessToken);
+              }}
               className="mt-2 px-4 py-2 bg-[#DC004E] text-white rounded hover:bg-[#A30342] transition-colors"
             >
               Retry
@@ -593,7 +606,14 @@ const Dashboard: React.FC = () => {
         <div className="flex justify-end mt-4">
           <button 
             className="text-[#DC004E] hover:underline text-sm"
-            onClick={() => getRecentBillingHistories(20)} // Load more when clicked
+            onClick={() => {
+              const accessToken = localStorage.getItem('access_token');
+              if(!accessToken) {
+                toast.error('Unauthorized: Access token not found');
+                return;
+              }
+              getRecentBillingHistories(20, accessToken);
+            }} // Load more when clicked
           >
             View More
           </button>

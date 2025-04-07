@@ -1,5 +1,5 @@
 import { CostumeBill } from "@renderer/types/costume-billing"
-import { CostumeStock, V2CostumeStock } from "@renderer/types/costume-stock"
+import { V2CostumeStock } from "@renderer/types/costume-stock"
 import type { ValidChannel } from "../types/electron";
 
 import toast from "react-hot-toast"

@@ -238,6 +238,8 @@ const CostumeStock: React.FC = (): React.ReactElement => {
                 >
                   <option value={CostumeCategory.MALE}>MALE</option>
                   <option value={CostumeCategory.FEMALE}>FEMALE</option>
+                  <option value={CostumeCategory.FEMALE_DRESS}>FEMALE_DRESS</option>
+                  <option value={CostumeCategory.FEMALE_FULLPANT}>FEMALE_FULLPANT</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                   <svg 

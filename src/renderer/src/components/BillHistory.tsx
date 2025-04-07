@@ -26,9 +26,14 @@ const BillHistory: React.FC = (): React.ReactElement => {
 
   // Fetch billing histories when filters change
   useEffect(() => {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      toast.error('Unauthorized: Access token not found');
+      return;
+    }
     // Only fetch if we have dates or search query
     if ((startDate && endDate) || searchQuery) {
-      getBillingHistories(startDate, endDate, filterType, searchQuery)
+      getBillingHistories(startDate, endDate, filterType, searchQuery, accessToken)
     }
   }, [startDate, endDate, filterType, searchQuery])
 
@@ -100,26 +105,26 @@ const BillHistory: React.FC = (): React.ReactElement => {
   };
 
   // Get bill type color based on products
-  const getBillTypeColor = (bill: UnifiedBilling): string => {
-    if (bill.tickets && bill.tickets.length > 0) {
-      return 'bg-blue-100 text-blue-800'
-    } else if (bill.lockers && bill.lockers.length > 0) {
-      return 'bg-purple-100 text-purple-800'
-    } else if (bill.costumes && bill.costumes.length > 0) {
-      return 'bg-pink-100 text-pink-800'
-    }
-    return 'bg-gray-100 text-gray-800'
-  }
+  // const getBillTypeColor = (bill: UnifiedBilling): string => {
+  //   if (bill.tickets && bill.tickets.length > 0) {
+  //     return 'bg-blue-100 text-blue-800'
+  //   } else if (bill.lockers && bill.lockers.length > 0) {
+  //     return 'bg-purple-100 text-purple-800'
+  //   } else if (bill.costumes && bill.costumes.length > 0) {
+  //     return 'bg-pink-100 text-pink-800'
+  //   }
+  //   return 'bg-gray-100 text-gray-800'
+  // }
 
-  // Get bill type label
-  const getBillTypeLabel = (bill: UnifiedBilling): string => {
-    const types: string[] = []
-    if (bill.tickets && bill.tickets.length > 0) types.push('Ticket')
-    if (bill.lockers && bill.lockers.length > 0) types.push('Locker')
-    if (bill.costumes && bill.costumes.length > 0) types.push('Costume')
+  // // Get bill type label
+  // const getBillTypeLabel = (bill: UnifiedBilling): string => {
+  //   const types: string[] = []
+  //   if (bill.tickets && bill.tickets.length > 0) types.push('Ticket')
+  //   if (bill.lockers && bill.lockers.length > 0) types.push('Locker')
+  //   if (bill.costumes && bill.costumes.length > 0) types.push('Costume')
     
-    return types.join(', ') || 'Unknown'
-  }
+  //   return types.join(', ') || 'Unknown'
+  // }
 
   // Calculate total quantity for a bill
   const getBillQuantity = (bill: UnifiedBilling): number => {
@@ -193,7 +198,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
               </div>
             </div>
             
-            <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
+            {/* <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Online Payments</p>
@@ -205,9 +210,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
                   </svg>
                 </div>
               </div>
-            </div>
+            </div> */}
             
-            <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-[#DC004E]">
+            {/* <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-[#DC004E]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Total Revenue</p>
@@ -219,7 +224,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
                   </svg>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         )}
 

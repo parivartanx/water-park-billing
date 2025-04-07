@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Search, CheckCircle, Phone, Package, X } from 'lucide-react'
+import { Search, CheckCircle, Package, X } from 'lucide-react'
 import { useBillingHistoryStore } from '../stores/billingHistoriesStore'
-import toast from 'react-hot-toast'
+// import toast from 'react-hot-toast'
+import { useReturnStore } from '../stores/returnStore'
 
 const ReturnItems = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -13,7 +14,7 @@ const ReturnItems = () => {
 
   // Get billing store functions and state
   const { loading, lastUnifiedBilling, getLastUnifiedBilling } = useBillingHistoryStore()
-
+ const { returnBillingCostumeAndLocker, loading: returnLoading, error: returnError, success: returnSuccess } = useReturnStore()
   // Derived state: show results if we have data
   const showResults = Boolean(lastUnifiedBilling)
 
@@ -21,6 +22,7 @@ const ReturnItems = () => {
   useEffect(() => {
     return () => {
       useBillingHistoryStore.setState({ lastUnifiedBilling: null })
+      useReturnStore.setState({ loading: false, error: null, success: null })
     }
   }, [])
 
@@ -37,12 +39,14 @@ const ReturnItems = () => {
       setError('Please enter a valid 10-digit phone number')
       return
     }
+
     const accessToken = localStorage.getItem('access_token')
     if (!accessToken) {
       setError('Please log in first')
       return
     }
 
+ 
     setIsSearching(true)
     setError('')
     setSelectedItems([])
@@ -95,12 +99,29 @@ const ReturnItems = () => {
       setError('Please select at least one item to return')
       return
     }
-    // TODO: Implement actual return logic
-    toast.success('Items returned successfully')
-    console.log('Returning items:', selectedItems)
+   
+      /// get access_token from localStorage
+      const accessToken = localStorage.getItem('access_token')
+      if (!accessToken) {
+        setError('Please log in first')
+        return
+      }
+       /// get selected items where id exist in selectedItems
+
+       const lockerIds = lastUnifiedBilling?.lockers?.filter(locker => selectedItems.includes(locker._id || '')).map(locker => locker._id || '') || []
+       const costumeIds = lastUnifiedBilling?.costumes?.filter(costume => selectedItems.includes(costume._id || '')).map(costume => costume._id || '') || []
+
+       if(lockerIds.length === 0 && costumeIds.length === 0) {
+        setError('Please select at least one item to return')
+        return
+       }
+
+       /// extract 
+       returnBillingCostumeAndLocker(lastUnifiedBilling?._id || '', costumeIds, lockerIds, accessToken)
+   
   }
 
-  if(loading){
+  if(loading || returnLoading){
     // write loading UI 
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -115,7 +136,7 @@ const ReturnItems = () => {
     )
   }
 
-  if(error) {
+  if(error || returnError) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto">
@@ -127,7 +148,33 @@ const ReturnItems = () => {
               </h2>
             </div>
             <div className="p-6">
-              <p className="text-red-500">{error}</p>
+              <p className="text-red-500">{error || returnError}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if(returnSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <CheckCircle className="text-[#DC004E]" />
+                Success
+              </h2>
+            </div>
+            <div className="p-6">
+              <p className="text-green-500">{"Items returned successfully"}</p>
+              <button className="bg-[#DC004E] text-white px-4 py-2 rounded-lg mt-4" onClick={() => {
+                useBillingHistoryStore.setState({ lastUnifiedBilling: null })
+                useReturnStore.setState({ loading: false, error: null, success: null })
+                setPhoneNumber('')
+                setSelectedItems([])
+              }}>Return Another</button>
             </div>
           </div>
         </div>

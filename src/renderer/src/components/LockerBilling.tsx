@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import {
   Lock,
   User,
-  CreditCard,
+  
   Calculator,
   Search
 } from 'lucide-react'

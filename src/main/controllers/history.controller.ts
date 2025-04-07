@@ -1,8 +1,18 @@
 import { unifiedBillingDB } from "../db";
 import { UnifiedBilling } from "../types/billing.types";
+import { decodeToken } from "./auth.controller";
 
-export const billingHistories = async ({from, to, type, searchStr}) => {
+///ignore linting for type 
+export const billingHistories = async ({from, to, type, searchStr, access_token}) => {
     try {
+        /// type is not used
+        console.log(type)
+        // Verify access token
+        const token = decodeToken(access_token);
+        if (!token) {
+            return { error: 'Invalid access token' };
+        }
+       
        if(searchStr !== '' && searchStr !== undefined && searchStr !== null) {
             // Search histories from unifiedBillingDB
             const unifiedBills = await unifiedBillingDB.find({
@@ -29,7 +39,8 @@ export const billingHistories = async ({from, to, type, searchStr}) => {
        
        // Base selector for date range
        const dateSelector = {
-           createdAt: { $gte: fromDate, $lte: toDate }
+           createdAt: { $gte: fromDate, $lte: toDate },
+           createdBy: token.id
        };
        
        /// if type === all then get all unified bills
@@ -86,8 +97,14 @@ export const billingHistories = async ({from, to, type, searchStr}) => {
 }
 
 /// recent billing histories limit 7
-export const recentBillingHistories = async (limit: number) => {
+export const recentBillingHistories = async (limit: number, access_token: string) => {
     try {
+        // Verify access token
+        const token = decodeToken(access_token);
+        if (!token) {
+            return { error: 'Invalid access token' };
+        }
+        
         // Get date from 365 days ago to ensure we get some recent records
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -96,7 +113,8 @@ export const recentBillingHistories = async (limit: number) => {
         // Get recent unified bills
         const unifiedBills = await unifiedBillingDB.find({
             selector: {
-                createdAt: { $gte: oneYearAgoStr }   
+                createdAt: { $gte: oneYearAgoStr },
+                createdBy: token.id
             },
             limit: limit
         }) as PouchDB.Find.FindResponse<UnifiedBilling>;
