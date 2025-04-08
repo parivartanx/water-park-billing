@@ -750,6 +750,7 @@ export const printUnifiedBilling = async (unifiedBilling: UnifiedBilling, employ
       .style('b')
       .text('ParivartanX.com')
       .style('normal')
+      .cashdraw()
       .cut()
       .close();
 

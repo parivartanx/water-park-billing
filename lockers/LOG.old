@@ -1,5 +1,14 @@
-2025/04/08-01:32:50.817 7dac Recovering log #305
-2025/04/08-01:32:50.817 7dac Level-0 table #307: started
-2025/04/08-01:32:50.831 7dac Level-0 table #307: 2608 bytes OK
-2025/04/08-01:32:50.846 7dac Delete type=0 #305
-2025/04/08-01:32:50.846 7dac Delete type=3 #303
+2025/04/08-01:46:31.277 2154 Recovering log #308
+2025/04/08-01:46:31.277 2154 Level-0 table #310: started
+2025/04/08-01:46:31.282 2154 Level-0 table #310: 3594 bytes OK
+2025/04/08-01:46:31.304 2154 Delete type=0 #308
+2025/04/08-01:46:31.305 2154 Delete type=3 #306
+2025/04/08-01:46:31.305 1fdc Compacting 4@0 + 1@1 files
+2025/04/08-01:46:31.320 1fdc Generated table #312@0: 1589 keys, 161824 bytes
+2025/04/08-01:46:31.320 1fdc Compacted 4@0 + 1@1 files => 161824 bytes
+2025/04/08-01:46:31.323 1fdc compacted to: files[ 0 1 0 0 0 0 0 ]
+2025/04/08-01:46:31.324 1fdc Delete type=2 #299
+2025/04/08-01:46:31.324 1fdc Delete type=2 #301
+2025/04/08-01:46:31.324 1fdc Delete type=2 #304
+2025/04/08-01:46:31.325 1fdc Delete type=2 #307
+2025/04/08-01:46:31.325 1fdc Delete type=2 #310
