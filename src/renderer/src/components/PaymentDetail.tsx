@@ -23,11 +23,11 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
   onPaymentChange
 }) => {
   const [selectedPaymentModes, setSelectedPaymentModes] = useState<string[]>(['cash'])
-  const [cashAmount, setCashAmount] = useState<number | null>(0)
-  const [onlineAmount, setOnlineAmount] = useState<number | null>(0)
-  const [totalPaymentAmount, setTotalPaymentAmount] = useState<number>(0)
+  const [cashAmount, setCashAmount] = useState<number | null>(null)
+  const [onlineAmount, setOnlineAmount] = useState<number | null>(null)
+  const [totalPaymentAmount, setTotalPaymentAmount] = useState<number | null>(null)
   const [isPaymentValid, setIsPaymentValid] = useState<boolean>(false)
-  const [discountAmount, setDiscountAmount] = useState<number>(0)
+  const [discountAmount, setDiscountAmount] = useState<number | null>(null)
 
   // Calculate discount amount
   useEffect(() => {
@@ -36,7 +36,7 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
     const calculatedDiscount = discountType === 'percentage' 
       ? (safeDiscount / 100) * safeSubtotal 
       : safeDiscount;
-    setDiscountAmount(calculatedDiscount);
+    setDiscountAmount(calculatedDiscount  );
   }, [subtotal, discount, discountType]);
 
   // Update total payment amount and validate
@@ -52,7 +52,7 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
 
   // Initialize cash amount to total when component mounts or total changes
   useEffect(() => {
-    if (total !== null && totalPaymentAmount === 0) {
+    if (total !== null && totalPaymentAmount === null) {
       setCashAmount(total);
       setOnlineAmount(0);
       // Ensure cash is selected as the default payment mode
@@ -216,39 +216,24 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
     }
   };
 
-  // // Distribute remaining amount to a specific payment mode
-  // const distributeRemainingAmount = (mode: string) => {
-  //   const safeTotal = total || 0;
-  //   const safeCashAmount = cashAmount || 0;
-  //   const safeOnlineAmount = onlineAmount || 0;
-  //   const currentTotal = safeCashAmount + safeOnlineAmount;
-  //   const remaining = safeTotal - currentTotal;
-    
-  //   if (remaining <= 0) return;
-    
-  //   if (mode === 'cash') {
-  //     const newCashAmount = safeCashAmount + remaining;
-  //     setCashAmount(newCashAmount);
-  //     onPaymentChange('cash', newCashAmount);
-  //   } else if (mode === 'online') {
-  //     const newOnlineAmount = safeOnlineAmount + remaining;
-  //     setOnlineAmount(newOnlineAmount);
-  //     onPaymentChange('card', newOnlineAmount);
-  //     onPaymentChange('upi', 0);
-  //   }
-  // };
-
   // Handle input changes
-  const handleCashAmountChange = (value: number | null) => {
-    setCashAmount(value);
-    onPaymentChange('cash', value);
+  const handleCashAmountChange = (value: string | null) => {
+    const numValue = value ? Number(value) : null;
+    setCashAmount(numValue);
+    onPaymentChange('cash', numValue);
   };
   
-  const handleOnlineAmountChange = (value: number | null) => {
-    setOnlineAmount(value);
+  const handleOnlineAmountChange = (value: string | null) => {
+    const numValue = value ? Number(value) : null;
+    setOnlineAmount(numValue);
     // For backward compatibility, we'll use 'card' as the primary online payment method
-    onPaymentChange('card', value);
-    onPaymentChange('upi', 0);
+    onPaymentChange('card', numValue);
+    onPaymentChange('upi', numValue);
+  };
+
+  const handleDiscountAmountChange = (value: string | null) => {
+    const numValue = value ? Number(value) : null;
+    onDiscountChange(numValue);
   };
 
   return (
@@ -280,8 +265,8 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
                 <label className="block text-sm text-gray-600 mb-1">Amount</label>
                 <input
                   type="number"
-                  value={discount === null ? '' : discount}
-                  onChange={(e) => onDiscountChange(e.target.value === '' ? null : Number(e.target.value))}
+                  value={discount === null ? '' : discount.toString() }
+                  onChange={(e) => handleDiscountAmountChange(e.target.value || null)}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-[#DC004E] focus:border-[#DC004E] pl-6 text-sm"
                   min="0"
                   disabled={isSubmitting}
@@ -383,7 +368,7 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
                   <input
                     type="number"
                     value={cashAmount === null ? '' : cashAmount}
-                    onChange={(e) => handleCashAmountChange(e.target.value === '' ? null : Number(e.target.value))}
+                    onChange={(e) => handleCashAmountChange(e.target.value)}
                     className="w-full px-4 py-3 border-y border-r rounded-r-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] pl-10"
                     min="0"
                     step="1"
@@ -404,7 +389,7 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
                   <input
                     type="number"
                     value={onlineAmount === null ? '' : onlineAmount}
-                    onChange={(e) => handleOnlineAmountChange(e.target.value === '' ? null : Number(e.target.value))}
+                    onChange={(e) => handleOnlineAmountChange(e.target.value)}
                     className="w-full px-4 py-3 border-y border-r rounded-r-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] pl-10"
                     min="0"
                     step="1"
@@ -427,7 +412,7 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Discount</span>
               <span className="font-medium text-[#DC004E]">
-                -₹{(discountAmount).toFixed(2)}
+                -₹{(discountAmount || 0).toFixed(2)}
               </span>
             </div>
             
@@ -443,7 +428,7 @@ const PaymentDetail: React.FC<PaymentDetailProps> = ({
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Total Payment</span>
               <span className={`font-medium ${isPaymentValid ? 'text-green-600' : 'text-red-600'}`}>
-                ₹{totalPaymentAmount.toFixed(2)}
+                ₹{(totalPaymentAmount || 0).toFixed(2)}
                 {!isPaymentValid && (
                   <button 
                     type="button" 

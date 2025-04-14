@@ -7,8 +7,8 @@ import toast from 'react-hot-toast'
 
 const BillHistory: React.FC = (): React.ReactElement => {
   // Local state for filters
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  // const [startDate, setStartDate] = useState('')
+  // const [endDate, setEndDate] = useState('')
   const [filterType, setFilterType] = useState<
     'ticket' | 'locker' | 'costume' | 'all'
   >('all')
@@ -21,7 +21,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
     error, 
     unifiedBills, 
     getBillingHistories,
-    clearHistories
+    // clearHistories
   } = useBillingHistoryStore()
 
   // Fetch billing histories when filters change
@@ -31,11 +31,15 @@ const BillHistory: React.FC = (): React.ReactElement => {
       toast.error('Unauthorized: Access token not found');
       return;
     }
+    const now = new Date(); // Current date and time
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - 1); // Set to yesterday
+    const endDate = now; // Now
     // Only fetch if we have dates or search query
     if ((startDate && endDate) || searchQuery) {
-      getBillingHistories(startDate, endDate, filterType, searchQuery, accessToken)
+      getBillingHistories(startDate.toISOString(), endDate.toISOString(), filterType, searchQuery, accessToken)
     }
-  }, [startDate, endDate, filterType, searchQuery])
+  }, [filterType, searchQuery])
 
   // Format date for display
   const formatDate = (dateString: string | Date): string => {
@@ -47,14 +51,14 @@ const BillHistory: React.FC = (): React.ReactElement => {
     }
   }
 
-  // Reset all filters
-  const handleResetFilters = () => {
-    setStartDate('')
-    setEndDate('')
-    setFilterType('all')
-    setSearchQuery('')
-    clearHistories()
-  }
+  // // Reset all filters
+  // const handleResetFilters = () => {
+  //   // setStartDate('')
+  //   // setEndDate('')
+  //   setFilterType('all')
+  //   setSearchQuery('')
+  //   clearHistories()
+  // }
 
   // Filter bills based on type if needed (additional client-side filtering)
   const filteredBills = useMemo(() => {
@@ -231,7 +235,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="p-6 border-b border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date Range
                 </label>
@@ -249,7 +253,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
                     className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E] text-sm"
                   />
                 </div>
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Type Filter
@@ -269,7 +273,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
                   <option value="costume">Costume</option>
                 </select>
               </div>
-              <div className="flex items-end">
+              {/* <div className="flex items-end">
                 <button
                   onClick={handleResetFilters}
                   className="px-4 py-2 text-[#DC004E] hover:bg-pink-50 rounded-lg transition-colors duration-200 flex items-center text-sm"
@@ -287,9 +291,9 @@ const BillHistory: React.FC = (): React.ReactElement => {
                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                     />
                   </svg>
-                  Reset Filters
+                  Reset Filters 
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -550,16 +554,16 @@ const BillHistory: React.FC = (): React.ReactElement => {
               <h3 className="mt-2 text-sm font-medium text-gray-900">
                 No bills found
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              {/* <p className="mt-1 text-sm text-gray-500">
                 {(startDate || endDate || searchQuery) 
                   ? 'Try adjusting your search or filter criteria'
                   : 'Select a date range or search to find bills'}
-              </p>
+              </p> */}
             </div>
           )}
         </div>
       </div>
-    </div>
+    // </div>
   )
 }
 

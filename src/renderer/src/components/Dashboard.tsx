@@ -437,7 +437,7 @@ const Dashboard: React.FC = () => {
                   <th className="py-2 px-4 text-left">Quantity</th>
                   <th className="py-2 px-4 text-left">Date</th>
                   <th className="py-2 px-4 text-left">Amount</th>
-                  <th className="py-2 px-4 text-left">Actions</th>
+                  {/* <th className="py-2 px-4 text-left">Actions</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -493,11 +493,11 @@ const Dashboard: React.FC = () => {
                       <td className="py-3 px-4 font-semibold text-gray-800">
                         {`₹${booking.amount.toLocaleString()}`}
                       </td>
-                      <td className="py-3 px-4">
+                      {/* <td className="py-3 px-4">
                         <button className="text-[#DC004E] hover:underline text-sm">
                           View Details
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                     
                     {/* Expanded details row */}

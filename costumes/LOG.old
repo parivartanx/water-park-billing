@@ -1,5 +1,5 @@
-2025/04/08-01:46:31.258 a24 Recovering log #308
-2025/04/08-01:46:31.259 a24 Level-0 table #310: started
-2025/04/08-01:46:31.268 a24 Level-0 table #310: 237 bytes OK
-2025/04/08-01:46:31.277 a24 Delete type=0 #308
-2025/04/08-01:46:31.277 a24 Delete type=3 #306
+2025/04/09-16:25:36.697 5c1c Recovering log #331
+2025/04/09-16:25:36.697 5c1c Level-0 table #333: started
+2025/04/09-16:25:36.704 5c1c Level-0 table #333: 237 bytes OK
+2025/04/09-16:25:36.716 5c1c Delete type=0 #331
+2025/04/09-16:25:36.716 5c1c Delete type=3 #329

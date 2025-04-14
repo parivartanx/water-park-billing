@@ -4,7 +4,7 @@ export interface CashManagement {
     withdrawBy: string
     transferById?: string
     transferBy?: string
-    amount: number
+    amount: number | null
     date: string
     description: string
     createdAt?: string
