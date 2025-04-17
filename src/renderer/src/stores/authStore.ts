@@ -73,7 +73,11 @@ export const useAuthStore = create<AuthState>()((set) => ({
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('employee')
     
-    // Reset store state
-    set(initialAuthState)
+    // Only reset the data fields, not the methods
+    set({
+      employee: null,
+      loading: false,
+      error: null
+    })
   }
 }))

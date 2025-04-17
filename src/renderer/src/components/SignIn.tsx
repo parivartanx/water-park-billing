@@ -46,12 +46,11 @@ const SignIn = (): JSX.Element => {
   const handleLogin = useCallback(async () => {
     try {
       // Call the login function from auth store
-      console.log('Logging in with:', { username, password, role: selectedRole })
+      // console.log('Logging in with:', { username, password, role: selectedRole })
       const result = await login(username, password, selectedRole || '')
       if (result.success) {
         // Validate authentication after login
         const isValid = validateAuth()
-        console.log('Authentication validated:', isValid)
         
         if (isValid) {
           // Navigate to dashboard after successful login and validation
@@ -81,7 +80,6 @@ const SignIn = (): JSX.Element => {
       setLocalError('Please fill in all fields')
       return
     }
-
     handleLogin()
   }
 

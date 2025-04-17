@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import { useCashManagementStore } from '../stores/cash-management-store'
 import { CashManagement } from '../../../main/types/cash-management'
+import { useBillingHistoryStore } from '../stores/billingHistoriesStore'
+import { UnifiedBilling } from '@renderer/types/unified-billing'
 
 type WithdrawalFormData = Pick<
   CashManagement,
@@ -11,39 +13,109 @@ type WithdrawalFormData = Pick<
 const CashStore: React.FC = () => {
   const { cashHistory, loading, setCashManagement, getCashHistory } =
     useCashManagementStore()
+
+    const now = new Date();
+  const startDate = new Date(now);
+  startDate.setHours(0, 0, 0, 0); // Set to today at 00:00:00
+  const endDate = new Date(now);
+  endDate.setHours(23, 59, 59, 999); // Set to today at 23:59:59.999
+
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalFormData>({
     withdrawBy: '',
     amount: null,
-    date: new Date().toISOString().split('T')[0],
+    // set today date
+    date: startDate.toISOString().split('T')[0],
     description: ''
   })
 
-  useEffect(() => {
-    // Get initial cash history for the current month
-    const now = new Date()
-    const firstDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      1
-    ).toISOString()
-    const lastDay = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      0
-    ).toISOString()
+  /// usestate of total cash amount
+  const [totalCashAmount, setTotalCashAmount] = useState(0)
 
-    if (typeof window === 'undefined') {
-      return
-    }
-    // Assuming we have access to the access token from somewhere (e.g., auth context)
-    const accessToken = localStorage.getItem('access_token')
-    console.log('Access token:', accessToken)
+  const [availableCash, setAvailableCash] = useState(0)
+
+  // Get state and actions from the billing history store
+  const { 
+    unifiedBills, 
+    getBillingHistories,
+    // clearHistories
+  } = useBillingHistoryStore()
+
+  // use callback to get billingHistory and calculate total cash amount
+  const getTotalCashAmount = useCallback(async () => {
+    const accessToken = localStorage.getItem('access_token');
     if (!accessToken) {
-      toast.error('Failed to retrieve access token')
-      return
+      toast.error('Unauthorized: Access token not found');
+      return;
     }
-    getCashHistory(firstDay, lastDay, accessToken)
-  }, [])
+
+    // Only fetch if we have dates or search query
+    if ((startDate && endDate)) {
+      await getBillingHistories(startDate.toISOString(), endDate.toISOString(), 'all', '', accessToken)
+      const totalCash = unifiedBills?.reduce((acc: number, bill: UnifiedBilling) => acc + (bill.cashPaid || 0), 0) || 0
+      setTotalCashAmount(totalCash)
+    }
+  }, [getBillingHistories])
+
+  // Fetch billing histories when filters change
+  useEffect(() => {
+    getTotalCashAmount()
+  }, [getTotalCashAmount])
+
+  // use callback to get cash history and calculate available cash for today
+  const getAvailableCash = useCallback(async () => {
+     // Get initial cash history for the current month
+ 
+ 
+     if (typeof window === 'undefined') {
+       return
+     }
+     // Assuming we have access to the access token from somewhere (e.g., auth context)
+     const accessToken = localStorage.getItem('access_token')
+    //  console.log('Access token:', accessToken)
+     if (!accessToken) {
+       toast.error('Failed to retrieve access token')
+       return
+     }
+     ///wrap in try catch
+     try {
+      await getCashHistory(startDate.toISOString(), endDate.toISOString(), accessToken)
+      const todayWithdrawals = cashHistory.reduce((acc: number, cash: CashManagement) => acc + (cash.amount || 0), 0)
+      ///
+      setAvailableCash(totalCashAmount - todayWithdrawals)
+
+     } catch (error) {
+      toast.error('Failed to retrieve cash history')
+     }
+  },[getCashHistory, totalCashAmount])
+    
+
+  useEffect(() => {
+    // // Get initial cash history for the current month
+    // const now = new Date()
+    // const firstDay = new Date(
+    //   now.getFullYear(),
+    //   now.getMonth(),
+    //   1
+    // ).toISOString()
+    // const lastDay = new Date(
+    //   now.getFullYear(),
+    //   now.getMonth() + 1,
+    //   0
+    // ).toISOString()
+
+    // if (typeof window === 'undefined') {
+    //   return
+    // }
+    // // Assuming we have access to the access token from somewhere (e.g., auth context)
+    // const accessToken = localStorage.getItem('access_token')
+    // console.log('Access token:', accessToken)
+    // if (!accessToken) {
+    //   toast.error('Failed to retrieve access token')
+    //   return
+    // }
+    // getCashHistory(firstDay, lastDay, accessToken)
+    getAvailableCash()
+  }, [getAvailableCash,])
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -63,6 +135,16 @@ const CashStore: React.FC = () => {
         toast.error('Failed to retrieve access token')
         return
       }
+
+      if (!withdrawalData.amount) {
+        toast.error('Amount is required')
+        return
+      }
+      /// check amoun
+      if (withdrawalData.amount > availableCash) {
+        toast.error('Insufficient cash available')
+        return
+      }
       await setCashManagement(
         {
           withdrawBy: withdrawalData.withdrawBy,
@@ -80,6 +162,7 @@ const CashStore: React.FC = () => {
         amount: 0,
         description: ''
       })
+      getAvailableCash()
     } catch (error) {
       console.error('Error recording withdrawal:', error)
       toast.error('Failed to record withdrawal')
@@ -106,9 +189,7 @@ const CashStore: React.FC = () => {
             </div>
             <p className="text-4xl font-bold text-gray-800">
               ₹
-              {cashHistory
-                .reduce((acc, item) => acc + (item.amount || 0), 0)
-                .toLocaleString()}
+              {totalCashAmount.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Total cash collected from all transactions
@@ -126,9 +207,7 @@ const CashStore: React.FC = () => {
             </div>
             <p className="text-4xl font-bold text-gray-800">
               ₹
-              {cashHistory
-                .reduce((acc, item) => acc + (item.amount || 0), 0)
-                .toLocaleString()}
+              {availableCash.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Cash available for withdrawal

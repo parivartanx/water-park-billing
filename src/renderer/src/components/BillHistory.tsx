@@ -31,10 +31,10 @@ const BillHistory: React.FC = (): React.ReactElement => {
       toast.error('Unauthorized: Access token not found');
       return;
     }
-    const now = new Date(); // Current date and time
+    const now = new Date();
     const startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - 1); // Set to yesterday
-    const endDate = now; // Now
+    startDate.setHours(0, 0, 0, 0); // Set to today at 00:00:00
+    const endDate = new Date(now);  // Set to today at 23:59:59
     // Only fetch if we have dates or search query
     if ((startDate && endDate) || searchQuery) {
       getBillingHistories(startDate.toISOString(), endDate.toISOString(), filterType, searchQuery, accessToken)
@@ -563,7 +563,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
           )}
         </div>
       </div>
-    // </div>
+    </div>
   )
 }
 

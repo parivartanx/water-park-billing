@@ -26,12 +26,13 @@ const initialState: Omit<BillingHistoryStore, 'getBillingHistories' | 'clearHist
     error: undefined
   },
   unifiedBills: [],
-  lastUnifiedBilling: null
+  lastUnifiedBilling: null,
+
 };
 
 export const useBillingHistoryStore = create<BillingHistoryStore>()(
   persist(
-    (set) => ({
+    (set,get) => ({
       ...initialState,
       
       // Clear all history data
@@ -51,7 +52,7 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
         try {
           set({ loading: true, error: null });
           const response = await window.electron.ipcRenderer.invoke('get-recent-billing-histories', { limit, access_token });
-          console.log("Recent booking response ", response);
+          // console.log("Recent booking response ", response);
           
           // Type guard to ensure response has the correct structure
           const isValidResponse = (res: unknown): res is {
@@ -141,7 +142,7 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
             { customerPhone, access_token: accessToken   }
           ) as { data: UnifiedBilling } | { error: string };
 
-          console.log("Getting last unified billing for customer:", response)
+          // console.log("Getting last unified billing for customer:", response)
 
           
           if ('error' in response) {
@@ -160,7 +161,7 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
           set({ error: errorMessage, loading: false });
           toast.error(errorMessage);
         }
-      }
+      },
     }),
     {
       name: 'billing-history-store',

@@ -324,9 +324,6 @@ export const refundUnifiedBillingByCostumeAndLockerIds = async (billingId: strin
       }
     }
 
-    console.log("Locker Ids", lockerIds)
-    console.log("Costume ids",costumeIds)
-
     /// update locker stock
     for(const lockerId of lockerIds){
       // update stock

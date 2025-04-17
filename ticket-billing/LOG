@@ -1,5 +1,5 @@
-2025/04/10-23:14:44.015 4aac Recovering log #405
-2025/04/10-23:14:44.015 4aac Level-0 table #408: started
-2025/04/10-23:14:44.018 4aac Level-0 table #408: 237 bytes OK
-2025/04/10-23:14:44.024 4aac Delete type=0 #405
-2025/04/10-23:14:44.024 4aac Delete type=3 #403
+2025/04/18-01:41:49.310 3860 Recovering log #418
+2025/04/18-01:41:49.310 3860 Level-0 table #421: started
+2025/04/18-01:41:49.315 3860 Level-0 table #421: 237 bytes OK
+2025/04/18-01:41:49.324 3860 Delete type=0 #418
+2025/04/18-01:41:49.324 3860 Delete type=3 #416

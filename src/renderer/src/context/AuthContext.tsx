@@ -14,7 +14,7 @@ export const AuthProvider = ({
     const storedAuth = localStorage.getItem('access_token')
     const storedRefreshToken = localStorage.getItem('refresh_token')
 
-    console.log("Auth provider called with auth: ", storedAuth, " and refresh token: ", storedRefreshToken)
+    // console.log("Auth provider called with auth: ", storedAuth, " and refresh token: ", storedRefreshToken)
 
     if (storedAuth && storedRefreshToken) {
       setIsAuthenticated(true)

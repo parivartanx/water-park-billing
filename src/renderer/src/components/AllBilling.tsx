@@ -186,8 +186,8 @@ const AllBilling: React.FC = () => {
   // Check if payment is valid
   const isPaymentValid = Math.abs(totalPaymentAmount - total) < 0.01
 
-  console.log("Total payment amount:", totalPaymentAmount)
-  console.log("Total:", total)
+  // console.log("Total payment amount:", totalPaymentAmount)
+  // console.log("Total:", total)
 
   // Handle billing submission
   const handleSubmit = async () => {

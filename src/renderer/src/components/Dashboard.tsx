@@ -102,9 +102,13 @@ ChartJS.register(
 // )
 
 const Dashboard: React.FC = () => {
-  const { unifiedBills, getRecentBillingHistories, loading, error } = useBillingHistoryStore();
+  const { unifiedBills, getBillingHistories, loading, error } = useBillingHistoryStore();
   const [expandedBill, setExpandedBill] = useState<string | null>(null);
 
+  const now = new Date();
+  const startDate = new Date(now);
+  startDate.setHours(0, 0, 0, 0); // Set to today at 00:00:00
+  const endDate = new Date(now);
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken) {
@@ -112,8 +116,8 @@ const Dashboard: React.FC = () => {
       return;
     }
     // Fetch recent billing histories when component mounts
-    getRecentBillingHistories(10, accessToken);
-  }, [getRecentBillingHistories]);
+    getBillingHistories(startDate.toISOString(), endDate.toISOString(), 'all', '', accessToken);
+  }, [getBillingHistories]);
 
   // // Calculate revenue metrics from real data
   // const revenueMetrics = useMemo(() => {
@@ -415,7 +419,11 @@ const Dashboard: React.FC = () => {
                   toast.error('Unauthorized: Access token not found');
                   return;
                 }
-                getRecentBillingHistories(10, accessToken);
+                const now = new Date();
+                const startDate = new Date(now);
+                startDate.setHours(0, 0, 0, 0); // Set to today at 00:00:00
+                const endDate = new Date(now);
+                getBillingHistories(startDate.toISOString(), endDate.toISOString(), 'all', '', accessToken);
               }}
               className="mt-2 px-4 py-2 bg-[#DC004E] text-white rounded hover:bg-[#A30342] transition-colors"
             >
@@ -612,7 +620,7 @@ const Dashboard: React.FC = () => {
                 toast.error('Unauthorized: Access token not found');
                 return;
               }
-              getRecentBillingHistories(20, accessToken);
+              getBillingHistories(startDate.toISOString(), endDate.toISOString(), 'all', '', accessToken);
             }} // Load more when clicked
           >
             View More

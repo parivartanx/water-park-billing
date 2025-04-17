@@ -37,15 +37,15 @@ export const useCashManagementStore = create<CashManagementStore>((set) => ({
 
   getCashHistory: async (from: string, to: string, accessToken: string) => {
     try {
-      console.log(
-        "cash history from:", from, "to:", to
-      )
+      // console.log(
+      //   "cash history from:", from, "to:", to
+      // )
       set({ loading: true, error: null })
       const response = await window.electron.ipcRenderer.invoke('get-cash-management-history', {from, to, access_token: accessToken}) as CashManagementResponse
       if (response.error) {
         throw new Error(response.error)
       }
-      console.log("get cash history response:", response)
+      // console.log("get cash history response:", response)
       set({ cashHistory: response.docs || [], loading: false })
     } catch (error: any) {
       set({ error: error.message || 'An error occurred', loading: false })
