@@ -32,7 +32,7 @@ const initialState: Omit<BillingHistoryStore, 'getBillingHistories' | 'clearHist
 
 export const useBillingHistoryStore = create<BillingHistoryStore>()(
   persist(
-    (set,get) => ({
+    (set) => ({
       ...initialState,
       
       // Clear all history data

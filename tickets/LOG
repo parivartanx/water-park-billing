@@ -1,5 +1,5 @@
-2025/04/18-01:41:49.294 4d7c Recovering log #418
-2025/04/18-01:41:49.295 4d7c Level-0 table #421: started
-2025/04/18-01:41:49.300 4d7c Level-0 table #421: 237 bytes OK
-2025/04/18-01:41:49.308 4d7c Delete type=0 #418
-2025/04/18-01:41:49.308 4d7c Delete type=3 #416
+2025/04/23-17:55:44.453 303c Recovering log #438
+2025/04/23-17:55:44.453 303c Level-0 table #440: started
+2025/04/23-17:55:44.464 303c Level-0 table #440: 237 bytes OK
+2025/04/23-17:55:44.470 303c Delete type=0 #438
+2025/04/23-17:55:44.471 303c Delete type=3 #436

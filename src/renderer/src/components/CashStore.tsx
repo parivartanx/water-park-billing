@@ -14,7 +14,7 @@ const CashStore: React.FC = () => {
   const { cashHistory, loading, setCashManagement, getCashHistory } =
     useCashManagementStore()
 
-    const now = new Date();
+  const now = new Date();
   const startDate = new Date(now);
   startDate.setHours(0, 0, 0, 0); // Set to today at 00:00:00
   const endDate = new Date(now);
@@ -24,7 +24,7 @@ const CashStore: React.FC = () => {
     withdrawBy: '',
     amount: null,
     // set today date
-    date: startDate.toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0],
     description: ''
   })
 
@@ -61,61 +61,23 @@ const CashStore: React.FC = () => {
     getTotalCashAmount()
   }, [getTotalCashAmount])
 
-  // use callback to get cash history and calculate available cash for today
-  const getAvailableCash = useCallback(async () => {
-     // Get initial cash history for the current month
- 
- 
-     if (typeof window === 'undefined') {
-       return
-     }
-     // Assuming we have access to the access token from somewhere (e.g., auth context)
-     const accessToken = localStorage.getItem('access_token')
-    //  console.log('Access token:', accessToken)
-     if (!accessToken) {
-       toast.error('Failed to retrieve access token')
-       return
-     }
-     ///wrap in try catch
-     try {
-      await getCashHistory(startDate.toISOString(), endDate.toISOString(), accessToken)
-      const todayWithdrawals = cashHistory.reduce((acc: number, cash: CashManagement) => acc + (cash.amount || 0), 0)
-      ///
-      setAvailableCash(totalCashAmount - todayWithdrawals)
 
-     } catch (error) {
-      toast.error('Failed to retrieve cash history')
-     }
-  },[getCashHistory, totalCashAmount])
-    
-
+  // Fetch cash history for today on mount
   useEffect(() => {
-    // // Get initial cash history for the current month
-    // const now = new Date()
-    // const firstDay = new Date(
-    //   now.getFullYear(),
-    //   now.getMonth(),
-    //   1
-    // ).toISOString()
-    // const lastDay = new Date(
-    //   now.getFullYear(),
-    //   now.getMonth() + 1,
-    //   0
-    // ).toISOString()
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+      toast.error('Failed to retrieve access token');
+      return;
+    }
+    getCashHistory(startDate.toISOString(), endDate.toISOString(), accessToken);
+  }, [getCashHistory]);
 
-    // if (typeof window === 'undefined') {
-    //   return
-    // }
-    // // Assuming we have access to the access token from somewhere (e.g., auth context)
-    // const accessToken = localStorage.getItem('access_token')
-    // console.log('Access token:', accessToken)
-    // if (!accessToken) {
-    //   toast.error('Failed to retrieve access token')
-    //   return
-    // }
-    // getCashHistory(firstDay, lastDay, accessToken)
-    getAvailableCash()
-  }, [getAvailableCash,])
+  // Calculate available cash whenever cashHistory or totalCashAmount changes
+  useEffect(() => {
+    const todayWithdrawals = cashHistory.reduce((acc: number, cash: CashManagement) => acc + (cash.amount || 0), 0);
+    setAvailableCash(totalCashAmount - todayWithdrawals);
+  }, [cashHistory, totalCashAmount]);
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -162,7 +124,8 @@ const CashStore: React.FC = () => {
         amount: 0,
         description: ''
       })
-      getAvailableCash()
+      // After successful withdrawal, refresh cash history for today
+      await getCashHistory(startDate.toISOString(), endDate.toISOString(), accessToken)
     } catch (error) {
       console.error('Error recording withdrawal:', error)
       toast.error('Failed to record withdrawal')
