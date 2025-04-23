@@ -226,12 +226,15 @@ export const getLastUnifiedBillingByCustomerPhoneForRefund = async (customerPhon
     if (!token) {
       return { error: 'Invalid access token' };
     }
+
+    // console.log("Token data is ", token)
     
     // Query database
     const result = await unifiedBillingDB.find({
       selector: {
         customerNumber: customerPhone,
-        isReturned: false
+        isReturned: false,
+        createdBy:token.id
       }
     }) as PouchDB.Find.FindResponse<UnifiedBilling>;
 
