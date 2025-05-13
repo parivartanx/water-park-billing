@@ -18,7 +18,7 @@ export const useTicketStore = create<TicketStore>((set,) => ({
     try {
       set({ loading: true, error: null })
       const tickets = await window.electron.ipcRenderer.invoke('get-tickets' as ValidChannel) as Ticket[];
-      // console.log("Tickets are ", tickets)
+      console.log("Tickets are ", tickets)
       set({ tickets, loading: false });
       return tickets;
     } catch (error) {

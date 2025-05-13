@@ -4,7 +4,7 @@ import PouchDBFind from 'pouchdb-find'
 // Enable PouchDB query capabilities
 PouchDB.plugin(PouchDBFind)
 
-export const apiEndPoint = 'http://165.232.179.60/api/v1'
+export const apiEndPoint = 'https://api.lagoonwaterpark.in/api/v1'
 const remoteIp = '165.232.179.60'
 // export const apiEndPoint = 'http://localhost:3004/api/v1'
 

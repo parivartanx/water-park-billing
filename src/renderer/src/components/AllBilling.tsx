@@ -78,6 +78,17 @@ const AllBilling: React.FC = () => {
   const [billingStatus, setBillingStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [billingError, setBillingError] = useState<string | null>(null)
 
+  /// if today is weekday return weekday price else return weekend price
+  const todayPrice = (ticket: TicketType) => {
+    /// if today is saturday or sunday return weekend price else return weekday price
+    const today = new Date().getDay()
+    if(today === 6 || today === 0) {
+      return ticket.weekendPrice
+    } else {
+      return ticket.weekdayPrice
+    }
+  }
+
   // Load data on component mount
   useEffect(() => {
     getTickets()
@@ -120,7 +131,7 @@ const AllBilling: React.FC = () => {
       if (type === 'ticket') {
         const ticketItem = item as TicketType
         name = ticketItem.ticketType
-        price = ticketItem.price
+        price = todayPrice(ticketItem)
       } else if (type === 'locker') {
         const lockerItem = item as Locker
         name = `Locker #${lockerItem.lockerNo}`
@@ -454,12 +465,9 @@ const AllBilling: React.FC = () => {
                           <h3 className="font-medium text-lg">
                             {ticket.ticketType}
                           </h3>
-                          <p className="text-sm text-gray-500 mt-1 mb-3">
-                            {ticket.description}
-                          </p>
                           <div className="flex justify-between items-center">
                             <p className="font-semibold text-[#DC004E] text-lg">
-                              ₹{ticket.price.toLocaleString()}
+                              ₹{todayPrice(ticket).toLocaleString()}
                             </p>
                             <span className={`text-xs ${ticket.status === 'active' ? 'text-green-600' : 'text-gray-400'}`}>
                               {ticket.status}
