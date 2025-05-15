@@ -1,5 +1,5 @@
-2025/05/14-02:10:52.275 bb4 Recovering log #448
-2025/05/14-02:10:52.276 bb4 Level-0 table #450: started
-2025/05/14-02:10:52.290 bb4 Level-0 table #450: 237 bytes OK
-2025/05/14-02:10:52.303 bb4 Delete type=0 #448
-2025/05/14-02:10:52.303 bb4 Delete type=3 #446
+2025/05/16-00:28:11.881 49e4 Recovering log #461
+2025/05/16-00:28:11.882 49e4 Level-0 table #463: started
+2025/05/16-00:28:11.885 49e4 Level-0 table #463: 237 bytes OK
+2025/05/16-00:28:11.895 49e4 Delete type=0 #461
+2025/05/16-00:28:11.895 49e4 Delete type=3 #459

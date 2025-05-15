@@ -20,7 +20,8 @@ export const billingHistories = async ({from, to, type, searchStr, access_token}
                     $or: [
                         { customerName: { $regex: new RegExp(searchStr, 'i') } },
                         { customerNumber: { $regex: new RegExp(searchStr, 'i') } }
-                    ]
+                    ],
+                    createdBy: token.id
                 }
             }) as PouchDB.Find.FindResponse<UnifiedBilling>;
             

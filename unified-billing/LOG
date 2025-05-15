@@ -1,9 +1,5 @@
-2025/05/14-02:10:52.305 bb4 Recovering log #276
-2025/05/14-02:10:52.307 bb4 Level-0 table #279: started
-2025/05/14-02:10:52.317 bb4 Level-0 table #279: 72975 bytes OK
-2025/05/14-02:10:52.323 bb4 Delete type=0 #276
-2025/05/14-02:10:52.324 bb4 Delete type=3 #274
-2025/05/14-02:11:13.464 940 Compacting 1@0 + 1@1 files
-2025/05/14-02:11:13.476 940 Generated table #281@0: 941 keys, 191416 bytes
-2025/05/14-02:11:13.476 940 Compacted 1@0 + 1@1 files => 191416 bytes
-2025/05/14-02:11:13.477 940 compacted to: files[ 0 1 0 0 0 0 0 ]
+2025/05/16-00:28:11.897 49e4 Recovering log #291
+2025/05/16-00:28:11.897 49e4 Level-0 table #293: started
+2025/05/16-00:28:11.901 49e4 Level-0 table #293: 237 bytes OK
+2025/05/16-00:28:11.907 49e4 Delete type=0 #291
+2025/05/16-00:28:11.907 49e4 Delete type=3 #289

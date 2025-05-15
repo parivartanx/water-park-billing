@@ -21,6 +21,7 @@ import AllBilling from './components/AllBilling'
 import SignIn from './components/SignIn'
 import ProtectedRoute from './components/ProtectedRoute'
 import ReturnItems from './components/ReturnItems'
+import SalesReport from './components/SalesReport'
 import { AuthProvider } from './context/AuthContext'
 import { Toaster } from 'react-hot-toast'
 
@@ -67,6 +68,7 @@ const App = (): JSX.Element => {
             {/* <Route path="/costume-billing" element={<CostumeBilling />} /> */}
             {/* <Route path="/return-costume" element={<ReturnCostume />} /> */}
             <Route path="/bill-history" element={<BillHistory />} />
+            <Route path="/sales-report" element={<SalesReport />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/locker" element={<LockerStock />} />
             <Route path="/add-locker" element={<AddLocker />} />

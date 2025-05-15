@@ -1,1 +1,5 @@
-2025/05/14-02:16:54.492 e64 Delete type=3 #1
+2025/05/15-22:52:48.789 1f8c Recovering log #6
+2025/05/15-22:52:48.791 1f8c Level-0 table #8: started
+2025/05/15-22:52:48.794 1f8c Level-0 table #8: 722 bytes OK
+2025/05/15-22:52:48.802 1f8c Delete type=0 #6
+2025/05/15-22:52:48.802 1f8c Delete type=3 #4

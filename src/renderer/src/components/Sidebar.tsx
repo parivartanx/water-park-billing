@@ -11,7 +11,8 @@ import {
   LogOut,
   ChevronDown,
   ChevronUp,
-  PackageCheck
+  PackageCheck,
+  BarChart
 } from 'lucide-react'
 
 import { useAuthStore } from '../stores/authStore'
@@ -31,6 +32,7 @@ const Sidebar = (): JSX.Element => {
     // { icon: Lock, label: 'Locker Billing', path: '/locker-billing' },
     // { icon: Shirt, label: 'Costume Billing', path: '/costume-billing' },
     { icon: FileText, label: 'Bill History', path: '/bill-history' },
+    { icon: BarChart, label: 'Sales Report', path: '/sales-report' },
     { icon: User, label: 'Profile', path: '/profile' },
     { icon: Box, label: 'Cash Store', path: '/cash-store' },
   ]
