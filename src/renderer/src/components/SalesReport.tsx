@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useBillingHistoryStore } from '../stores/billingHistoriesStore'
-import { UnifiedBilling } from '../types/unified-billing'
 import { format } from 'date-fns'
 import { Spinner } from './ui/Spinner'
 import toast from 'react-hot-toast'
 import { Chart as ChartJS, ArcElement, Tooltip as ChartTooltip, Legend as ChartLegend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js'
-import { Pie, Bar } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2'
 
 // Register ChartJS components
 ChartJS.register(ArcElement, ChartTooltip, ChartLegend, CategoryScale, LinearScale, BarElement, Title)
@@ -38,7 +37,8 @@ const SalesReport: React.FC = (): React.ReactElement => {
     } else if (filterPeriod === 'yesterday') {
       setStartDate(format(yesterday, 'yyyy-MM-dd'))
       setEndDate(format(yesterday, 'yyyy-MM-dd'))
-    } else if (filterPeriod === 'all') {
+    } 
+    else if (filterPeriod === 'all') {
       // Set to a wide date range to get all data
       const oneYearAgo = new Date(today)
       oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
@@ -176,17 +176,17 @@ const SalesReport: React.FC = (): React.ReactElement => {
   }, [filteredBills])
 
   // Prepare chart data for Chart.js (cash only)
-  const paymentChartData = {
-    labels: ['Cash'],
-    datasets: [
-      {
-        data: [summary.cashAmount],
-        backgroundColor: ['#0088FE'],
-        borderColor: ['#0088FE'],
-        borderWidth: 1,
-      },
-    ],
-  }
+  // const paymentChartData = {
+  //   labels: ['Cash'],
+  //   datasets: [
+  //     {
+  //       data: [summary.cashAmount],
+  //       backgroundColor: ['#0088FE'],
+  //       borderColor: ['#0088FE'],
+  //       borderWidth: 1,
+  //     },
+  //   ],
+  // }
   
   const categoryChartData = {
     labels: ['Tickets', 'Lockers', 'Costumes'],
@@ -200,23 +200,23 @@ const SalesReport: React.FC = (): React.ReactElement => {
   }
   
   // Chart options
-  const pieOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const label = context.label || '';
-            const value = context.raw || 0;
-            return `${label}: ₹${Number(value).toFixed(2)}`;
-          }
-        }
-      }
-    },
-  }
+  // const pieOptions = {
+  //   responsive: true,
+  //   plugins: {
+  //     legend: {
+  //       position: 'bottom' as const,
+  //     },
+  //     tooltip: {
+  //       callbacks: {
+  //         label: function(context) {
+  //           const label = context.label || '';
+  //           const value = context.raw || 0;
+  //           return `${label}: ₹${Number(value).toFixed(2)}`;
+  //         }
+  //       }
+  //     }
+  //   },
+  // }
   
   const barOptions = {
     responsive: true,
@@ -259,8 +259,8 @@ const SalesReport: React.FC = (): React.ReactElement => {
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E]"
               >
                 <option value="today">Today</option>
-                <option value="yesterday">Yesterday</option>
-                <option value="all">All Time</option>
+                {/* <option value="yesterday">Yesterday</option> */}
+                {/* <option value="all">All Time</option> */}
               </select>
             </div>
             
@@ -278,7 +278,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
               </select>
             </div>
             
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
               <input
                 type="date"
@@ -296,7 +296,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#DC004E] focus:border-[#DC004E]"
               />
-            </div>
+            </div> */}
           </div>
           
           <div className="mt-4">
@@ -328,7 +328,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
         {/* Summary Cards */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
+            {/* <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Total Sales</p>
@@ -343,7 +343,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
               <div className="mt-2">
                 <p className="text-sm text-gray-500">Transactions: {summary.transactionCount}</p>
               </div>
-            </div>
+            </div> */}
             
             <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-green-500">
               <div className="flex items-center justify-between">
@@ -375,7 +375,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
                 </div>
               </div>
               <div className="mt-2">
-                <p className="text-sm text-gray-500">Final Sales: ₹{summary.finalSales.toFixed(2)}</p>
+                {/* <p className="text-sm text-gray-500">Final Sales: ₹{summary.finalSales.toFixed(2)}</p> */}
               </div>
             </div>
           </div>

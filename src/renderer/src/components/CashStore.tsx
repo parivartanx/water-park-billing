@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import { useCashManagementStore } from '../stores/cash-management-store'
 import { CashManagement } from '../../../main/types/cash-management'
@@ -52,6 +52,8 @@ const CashStore: React.FC = () => {
     if ((startDate && endDate)) {
       await getBillingHistories(startDate.toISOString(), endDate.toISOString(), 'all', '', accessToken)
       const totalCash = unifiedBills?.reduce((acc: number, bill: UnifiedBilling) => acc + (bill.cashPaid || 0), 0) || 0
+      const totalRefunds = unifiedBills?.reduce((acc: number, bill: UnifiedBilling) => acc + (bill.refundAmount || 0), 0) || 0
+      console.log(totalCash, totalRefunds)
       setTotalCashAmount(totalCash)
     }
   }, [getBillingHistories])
@@ -72,11 +74,29 @@ const CashStore: React.FC = () => {
     getCashHistory(startDate.toISOString(), endDate.toISOString(), accessToken);
   }, [getCashHistory]);
 
+  /// calculate total refund amount
+  const totalRefundAmount = useMemo(() => {
+    let total = 0
+    for(let i = 0; i < unifiedBills?.length; i++) {
+      if(unifiedBills[i].isReturned) {
+        /// loop through costumes and lockers
+        for(let j = 0; j < unifiedBills[i].costumes?.length; j++) {
+          total += unifiedBills[i].costumes[j].refundPrice || 0
+        }
+        for(let j = 0; j < unifiedBills[i].lockers?.length; j++) {
+          total += unifiedBills[i].lockers[j].refundPrice || 0
+        }
+      }
+    }
+    return total
+  }, [unifiedBills])
+
   // Calculate available cash whenever cashHistory or totalCashAmount changes
   useEffect(() => {
     const todayWithdrawals = cashHistory.reduce((acc: number, cash: CashManagement) => acc + (cash.amount || 0), 0);
-    setAvailableCash(totalCashAmount - todayWithdrawals);
-  }, [cashHistory, totalCashAmount]);
+    const totalRefunds = totalRefundAmount;
+    setAvailableCash(totalCashAmount - todayWithdrawals - totalRefunds);
+  }, [cashHistory, totalCashAmount, totalRefundAmount]);
 
 
   const handleInputChange = (
@@ -173,7 +193,7 @@ const CashStore: React.FC = () => {
               {availableCash.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              Cash available for withdrawal
+              Cash available for withdrawal (after refunds)
             </p>
           </div>
         </div>

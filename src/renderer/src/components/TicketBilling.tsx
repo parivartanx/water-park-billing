@@ -73,7 +73,7 @@ const TicketBilling: React.FC = () => {
   }
 
   const subtotal = selectedTickets.reduce(
-    (sum, ticket) => sum + ticket.price * ticket.quantity,
+    (sum, ticket) => sum + (ticket.price || 0)   * ticket.quantity,
     0
   )
   const discountAmount =
