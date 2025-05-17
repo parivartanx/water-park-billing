@@ -1,4 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { setupAutoUpdater, checkForUpdates } from './updater'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -6,7 +7,7 @@ import { login } from './controllers/auth.controller'
 import { getTickets, getTicketById, saveTicketBilling } from './controllers/ticket.controller'
 import { getLockerBillingByCustomerPhone, getLockers, getLockerStock, refundLockerBilling } from './controllers/locker.controller'
 import { createLockerBilling } from './controllers/locker.controller'
-import { createV2CostumeStock, getCostumeStock, deleteCostumeStock, createCostumeBilling, getCostumeBillingByCustomerPhone, refundCostumeBilling } from './controllers/costume.controller'
+import { getCostumeStock, deleteCostumeStock, createCostumeBilling, getCostumeBillingByCustomerPhone, refundCostumeBilling, createV2CostumeStock, getCategoryNameList } from './controllers/costume.controller'
 import { billingHistories, recentBillingHistories } from './controllers/history.controller'
 import { getEmployeeById } from './controllers/employee.controller'
 import { createUnifiedBilling, getUnifiedBillingByCustomerPhone, getAllUnifiedBillings, refundUnifiedBilling } from './controllers/unified-billing.controller'
@@ -35,6 +36,11 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    
+    // Initialize auto-updater (only in production)
+    if (!is.dev) {
+      setupAutoUpdater(mainWindow)
+    }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -72,7 +78,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.parivartanx.waterparkbilling')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -182,6 +188,16 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error getting costume stock:', error)
       return { error: 'Failed to fetch costume stock' }
+    }
+  })
+
+  ipcMain.handle('get-category-list', async () => {
+    try {
+      console.log('Get category list handler called')
+      return await getCategoryNameList()
+    } catch (error) {
+      console.error('Error getting category list:', error)
+      return { success: false, error: 'Failed to fetch category list', categories: [] }
     }
   })
 
@@ -331,10 +347,26 @@ app.whenReady().then(() => {
 
   ipcMain.handle('refund-unified-billing-by-costume-and-locker-ids', async (_event, args) => {
     try {
-      return await refundUnifiedBillingByCostumeAndLockerIds(args.billingId, args.lockerIds, args.costumeIds, args.access_token)
+      return await refundUnifiedBillingByCostumeAndLockerIds(args.id, args.costumeIds, args.lockerIds, args.access_token)
     } catch (error) {
       console.error('Error refunding unified billing by costume and locker ids:', error)
-      return { error: 'Failed to refund unified billing by costume and locker ids' }
+      return { error: 'Failed to process unified billing refund by costume and locker ids' }
+    }
+  })
+
+  // Auto-update handler
+  ipcMain.handle('check-for-updates', () => {
+    try {
+      console.log('Manual update check requested')
+      if (!is.dev) {
+        checkForUpdates()
+        return { success: true, message: 'Checking for updates...' }
+      } else {
+        return { success: false, message: 'Update checking is disabled in development mode' }
+      }
+    } catch (error) {
+      console.error('Error checking for updates:', error)
+      return { error: 'Failed to check for updates' }
     }
   })
 

@@ -9,7 +9,8 @@ export const getTickets = async (): Promise<Ticket[]> => {
     try {
         const tickets = await ticketDB.find({
             selector: {
-                status: { $in: ["active","Active"] }
+                status: { $in: ["active","Active"] },
+                isDeleted: false
             }
         })
         return tickets.docs as unknown as Ticket[]
@@ -24,7 +25,8 @@ export const getTicketById = async (id: string): Promise<Ticket[] | null> => {
     try {
         const ticket = await ticketDB.find({
             selector: {
-                _id: id 
+                _id: id,
+                isDeleted: false 
             }
         })
         return ticket.docs as unknown as Ticket[]

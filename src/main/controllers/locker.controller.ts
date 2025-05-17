@@ -19,7 +19,8 @@ export const getLockers = async () => {
     try {
         const lockers = await lockerDB.find({
             selector: {
-                status: { $in: ["available", "Available"] }
+                status: { $in: ["available", "Available"] },
+                isDeleted: false
             }
         }) as PouchDB.Find.FindResponse<Locker>
         return lockers.docs
@@ -33,7 +34,9 @@ export const getLockers = async () => {
 export const getLockerStock = async () => {
     try {
         const lockers = await lockerDB.find({
-            selector: {}
+            selector: {
+                isDeleted: false
+            }
         }) as PouchDB.Find.FindResponse<Locker>
 
         // total lockers
@@ -70,7 +73,8 @@ export const createLockerBilling = async (lockerBilling: LockerBilling, access_t
 
         const lockers = await lockerDB.find({
             selector: {
-                _id: { $in: lockerBilling.lockerIds }
+                _id: { $in: lockerBilling.lockerIds },
+                isDeleted: false
             }
         }) as PouchDB.Find.FindResponse<Locker>
         if(!lockers.docs.length) {
@@ -109,6 +113,7 @@ export async function getLockerBillingByCustomerPhone(customerPhone: string, acc
         const lockerBilling = await lockerBillingDB.find({
             selector: {
                 mobileNumber: customerPhone,
+                isDeleted: false
             }
         }) as PouchDB.Find.FindResponse<LockerBilling>;
 
@@ -127,7 +132,8 @@ export async function getLockerBillingByCustomerPhone(customerPhone: string, acc
         
         const lockers = await lockerDB.find({
             selector: {
-                _id: { $in: lockerIds }
+                _id: { $in: lockerIds },
+                isDeleted: false
             }
         }) as PouchDB.Find.FindResponse<Locker>;
         
@@ -166,7 +172,8 @@ export const refundLockerBilling = async (lockerBillingId: string, access_token:
         /// change locker status to available
         const lockers = await lockerDB.find({
             selector: {
-                _id: { $in: lockerBilling.lockerIds }
+                _id: { $in: lockerBilling.lockerIds },
+                isDeleted: false
             }
         }) as PouchDB.Find.FindResponse<Locker>;
         

@@ -14,7 +14,6 @@ import { FaTshirt } from 'react-icons/fa'
 import { useTicketStore } from '../stores/ticket.store'
 import { useLockerStore } from '../stores/lockerStore'
 import { useCostumeStockStore } from '../stores/costumeStore'
-import { CostumeCategory } from '../utils/enums'
 import toast from 'react-hot-toast'
 import PaymentDetail from './PaymentDetail'
 
@@ -63,12 +62,15 @@ const AllBilling: React.FC = () => {
   const {
     costumeStock,
     loading: costumeLoading,
-    getCostumeStock
+    getCostumeStock,
+    categories,
+    categoriesLoading,
+    getCategoryList
     // createCostumeBilling
   } = useCostumeStockStore()
 
   // Filter states
-  const [selectedCostumeCategory, setSelectedCostumeCategory] = useState<CostumeCategory>(CostumeCategory.MALE)
+  const [selectedCostumeCategory, setSelectedCostumeCategory] = useState<string>('MALE')
   const [lockerSearchTerm, setLockerSearchTerm] = useState('')
   const [costumeQuantity, setCostumeQuantity] = useState(1)
   const [ticketQuantity, setTicketQuantity] = useState(1)
@@ -94,7 +96,15 @@ const AllBilling: React.FC = () => {
     getTickets()
     getLockers()
     getCostumeStock()
-  }, [getTickets, getLockers, getCostumeStock])
+    getCategoryList()
+  }, [getTickets, getLockers, getCostumeStock, getCategoryList])
+  
+  // Set the first category as default when categories are loaded
+  useEffect(() => {
+    if (categories.length > 0 && !categoriesLoading) {
+      setSelectedCostumeCategory(categories[0])
+    }
+  }, [categories, categoriesLoading])
 
   // Filter lockers based on search term
   const filteredLockers = lockers.filter(
@@ -630,50 +640,31 @@ const AllBilling: React.FC = () => {
                 <div className="p-6 overflow-y-auto flex-grow">
                   <div className="mb-6">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Category</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        onClick={() => setSelectedCostumeCategory(CostumeCategory.MALE)}
-                        className={`py-3 rounded-md text-center font-medium ${
-                          selectedCostumeCategory === CostumeCategory.MALE
-                            ? 'bg-[#DC004E] text-white'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        MALE
-                      </button>
-                      <button
-                        onClick={() => setSelectedCostumeCategory(CostumeCategory.FEMALE)}
-                        className={`py-3 rounded-md text-center font-medium ${
-                          selectedCostumeCategory === CostumeCategory.FEMALE
-                            ? 'bg-[#DC004E] text-white'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        FEMALE
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedCostumeCategory(CostumeCategory.FEMALE_DRESS)}
-                        className={`py-3 rounded-md text-center font-medium ${
-                          selectedCostumeCategory === CostumeCategory.FEMALE_DRESS
-                            ? 'bg-[#DC004E] text-white'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        FEMALE_DRESS
-                      </button>
-                      <button
-                        onClick={() => setSelectedCostumeCategory(CostumeCategory.FEMALE_FULLPANT)}
-                        className={`py-3 rounded-md text-center font-medium ${
-                          selectedCostumeCategory === CostumeCategory.FEMALE_FULLPANT
-                            ? 'bg-[#DC004E] text-white'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        FEMALE_FULLPANT
-                      </button>
-
-                    </div>
+                    {categoriesLoading ? (
+                      <div className="flex justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#DC004E]"></div>
+                      </div>
+                    ) : categories.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">
+                        No categories available
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        {categories.map((category) => (
+                          <button
+                            key={category}
+                            onClick={() => setSelectedCostumeCategory(category)}
+                            className={`py-3 rounded-md text-center font-medium ${
+                              selectedCostumeCategory === category
+                                ? 'bg-[#DC004E] text-white'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {category}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Display costume details */}

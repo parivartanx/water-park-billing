@@ -6,7 +6,7 @@ const validChannels = ['login', 'logout', 'get-tickets', 'get-ticket-by-id', 'cr
   'get-billing-histories', 'get-recent-billing-histories', 'get-costume-billing-by-customer-phone', 'refund-costume-billing',
   'get-locker-billing-by-customer-phone', 'refund-locker-billing', 'get-employee-by-id', 'create-unified-billing', 'get-unified-billing-by-customer-phone', 'refund-unified-billing',
   'get-all-unified-billings', 'set-cash-management', 'get-cash-management-history', 'get-last-unified-billing-by-customer-phone',
-  'refund-unified-billing-by-costume-and-locker-ids'
+  'refund-unified-billing-by-costume-and-locker-ids', 'get-category-list', 'check-for-updates'
 ] as const
 export type ValidChannel = typeof validChannels[number]
 
@@ -46,6 +46,15 @@ if (process.contextIsolated) {
             return ipcRenderer.invoke(channel, ...args)
           }
           return Promise.reject(new Error(`Invalid channel: ${channel}`))
+        },
+        on: (channel: string, listener: (...args: unknown[]) => void) => {
+          if (channel === 'update-status') {
+            ipcRenderer.on(channel, (_, ...args) => listener(...args))
+            return () => {
+              ipcRenderer.removeListener(channel, listener)
+            }
+          }
+          return undefined
         }
       }
     })

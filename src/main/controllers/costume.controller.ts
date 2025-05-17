@@ -9,7 +9,9 @@ import { v2CostumeStockDB } from "../db";
 export const getCostumeStock = async () => {
     try {
         const response = await v2CostumeStockDB.find({
-            selector: {}
+            selector: {
+                isDeleted:false
+            }
         }) as PouchDB.Find.FindResponse<CostumeStock>
         return { success: true, data: response.docs }
     } catch (error) {
@@ -293,6 +295,36 @@ export const createV2CostumeStock = async (costumeStock: V2CostumeStock, access_
     } catch (error) {
         console.log(error)
         return { error: 'Failed to create v2CostumeStock' }
+    }
+
+   
+}
+
+/// get category list from v2CostumeStock
+export const getCategoryNameList = async () => {
+    try {
+        const categoryList = await v2CostumeStockDB.find({
+            selector: {
+                category: { $exists: true },
+                isDeleted: false
+            }
+        }) as PouchDB.Find.FindResponse<V2CostumeStock>
+        
+        // Extract unique categories
+        const categories = categoryList.docs.map(doc => doc.category)
+        const uniqueCategories = [...new Set(categories)]
+        
+        return {
+            success: true,
+            categories: uniqueCategories
+        }
+    } catch (error) {
+        console.log(error)
+        return {
+            success: false,
+            error: 'Failed to fetch category list',
+            categories: []
+        }
     }
 }
 

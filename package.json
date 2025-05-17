@@ -1,10 +1,10 @@
 {
   "name": "water-park-billing",
-  "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "version": "1.0.1",
+  "description": "Water Park Billing System",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "parivartanx.com",
+  "homepage": "https://parivartanx.com",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -32,6 +32,7 @@
     "chart.js": "^4.4.8",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
+    "electron-log": "^5.4.0",
     "electron-updater": "^6.3.9",
     "escpos": "^3.0.0-alpha.6",
     "escpos-usb": "^3.0.0-alpha.4",

@@ -17,6 +17,13 @@ interface CostumeStockResponse {
   costumeStock?: V2CostumeStock[]
 }
 
+// Define response type for category list operations
+interface CategoryListResponse {
+  success?: boolean
+  error?: string
+  categories?: string[]
+}
+
 // Define response type for costume billing operations
 interface CostumeBillingResponse {
   success?: boolean
@@ -34,7 +41,10 @@ export interface CostumeStore {
   loading: boolean
   error: string | null
   costumeStock: V2CostumeStock[]
+  categories: string[]
+  categoriesLoading: boolean
   getCostumeStock: () => Promise<void>
+  getCategoryList: () => Promise<string[]>
   createCostumeStock: (costumeStock: V2CostumeStock, access_token: string) => Promise<void>
   createCostumeBilling: (costumeBilling: CostumeBill, access_token: string) => Promise<CostumeBillingResponse>
 }
@@ -43,13 +53,39 @@ export const initialCostumeStore: CostumeStore = {
   loading: false,
   error: null,
   costumeStock: [],
+  categories: [],
+  categoriesLoading: false,
   getCostumeStock: async () => {},
+  getCategoryList: async () => [],
   createCostumeStock: async () => {},
   createCostumeBilling: async () => ({ success: false } as CostumeBillingResponse)
 }
 
 export const useCostumeStockStore = create<CostumeStore>()((set) => ({
   ...initialCostumeStore,
+  getCategoryList: async () => {
+    try {
+      set({ categoriesLoading: true, error: null })
+      
+      const response = await window.electron.ipcRenderer.invoke('get-category-list' as ValidChannel) as CategoryListResponse
+      
+      if (response.error) {
+        set({ error: response.error, categoriesLoading: false })
+        return []
+      }
+      
+      const categories = response.categories || []
+      set({ categories, categoriesLoading: false })
+      return categories
+    } catch (error) {
+      console.error('Error fetching category list:', error)
+      set({ 
+        error: 'Failed to fetch category list', 
+        categoriesLoading: false 
+      })
+      return []
+    }
+  },
   getCostumeStock: async () => {
     try {
       set({ loading: true, error: null })
