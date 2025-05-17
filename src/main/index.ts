@@ -347,7 +347,8 @@ app.whenReady().then(() => {
 
   ipcMain.handle('refund-unified-billing-by-costume-and-locker-ids', async (_event, args) => {
     try {
-      return await refundUnifiedBillingByCostumeAndLockerIds(args.id, args.costumeIds, args.lockerIds, args.access_token)
+      console.log('Refund unified billing by costume and locker ids handler called with args:', args)
+      return await refundUnifiedBillingByCostumeAndLockerIds(args.billingId, args.costumeIds, args.lockerIds, args.access_token)
     } catch (error) {
       console.error('Error refunding unified billing by costume and locker ids:', error)
       return { error: 'Failed to process unified billing refund by costume and locker ids' }

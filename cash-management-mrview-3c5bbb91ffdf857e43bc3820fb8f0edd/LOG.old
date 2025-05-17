@@ -1,5 +1,5 @@
-2025/05/18-03:15:53.477 3fb4 Recovering log #15
-2025/05/18-03:15:53.477 3fb4 Level-0 table #18: started
-2025/05/18-03:15:53.480 3fb4 Level-0 table #18: 237 bytes OK
-2025/05/18-03:15:53.489 3fb4 Delete type=0 #15
-2025/05/18-03:15:53.492 3fb4 Delete type=3 #13
+2025/05/18-03:43:43.903 2cc8 Recovering log #19
+2025/05/18-03:43:43.903 2cc8 Level-0 table #21: started
+2025/05/18-03:43:43.907 2cc8 Level-0 table #21: 237 bytes OK
+2025/05/18-03:43:43.913 2cc8 Delete type=0 #19
+2025/05/18-03:43:43.914 2cc8 Delete type=3 #17

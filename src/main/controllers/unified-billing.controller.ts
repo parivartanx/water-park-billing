@@ -292,6 +292,8 @@ export const refundUnifiedBillingByCostumeAndLockerIds = async (billingId: strin
       return { success: false, error: 'Billing not found' };
     }
 
+    console.log(billing);
+
     // extract costumeids and quantity
     const costumeIds_qty: {id: string, quantity: number}[] = [];
     for(const costume of billing.costumes) {

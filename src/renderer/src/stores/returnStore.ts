@@ -17,7 +17,7 @@ export const useReturnStore = create<ReturnStore>((set) => ({
   loading:false,
   error:null,
   success:null,
-  returnBillingCostumeAndLocker: async (billingId, lockerIds, costumeIds, access_token) => {
+  returnBillingCostumeAndLocker: async (billingId, costumeIds,lockerIds, access_token) => {
     try {
       set({loading:true,error:null,success:null})
     const result = await window.electron.ipcRenderer.invoke('refund-unified-billing-by-costume-and-locker-ids', { billingId, lockerIds, costumeIds, access_token }) as ReturnResponse
