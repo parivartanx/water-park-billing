@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, ReactNode } from 'react'
 import { AuthContext } from './AuthTypes'
+import { toast } from 'react-hot-toast'
 
 export const AuthProvider = ({
   children
@@ -18,6 +19,58 @@ export const AuthProvider = ({
 
     if (storedAuth && storedRefreshToken) {
       setIsAuthenticated(true)
+    }
+
+    // Check for updates when app starts
+    checkForUpdates()
+  }, [])
+
+  // Function to check for updates
+  const checkForUpdates = async (): Promise<void> => {
+    try {
+      // Type assertion to ensure 'check-for-updates' is recognized as a valid channel
+      const result = await window.electron.ipcRenderer.invoke('check-for-updates' as any)
+      const updateResult = result as { error?: string; success?: boolean; message?: string }
+      
+      if (updateResult.error) {
+        console.error('Error checking for updates:', updateResult.error)
+      } else {
+        console.log('Update check result:', updateResult)
+      }
+    } catch (error) {
+      console.error('Failed to check for updates:', error)
+    }
+  }
+
+  // Listen for update status notifications
+  useEffect(() => {
+    // The 'on' method is available in the preload script but needs type assertion
+    const electronIpcRenderer = window.electron.ipcRenderer as any
+    
+    // Type for update status
+    type UpdateStatus = {
+      status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
+      version?: string;
+      percent?: number;
+      error?: string;
+    }
+    
+    const removeListener = electronIpcRenderer.on?.('update-status', (status: UpdateStatus) => {
+      console.log('Update status:', status)
+      
+      if (status.status === 'available' && status.version) {
+        toast.success(`Update v${status.version} available and downloading...`)
+      } else if (status.status === 'downloaded' && status.version) {
+        toast.success(`Update v${status.version} ready to install on restart`)
+      } else if (status.status === 'error' && status.error) {
+        toast.error(`Update error: ${status.error}`)
+      }
+    })
+
+    return () => {
+      if (typeof removeListener === 'function') {
+        removeListener()
+      }
     }
   }, [])
 
