@@ -1,8 +1,6 @@
-import { dialog, BrowserWindow, app } from 'electron'
+import { dialog, BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
-import path from 'path'
-import fs from 'fs'
 
 // Configure logging
 log.transports.file.level = 'info'
@@ -10,37 +8,17 @@ autoUpdater.logger = log
 autoUpdater.autoDownload = true
 autoUpdater.autoInstallOnAppQuit = true
 
-// GitHub token configuration
-interface UpdaterConfig {
-  githubToken?: string;
-}
+// No need for token configuration since the repository is public
 
-// Load GitHub token from config file if it exists
-function loadUpdaterConfig(): UpdaterConfig {
-  try {
-    const configPath = path.join(app.getPath('userData'), 'updater-config.json')
-    if (fs.existsSync(configPath)) {
-      const configData = fs.readFileSync(configPath, 'utf8')
-      return JSON.parse(configData)
-    }
-  } catch (error) {
-    log.error('Error loading updater config:', error)
-  }
-  return {}
-}
-
-// Set GitHub token for private repository access
-const config = loadUpdaterConfig()
-if (config.githubToken) {
-  log.info('Using GitHub token for updates')
-  autoUpdater.setFeedURL({
-    provider: 'github',
-    owner: 'parivartanx',
-    repo: 'water-park-billing',
-    private: true,
-    token: config.githubToken
-  })
-}
+// Since the repository is now public, we don't need a token
+log.info('Configuring auto-updater for public repository')
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'parivartanx',
+  repo: 'water-park-billing',
+  private: false,
+  releaseType: 'release'
+})
 
 export function setupAutoUpdater(mainWindow: BrowserWindow): void {
   // Check for updates immediately when the app starts

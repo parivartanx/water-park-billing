@@ -1,6 +1,6 @@
 {
   "name": "water-park-billing",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "Water Park Billing System",
   "main": "./out/main/index.js",
   "author": "parivartanx.com",
@@ -122,7 +122,7 @@
         "provider": "github",
         "owner": "parivartanx",
         "repo": "water-park-billing",
-        "private": true,
+        "private": false,
         "releaseType": "release"
       }
     ]
