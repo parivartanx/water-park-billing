@@ -102,7 +102,6 @@ const SalesReport: React.FC = (): React.ReactElement => {
       return false
     })
   }, [unifiedBills, filterType])
-
   // Calculate summary totals
   const summary = useMemo(() => {
     const result = {
@@ -110,6 +109,9 @@ const SalesReport: React.FC = (): React.ReactElement => {
       cashAmount: 0,
       onlineAmount: 0,
       refundAmount: 0,
+      pendingRefundAmount: 0,
+      completedRefundAmount: 0,
+      totalRefundableAmount: 0,
       finalSales: 0,
       ticketCount: 0,
       lockerCount: 0,
@@ -125,27 +127,23 @@ const SalesReport: React.FC = (): React.ReactElement => {
       result.totalAmount += bill.total || 0
       result.cashAmount += bill.cashPaid || 0
       result.onlineAmount += bill.onlinePaid || 0
+     
       
-      // Calculate refund amount
-      if (bill.isReturned) {
-        // Add the bill's overall refund amount
-        result.refundAmount += bill.refundAmount || 0
-        
-        // Add refund amounts from lockers if they exist
-        if (bill.lockers && bill.lockers.length > 0) {
-          bill.lockers.forEach(locker => {
-            result.refundAmount += locker.refundPrice || 0
-          })
+      // Calculate total refundable amount for today's transactions
+      for(const locker of bill.lockers || []) {
+        if(bill.isReturned){
+          result.completedRefundAmount += locker.refundPrice || 0
+
         }
-        
-        // Add refund amounts from costumes if they exist
-        if (bill.costumes && bill.costumes.length > 0) {
-          bill.costumes.forEach(costume => {
-            result.refundAmount += costume.refundPrice || 0
-          })
-        }
+        result.totalRefundableAmount += locker.refundPrice || 0
       }
-      
+      for(const costume of bill.costumes || []) {
+        if(bill.isReturned){
+          result.completedRefundAmount += costume.refundPrice || 0
+        }
+        result.totalRefundableAmount += costume.refundPrice || 0
+      }
+
       // Count items and their amounts
       if (bill.tickets && bill.tickets.length > 0) {
         bill.tickets.forEach(ticket => {
@@ -171,6 +169,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
     
     // Calculate final sales (total minus refunds)
     result.finalSales = result.totalAmount - result.refundAmount
+    result.pendingRefundAmount = result.totalRefundableAmount - result.completedRefundAmount
     
     return result
   }, [filteredBills])
@@ -323,9 +322,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
           <div className="bg-red-50 text-red-800 p-4 rounded-lg mb-6">
             <p>{error}</p>
           </div>
-        )}
-
-        {/* Summary Cards */}
+        )}        {/* Summary Cards */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
@@ -362,11 +359,28 @@ const SalesReport: React.FC = (): React.ReactElement => {
               </div>
             </div>
             
+            <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-yellow-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Pending Refunds</p>
+                  <p className="text-2xl font-bold text-gray-800">₹{summary.pendingRefundAmount.toFixed(2)}</p>
+                </div>
+                <div className="p-3 bg-yellow-100 rounded-full">
+                  <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">Total Refundable: ₹{summary.totalRefundableAmount.toFixed(2)}</p>
+              </div>
+            </div>
+            
             <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-red-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Refunds</p>
-                  <p className="text-2xl font-bold text-gray-800">₹{summary.refundAmount.toFixed(2)}</p>
+                  <p className="text-sm text-gray-500">Completed Refunds</p>
+                  <p className="text-2xl font-bold text-gray-800">₹{summary.completedRefundAmount.toFixed(2)}</p>
                 </div>
                 <div className="p-3 bg-red-100 rounded-full">
                   <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,7 +389,57 @@ const SalesReport: React.FC = (): React.ReactElement => {
                 </div>
               </div>
               <div className="mt-2">
-                {/* <p className="text-sm text-gray-500">Final Sales: ₹{summary.finalSales.toFixed(2)}</p> */}
+                <p className="text-sm text-gray-500">Total Refunds: ₹{summary.refundAmount.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Refund Summary */}
+        {!loading && !error && filteredBills.length > 0 && (
+          <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold">Refund Summary</h3>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-md font-medium mb-4 text-gray-700">Today's Refund Status</h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Pending Refunds:</span>
+                      <span className="font-semibold text-yellow-600">₹{summary.pendingRefundAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Completed Refunds:</span>
+                      <span className="font-semibold text-green-600">₹{summary.completedRefundAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <span className="text-gray-700 font-medium">Total Refunds:</span>
+                      <span className="font-bold text-gray-800">₹{summary.refundAmount.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="text-md font-medium mb-4 text-gray-700">Refundable Transactions</h4>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Total Refundable Amount:</span>
+                      <span className="font-semibold text-blue-600">₹{summary.totalRefundableAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="mt-6">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${Math.min(100, (summary.pendingRefundAmount / (summary.totalRefundableAmount || 1)) * 100)}%` }}></div>
+                      </div>
+                      <div className="flex justify-between mt-2 text-xs text-gray-500">
+                        <span>0%</span>
+                        <span>Pending Refunds: {summary.totalRefundableAmount ? ((summary.pendingRefundAmount / summary.totalRefundableAmount) * 100).toFixed(1) : 0}%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -452,8 +516,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
               <h3 className="text-lg font-semibold">Recent Transactions</h3>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200">                <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
@@ -461,6 +524,7 @@ const SalesReport: React.FC = (): React.ReactElement => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Refund Status</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -511,6 +575,24 @@ const SalesReport: React.FC = (): React.ReactElement => {
                         ) : (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             Completed
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {bill.isReturned && (
+                          bill.isReturned ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Completed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Pending
+                            </span>
+                          )
+                        )}
+                        { (bill.costumes.length > 0 || bill.lockers.length > 0 || bill.costumes.length > 0) && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Refundable
                           </span>
                         )}
                       </td>

@@ -17,30 +17,9 @@ export const AuthProvider = ({
 
     // console.log("Auth provider called with auth: ", storedAuth, " and refresh token: ", storedRefreshToken)
 
-    if (storedAuth && storedRefreshToken) {
-      setIsAuthenticated(true)
+    if (storedAuth && storedRefreshToken) {    setIsAuthenticated(true)
     }
-
-    // Check for updates when app starts
-    checkForUpdates()
   }, [])
-
-  // Function to check for updates
-  const checkForUpdates = async (): Promise<void> => {
-    try {
-      // Type assertion to ensure 'check-for-updates' is recognized as a valid channel
-      const result = await window.electron.ipcRenderer.invoke('check-for-updates' as any)
-      const updateResult = result as { error?: string; success?: boolean; message?: string }
-      
-      if (updateResult.error) {
-        console.error('Error checking for updates:', updateResult.error)
-      } else {
-        console.log('Update check result:', updateResult)
-      }
-    } catch (error) {
-      console.error('Failed to check for updates:', error)
-    }
-  }
 
   // Listen for update status notifications
   useEffect(() => {

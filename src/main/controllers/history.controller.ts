@@ -106,15 +106,20 @@ export const recentBillingHistories = async (limit: number, access_token: string
             return { error: 'Invalid access token' };
         }
         
-        // Get date from 365 days ago to ensure we get some recent records
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-        const oneYearAgoStr = oneYearAgo.toISOString();
+        // Get today's date at midnight (start of day)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString();
+        
+        // Get tomorrow's date at midnight (for end of range)
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString();
 
-        // Get recent unified bills
+        // Get today's unified bills
         const unifiedBills = await unifiedBillingDB.find({
             selector: {
-                createdAt: { $gte: oneYearAgoStr },
+                createdAt: { $gte: todayStr, $lt: tomorrowStr },
                 createdBy: token.id
             },
             limit: limit
@@ -127,11 +132,28 @@ export const recentBillingHistories = async (limit: number, access_token: string
                 const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
                 return dateB - dateA;
             });
+            
+            // Format dates to remove time part (keep only YYYY-MM-DD)
+            unifiedBills.docs = unifiedBills.docs.map(bill => {
+                if (bill.createdAt) {
+                    // Create a new date object from the ISO string
+                    const date = new Date(bill.createdAt);
+                    // Format to YYYY-MM-DD
+                    const formattedDate = date.toISOString().split('T')[0];
+                    
+                    // Return a new object with formatted date
+                    return {
+                        ...bill,
+                        createdAt: formattedDate
+                    };
+                }
+                return bill;
+            });
         }
         
         return { unifiedBills: unifiedBills.docs || [] };
     } catch (error) {
-        console.error('Error getting recent billing histories:', error);
-        return { error: 'Failed to get recent billing histories' };
+        console.error('Error getting today\'s billing histories:', error);
+        return { error: 'Failed to get today\'s billing histories' };
     }
 }

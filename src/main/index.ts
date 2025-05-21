@@ -1,5 +1,4 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { setupAutoUpdater, checkForUpdates } from './updater'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -33,14 +32,8 @@ function createWindow(): void {
       devTools: true
     }
   })
-
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    
-    // Initialize auto-updater (only in production)
-    if (!is.dev) {
-      setupAutoUpdater(mainWindow)
-    }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -354,23 +347,6 @@ app.whenReady().then(() => {
       return { error: 'Failed to process unified billing refund by costume and locker ids' }
     }
   })
-
-  // Auto-update handler
-  ipcMain.handle('check-for-updates', () => {
-    try {
-      console.log('Manual update check requested')
-      if (!is.dev) {
-        checkForUpdates()
-        return { success: true, message: 'Checking for updates...' }
-      } else {
-        return { success: false, message: 'Update checking is disabled in development mode' }
-      }
-    } catch (error) {
-      console.error('Error checking for updates:', error)
-      return { error: 'Failed to check for updates' }
-    }
-  })
-
   // 
   createWindow()
 

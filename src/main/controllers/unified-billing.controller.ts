@@ -231,7 +231,8 @@ export const getLastUnifiedBillingByCustomerPhoneForRefund = async (customerPhon
     const result = await unifiedBillingDB.find({
       selector: {
         customerNumber: customerPhone,
-        isReturned: false
+        isReturned: false,
+        createdBy: token.id
       }
     }) as PouchDB.Find.FindResponse<UnifiedBilling>;
 

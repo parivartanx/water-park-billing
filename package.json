@@ -110,21 +110,11 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": false
-    },
-    "linux": {
+    },    "linux": {
       "target": [
         "AppImage"
       ],
       "artifactName": "${productName}-${version}-linux.${ext}"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "parivartanx",
-        "repo": "water-park-billing",
-        "private": false,
-        "releaseType": "release"
-      }
-    ]
+    }
   }
 }
