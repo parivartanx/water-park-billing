@@ -1,0 +1,3 @@
+@echo off
+echo Running build with Administrator privileges...
+PowerShell -Command "Start-Process PowerShell -ArgumentList '-ExecutionPolicy Bypass -File \"%~dp0win-build.ps1\"' -Verb RunAs"

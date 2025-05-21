@@ -1,0 +1,34 @@
+{
+  "appId": "com.parivartanx.waterparkbilling",
+  "productName": "Water Park Billing",
+  "directories": {
+    "buildResources": "build",
+    "output": "dist"
+  },
+  "files": [
+    "out",
+    "resources"
+  ],
+  "win": {
+    "target": ["nsis", "portable"],
+    "artifactName": "${productName}-${version}.${ext}",
+    "publisherName": "parivartanx.com",
+    "sign": false
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "${productName}",
+    "artifactName": "${productName}-${version}-setup.${ext}"
+  },
+  "portable": {
+    "artifactName": "${productName}-${version}-portable.${ext}" 
+  },
+  "forceCodeSigning": false,
+  "asar": true,
+  "electronDownload": {
+    "mirror": "https://npmmirror.com/mirrors/electron/"
+  }
+}

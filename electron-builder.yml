@@ -13,6 +13,12 @@ asarUnpack:
   - resources/**
 win:
   executableName: water-park-billing
+  # Completely disable code signing to avoid symbolic link issues
+  sign: false
+  signDlls: false
+  signingHashAlgorithms: null
+  verifyUpdateCodeSignature: false
+  artifactName: ${productName}-${version}.${ext}
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

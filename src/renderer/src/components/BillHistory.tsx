@@ -515,10 +515,10 @@ const BillHistory: React.FC = (): React.ReactElement => {
                                           <span>{costume.category || 'Costume'}</span>
                                           <span>x{costume.quantity}</span>
                                         </div>
-                                        <div className="flex justify-between text-xs text-gray-500">
-                                          <span>₹{costume.amount} each</span>
-                                          <span>₹{costume.amount * costume.quantity}</span>
-                                        </div>
+                                         <div className="flex justify-between text-xs text-gray-500">
+                                        <span>₹{costume.amount / costume.quantity} each</span>
+                                        <span>₹{costume.amount}</span>
+                                      </div>
                                       </div>
                                     ))}
                                   </div>

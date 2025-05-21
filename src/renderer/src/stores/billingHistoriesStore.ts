@@ -52,7 +52,7 @@ export const useBillingHistoryStore = create<BillingHistoryStore>()(
         try {
           set({ loading: true, error: null });
           const response = await window.electron.ipcRenderer.invoke('get-recent-billing-histories', { limit, access_token });
-          // console.log("Recent booking response ", response);
+          console.log("Recent booking response ", response);
           
           // Type guard to ensure response has the correct structure
           const isValidResponse = (res: unknown): res is {

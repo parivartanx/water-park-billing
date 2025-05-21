@@ -388,9 +388,9 @@ const SalesReport: React.FC = (): React.ReactElement => {
                   </svg>
                 </div>
               </div>
-              <div className="mt-2">
+              {/* <div className="mt-2">
                 <p className="text-sm text-gray-500">Total Refunds: ₹{summary.refundAmount.toFixed(2)}</p>
-              </div>
+              </div> */}
             </div>
           </div>
         )}
@@ -414,10 +414,10 @@ const SalesReport: React.FC = (): React.ReactElement => {
                       <span className="text-gray-600">Completed Refunds:</span>
                       <span className="font-semibold text-green-600">₹{summary.completedRefundAmount.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center pt-2 border-t">
+                    {/* <div className="flex justify-between items-center pt-2 border-t">
                       <span className="text-gray-700 font-medium">Total Refunds:</span>
                       <span className="font-bold text-gray-800">₹{summary.refundAmount.toFixed(2)}</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 

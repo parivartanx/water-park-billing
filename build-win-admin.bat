@@ -1,0 +1,3 @@
+@echo off
+echo Running build with Administrator privileges...
+powershell -Command "Start-Process -Verb RunAs cmd.exe '/c cd /d \"%~dp0\" && npm run build:win && pause'"

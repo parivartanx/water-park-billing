@@ -6,7 +6,7 @@ type ValidChannel = 'login' | 'logout' | 'get-tickets' | 'get-ticket-by-id' | 'c
 | 'create-unified-billing' | 'get-unified-billing-by-customer-phone' | 'refund-unified-billing' | 'get-all-unified-billings'
 | 'set-cash-management' | 'get-cash-management-history' | 'get-last-unified-billing-by-customer-phone'
 | 'refund-unified-billing-by-costume-and-locker-ids' | 'get-category-list' | 'check-for-updates'
-
+| 'get-cash-statistics'
 // Define custom API interface
 interface CustomAPI {
   invoke: (channel: ValidChannel, ...args: unknown[]) => Promise<unknown>

@@ -12,6 +12,7 @@ import { getEmployeeById } from './controllers/employee.controller'
 import { createUnifiedBilling, getUnifiedBillingByCustomerPhone, getAllUnifiedBillings, refundUnifiedBilling } from './controllers/unified-billing.controller'
 import { setCashManagement, getCashManagementHistory } from './controllers/cash-management-controller'
 import { getLastUnifiedBillingByCustomerPhoneForRefund, refundUnifiedBillingByCostumeAndLockerIds } from './controllers/unified-billing.controller'
+import { getCashStatistics } from './controllers/cash-statistics.controller'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const escpos = require('escpos');
@@ -337,7 +338,6 @@ app.whenReady().then(() => {
       return { error: 'Failed to get last unified billing by customer phone' }
     }
   })
-
   ipcMain.handle('refund-unified-billing-by-costume-and-locker-ids', async (_event, args) => {
     try {
       console.log('Refund unified billing by costume and locker ids handler called with args:', args)
@@ -347,6 +347,17 @@ app.whenReady().then(() => {
       return { error: 'Failed to process unified billing refund by costume and locker ids' }
     }
   })
+
+  // Get cash statistics for today or a specific date
+  ipcMain.handle('get-cash-statistics', async (_event, args) => {
+    try {
+      return await getCashStatistics(args.date, args.access_token)
+    } catch (error) {
+      console.error('Error getting cash statistics:', error)
+      return { error: 'Failed to get cash statistics' }
+    }
+  })
+  
   // 
   createWindow()
 

@@ -1,0 +1,24 @@
+{
+  "appId": "com.parivartanx.waterparkbilling",
+  "productName": "Water Park Billing",
+  "directories": {
+    "output": "dist/portable"
+  },
+  "files": [
+    "out",
+    "resources"
+  ],  "win": {
+    "target": "portable",
+    "artifactName": "${productName}-${version}-portable.${ext}",
+    "publisherName": "parivartanx.com",
+    "sign": false
+  },
+  "portable": {
+    "unicode": false,
+    "artifactName": "${productName}-${version}-portable.${ext}"
+  },
+  "asar": true,
+  "electronDownload": {
+    "mirror": "https://npmmirror.com/mirrors/electron/"
+  }
+}

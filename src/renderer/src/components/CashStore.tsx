@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import { useCashManagementStore } from '../stores/cash-management-store'
 import { CashManagement } from '../../../main/types/cash-management'
-import { useBillingHistoryStore } from '../stores/billingHistoriesStore'
-import { UnifiedBilling } from '@renderer/types/unified-billing'
+import { useCashStatisticsStore } from '../stores/cash-statistics-store'
 
 type WithdrawalFormData = Pick<
   CashManagement,
@@ -11,122 +10,94 @@ type WithdrawalFormData = Pick<
 >
 
 const CashStore: React.FC = () => {
-  const { cashHistory, loading, setCashManagement, getCashHistory } =
-    useCashManagementStore()
+  // Get cash management store hooks
+  const { cashHistory, loading: cashLoading, setCashManagement, getCashHistory } =
+    useCashManagementStore();
 
-  const now = new Date();
-  const startDate = new Date(now);
-  startDate.setHours(0, 0, 0, 0); // Set to today at 00:00:00
-  const endDate = new Date(now);
-  endDate.setHours(23, 59, 59, 999); // Set to today at 23:59:59.999
-
+  // Get cash statistics store hooks  
+  const { cashStats, loading: statsLoading, getCashStatistics } = 
+    useCashStatisticsStore();
+  // Get today's date in local timezone without time component
+  const today = new Date().toLocaleDateString('en-CA'); // Uses YYYY-MM-DD format but in local timezone
+  
+  // State for withdrawal form data
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalFormData>({
     withdrawBy: '',
     amount: null,
-    // set today date
-    date: new Date().toISOString().split('T')[0],
+    date: today,
     description: ''
-  })
+  });
 
-  /// usestate of total cash amount
-  const [totalCashAmount, setTotalCashAmount] = useState(0)
+  // Combine loading states
+  const loading = cashLoading || statsLoading;
 
-  const [availableCash, setAvailableCash] = useState(0)
-
-  // Get state and actions from the billing history store
-  const { 
-    unifiedBills, 
-    getBillingHistories,
-    // clearHistories
-  } = useBillingHistoryStore()
-
-  // use callback to get billingHistory and calculate total cash amount
-  const getTotalCashAmount = useCallback(async () => {
+  // Load cash statistics when component mounts
+  const loadCashStatistics = useCallback(async () => {
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken) {
       toast.error('Unauthorized: Access token not found');
       return;
     }
 
-    // Only fetch if we have dates or search query
-    if ((startDate && endDate)) {
-      await getBillingHistories(startDate.toISOString(), endDate.toISOString(), 'all', '', accessToken)
-      const totalCash = unifiedBills?.reduce((acc: number, bill: UnifiedBilling) => acc + (bill.cashPaid || 0), 0) || 0
-      const totalRefunds = unifiedBills?.reduce((acc: number, bill: UnifiedBilling) => acc + (bill.refundAmount || 0), 0) || 0
-      console.log(totalCash, totalRefunds)
-      setTotalCashAmount(totalCash)
-    }
-  }, [getBillingHistories])
-
-  // Fetch billing histories when filters change
+    // Get cash statistics for today
+    await getCashStatistics(today, accessToken);
+  }, [getCashStatistics, today]);
+  
+  // Fetch cash statistics data when the component mounts
   useEffect(() => {
-    getTotalCashAmount()
-  }, [getTotalCashAmount])
+    loadCashStatistics();
+  }, [loadCashStatistics]);
 
-
-  // Fetch cash history for today on mount
+  // Fetch cash withdrawal history for today on mount
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken) {
       toast.error('Failed to retrieve access token');
       return;
     }
-    getCashHistory(startDate.toISOString(), endDate.toISOString(), accessToken);
-  }, [getCashHistory]);
+    
+    // Get cash withdrawal history for today
+    getCashHistory(today, today, accessToken);
+  }, [getCashHistory, today]);
 
-  /// calculate total refund amount
-  const totalRefundAmount = useMemo(() => {
-    let total = 0
-    for(let i = 0; i < unifiedBills?.length; i++) {
-      if(unifiedBills[i].isReturned) {
-        /// loop through costumes and lockers
-        for(let j = 0; j < unifiedBills[i].costumes?.length; j++) {
-          total += unifiedBills[i].costumes[j].refundPrice || 0
-        }
-        for(let j = 0; j < unifiedBills[i].lockers?.length; j++) {
-          total += unifiedBills[i].lockers[j].refundPrice || 0
-        }
-      }
-    }
-    return total
-  }, [unifiedBills])
+  // No need to calculate cash statistics manually - now handled by cash-statistics controller
 
-  // Calculate available cash whenever cashHistory or totalCashAmount changes
-  useEffect(() => {
-    const todayWithdrawals = cashHistory.reduce((acc: number, cash: CashManagement) => acc + (cash.amount || 0), 0);
-    const totalRefunds = totalRefundAmount;
-    setAvailableCash(totalCashAmount - todayWithdrawals - totalRefunds);
-  }, [cashHistory, totalCashAmount, totalRefundAmount]);
-
-
+  // Handle input changes in the withdrawal form
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
+    
+    // Parse the value as a float if it's the amount field
     setWithdrawalData({
       ...withdrawalData,
-      [name]: name === 'amount' ? parseFloat(value) || 0 : value
-    })
+      [name]: name === 'amount' ? parseFloat(value) || null : value
+    });
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    
     try {
-      const accessToken = localStorage.getItem('access_token')
+      // Get access token from local storage
+      const accessToken = localStorage.getItem('access_token');
       if (!accessToken) {
-        toast.error('Failed to retrieve access token')
-        return
+        toast.error('Failed to retrieve access token');
+        return;
       }
 
+      // Validate form data
       if (!withdrawalData.amount) {
-        toast.error('Amount is required')
-        return
+        toast.error('Amount is required');
+        return;      }
+      
+      // Check if sufficient cash is available
+      if (withdrawalData.amount > (cashStats.availableCash || 0)) {
+        toast.error('Insufficient cash available');
+        return;
       }
-      /// check amoun
-      if (withdrawalData.amount > availableCash) {
-        toast.error('Insufficient cash available')
-        return
-      }
+      
+      // Submit withdrawal request
       await setCashManagement(
         {
           withdrawBy: withdrawalData.withdrawBy,
@@ -135,20 +106,27 @@ const CashStore: React.FC = () => {
           description: withdrawalData.description
         },
         accessToken
-      )
-
-      toast.success('Cash withdrawal recorded successfully')
+      );
+      
+      // Show success message
+      toast.success('Cash withdrawal recorded successfully');
+      
+      // Reset form data
       setWithdrawalData({
-        date: new Date().toISOString().split('T')[0],
+        date: today,
         withdrawBy: '',
-        amount: 0,
+        amount: null,
         description: ''
-      })
-      // After successful withdrawal, refresh cash history for today
-      await getCashHistory(startDate.toISOString(), endDate.toISOString(), accessToken)
+      });
+      
+      // Refresh cash history for today
+      await getCashHistory(today, today, accessToken);
+      
+      // Also refresh cash statistics to update available cash calculation
+      await loadCashStatistics();
     } catch (error) {
-      console.error('Error recording withdrawal:', error)
-      toast.error('Failed to record withdrawal')
+      console.error('Error recording withdrawal:', error);
+      toast.error('Failed to record withdrawal');
     }
   }
 
@@ -168,11 +146,10 @@ const CashStore: React.FC = () => {
               </h3>
               <div className="bg-gradient-to-r from-[#DC004E] to-[#A30342] p-3 rounded-full shadow-md">
                 <span className="text-white text-xl">💰</span>
-              </div>
-            </div>
+              </div>            </div>
             <p className="text-4xl font-bold text-gray-800">
               ₹
-              {totalCashAmount.toLocaleString()}
+              {(cashStats.totalCashAmount || 0).toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Total cash collected from all transactions
@@ -190,7 +167,7 @@ const CashStore: React.FC = () => {
             </div>
             <p className="text-4xl font-bold text-gray-800">
               ₹
-              {availableCash.toLocaleString()}
+              {(cashStats.availableCash || 0).toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Cash available for withdrawal (after refunds)
@@ -245,13 +222,7 @@ const CashStore: React.FC = () => {
                 <input
                   type="number"
                   name="amount"
-                  value={withdrawalData.amount ?? ''}
-                  onChange={(e) =>
-                    setWithdrawalData({
-                      ...withdrawalData,
-                      amount: parseFloat(e.target.value) || null
-                    })
-                  }
+                  value={withdrawalData.amount ?? ''}                   onChange={handleInputChange}
                   className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter Amount"
                   min="0"
