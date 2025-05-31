@@ -2,6 +2,7 @@ import { unifiedBillingDB, cashManagementDB } from "../db";
 import { UnifiedBilling } from "../types/billing.types";
 import { CashManagement } from "../types/cash-management";
 import { decodeToken } from "./auth.controller";
+import { todayISTDateTime } from "./ist.controller";
 
 /**
  * CashStatistics interface to hold cash-related statistics
@@ -34,7 +35,7 @@ export const getCashStatistics = async (date?: string, access_token?: string) =>
     }
     
     // Use provided date or default to today in local timezone
-    const localDate = date || new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format in local timezone
+    const localDate = date || todayISTDateTime() // YYYY-MM-DD format in local timezone
     console.log('Local date:', localDate);
     
     // Create start of day in local timezone

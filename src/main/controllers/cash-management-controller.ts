@@ -1,6 +1,7 @@
 import { cashManagementDB } from "../db"
 import { CashManagement } from "../types/cash-management"
 import { decodeToken } from "./auth.controller"
+import { todayISTDateTime } from "./ist.controller"
 
 export const setCashManagement = async (cashManagement: CashManagement,access_token:string) => {
     try {
@@ -8,7 +9,7 @@ export const setCashManagement = async (cashManagement: CashManagement,access_to
         if (!decodedToken) {
             throw new Error('Invalid access token')
         }
-        cashManagement.createdAt = new Date().toISOString()
+        cashManagement.createdAt = todayISTDateTime().toISOString()
         cashManagement.transferById = decodedToken.id
         cashManagement.createdBy = decodedToken.id
         const response = await cashManagementDB.post(cashManagement)
@@ -36,13 +37,13 @@ export const getCashManagementHistory = async (from:string, to:string, access_to
         
         const response = await cashManagementDB.find({
             selector: {
-                date: {
+                createdAt: {
                     $gte: from,
                     $lte: to
                 },
                 transferById: token.id
             },
-            sort: [{ date: 'desc' }]
+            sort: [{ createdAt: 'desc' }]
         })
         
         return response

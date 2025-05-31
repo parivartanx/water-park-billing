@@ -12,7 +12,8 @@ import {
   ChevronDown,
   ChevronUp,
   PackageCheck,
-  BarChart
+  BarChart,
+  CloudUpload
 } from 'lucide-react'
 
 import { useAuthStore } from '../stores/authStore'
@@ -35,6 +36,7 @@ const Sidebar = (): JSX.Element => {
     { icon: BarChart, label: 'Sales Report', path: '/sales-report' },
     { icon: User, label: 'Profile', path: '/profile' },
     { icon: Box, label: 'Cash Store', path: '/cash-store' },
+    { icon: CloudUpload, label: 'Sync to Cloud', path: '/sync' },
   ]
 
   const stockItems = [

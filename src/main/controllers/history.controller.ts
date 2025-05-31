@@ -1,6 +1,7 @@
 import { unifiedBillingDB } from "../db";
 import { UnifiedBilling } from "../types/billing.types";
 import { decodeToken } from "./auth.controller";
+import { todayISTDateTime } from "./ist.controller";
 
 ///ignore linting for type 
 export const billingHistories = async ({from, to, type, searchStr, access_token}) => {
@@ -34,15 +35,21 @@ export const billingHistories = async ({from, to, type, searchStr, access_token}
        }
 
        /// from date 
-       const fromDate = new Date(from).toISOString();
+       const fromDate = todayISTDateTime();
+    //    console.log("From date", fromDate)
        /// to date
-       const toDate = new Date(to).toISOString();
-       
+       const toDate = todayISTDateTime();
+       fromDate.setHours(0, 0, 0, 0); // Set to start of day
+       toDate.setHours(23, 59, 59, 999); // Set to end of day
+        //  console.log("To date", toDate)
+
        // Base selector for date range
        const dateSelector = {
-           createdAt: { $gte: fromDate, $lte: toDate },
+           createdAt: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() },
            createdBy: token.id
        };
+
+    //    console.log("today billing histories", dateSelector)
        
        /// if type === all then get all unified bills
   
@@ -107,7 +114,7 @@ export const recentBillingHistories = async (limit: number, access_token: string
         }
         
         // Get today's date at midnight (start of day)
-        const today = new Date();
+        const today = todayISTDateTime();
         today.setHours(0, 0, 0, 0);
         const todayStr = today.toISOString();
         

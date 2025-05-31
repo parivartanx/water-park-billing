@@ -5,6 +5,7 @@ import { decodeToken } from "./auth.controller";
 import { CostumeBilling } from "../types/costume.billing";
 import { printCostumeBill } from "./print-bill.controller";
 import { v2CostumeStockDB } from "../db";
+import { todayISTDateTime } from "./ist.controller";
 
 export const getCostumeStock = async () => {
     try {
@@ -32,8 +33,8 @@ export const createCostumeStock = async (costumeStock: CostumeStock, access_toke
         }
 
         costumeStock.createdBy = decoded.id
-        costumeStock.createdAt = new Date().toISOString()
-        costumeStock.updatedAt = new Date().toISOString()
+        costumeStock.createdAt = todayISTDateTime().toISOString()
+        costumeStock.updatedAt = todayISTDateTime().toISOString()
 
         ///TODO: check if the costume stock already exists
         const existingCostumeStock = await costumeDB.find({
@@ -136,9 +137,9 @@ export const createCostumeBilling = async (costumeBilling: CostumeBilling, acces
         
 
         costumeBilling.createdBy = decoded.id
-        costumeBilling.createdAt = new Date().toISOString()
-        costumeBilling.updatedAt = new Date().toISOString()
-        
+        costumeBilling.createdAt = todayISTDateTime().toISOString()
+        costumeBilling.updatedAt = todayISTDateTime().toISOString()
+
         /// print 
         await printCostumeBill(costumeBilling)
         const response = await costumeBillingDB.post(costumeBilling) as PouchDB.Core.Response
@@ -282,13 +283,13 @@ export const createV2CostumeStock = async (costumeStock: V2CostumeStock, access_
             stock.quantity += costumeStock.quantity
             stock.pricePerUnit = costumeStock.pricePerUnit
             stock.refundPrice = costumeStock.refundPrice
-            stock.updatedAt = new Date().toISOString()
+            stock.updatedAt = todayISTDateTime().toISOString()
             stock.updatedBy = token.id
             await v2CostumeStockDB.put(stock)
             return stock
         }
         /// create v2CostumeStock
-        costumeStock.createdAt = new Date().toISOString()
+        costumeStock.createdAt = todayISTDateTime().toISOString()
         costumeStock.createdBy = token.id
         const v2CostumeStock = await v2CostumeStockDB.post(costumeStock)
         return v2CostumeStock

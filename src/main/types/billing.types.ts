@@ -116,6 +116,7 @@ export interface UnifiedBilling {
   discountAmount: number;
   total: number;
   gstAmount: number;
+  billDate: string | Date;
   isReturned: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;

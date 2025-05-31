@@ -3,6 +3,7 @@ import { LockerBilling } from "../types/locker.billing";
 import { Locker } from "../types/locker";
 import { decodeToken } from "./auth.controller";
 import { printLockerBill } from "./print-bill.controller";
+import { todayISTDateTime } from "./ist.controller";
 
 interface PouchResponse {
     ok?: boolean;
@@ -66,8 +67,8 @@ export const createLockerBilling = async (lockerBilling: LockerBilling, access_t
         // }
         console.log("Decoded is ", lockerBilling)
         lockerBilling.createdBy = decoded.id
-        lockerBilling.createdAt = new Date().toISOString()
-        lockerBilling.updatedAt = new Date().toISOString()
+        lockerBilling.createdAt = todayISTDateTime().toISOString()
+        lockerBilling.updatedAt = todayISTDateTime().toISOString()
         /// write transaction query to update lockers as occupied
       
 
@@ -85,7 +86,7 @@ export const createLockerBilling = async (lockerBilling: LockerBilling, access_t
         const updateLockerResult = await lockerDB.bulkDocs(lockers.docs.map(locker => ({
             ...locker,  // This spreads all properties including _id and _rev
             status: "occupied",
-            updatedAt: new Date().toISOString()
+            updatedAt: todayISTDateTime().toISOString()
         }))) as PouchResponse[];
         
         console.log("Update locker result is ", updateLockerResult)
@@ -183,7 +184,7 @@ export const refundLockerBilling = async (lockerBillingId: string, access_token:
         
         lockers.docs.forEach(locker => {
             locker.status = 'available';
-            locker.updatedAt = new Date().toISOString();
+            locker.updatedAt = todayISTDateTime().toISOString();
         })
         
         // Check if already returned
@@ -195,7 +196,7 @@ export const refundLockerBilling = async (lockerBillingId: string, access_token:
         const updatedLockerBilling = {
             ...lockerBilling,
             isReturned: true,
-            updatedAt: new Date().toISOString(),
+            updatedAt: todayISTDateTime().toISOString(),
             updatedBy: decoded.id
         }
         

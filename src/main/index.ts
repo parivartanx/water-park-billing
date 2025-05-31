@@ -13,6 +13,7 @@ import { createUnifiedBilling, getUnifiedBillingByCustomerPhone, getAllUnifiedBi
 import { setCashManagement, getCashManagementHistory } from './controllers/cash-management-controller'
 import { getLastUnifiedBillingByCustomerPhoneForRefund, refundUnifiedBillingByCostumeAndLockerIds } from './controllers/unified-billing.controller'
 import { getCashStatistics } from './controllers/cash-statistics.controller'
+import { forceSyncToCloud, getSyncStatus, syncUnifiedBillingOnly } from './controllers/sync.controller'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const escpos = require('escpos');
@@ -355,6 +356,35 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error getting cash statistics:', error)
       return { error: 'Failed to get cash statistics' }
+    }
+  })
+
+  // Manual sync handlers
+  ipcMain.handle('force-sync-to-cloud', async (_event, args) => {
+    try {
+      return await forceSyncToCloud(args.access_token)
+    } catch (error) {
+      console.error('Error in force sync to cloud:', error)
+      return { error: 'Failed to sync data to cloud' }
+    }
+  })
+
+  // Priority sync for unified billing only
+  ipcMain.handle('sync-unified-billing-only', async (_event, args) => {
+    try {
+      return await syncUnifiedBillingOnly(args.access_token)
+    } catch (error) {
+      console.error('Error in unified billing sync:', error)
+      return { error: 'Failed to sync unified billing to cloud' }
+    }
+  })
+
+  ipcMain.handle('get-sync-status', async (_event, args) => {
+    try {
+      return await getSyncStatus(args.access_token)
+    } catch (error) {
+      console.error('Error getting sync status:', error)
+      return { error: 'Failed to get sync status' }
     }
   })
   

@@ -3,6 +3,7 @@ import { TicketBilling } from "../types/ticket.billing";
 import { Ticket } from "../types/ticket"; 
 import { decodeToken } from "./auth.controller";
 import { printTicket } from "./print-bill.controller";
+import { todayISTDateTime } from "./ist.controller";
 
 // get tickets
 export const getTickets = async (): Promise<Ticket[]> => {
@@ -48,8 +49,8 @@ export const saveTicketBilling = async (billing: TicketBilling, access_token: st
             return { error: 'Unauthorized to save ticket billing' }
         }
         billing.createdBy = decoded.id
-        billing.createdAt = new Date().toISOString()
-        billing.updatedAt = new Date().toISOString()
+        billing.createdAt = todayISTDateTime().toISOString()
+        billing.updatedAt = todayISTDateTime().toISOString()
 
         /// print 
         await printTicket(billing)

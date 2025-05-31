@@ -6,6 +6,7 @@ import PouchDB from 'pouchdb';
 import { unifiedBillingDB, v2CostumeStockDB, lockerDB } from '../db';
 import { Locker } from '../types/locker';
 import { printUnifiedBilling } from './print-bill.controller';
+import { todayISTDateTime } from './ist.controller';
 
 // Initialize PouchDB with the find plugin
 PouchDB.plugin(PouchDBFind);
@@ -24,11 +25,18 @@ export const createUnifiedBilling = async (billingData: UnifiedBilling, access_t
     if (!token) {
       return { error: 'Invalid access token' };
     }
-
-    // Add metadata
-    billingData.createdAt = new Date().toISOString();
-    billingData.updatedAt = new Date().toISOString();
+    // Set time zone to Asia/Kolkata (Indian Standard Time)
+    const now = new Date();
+    // IST is UTC+5:30
+    const istTime = todayISTDateTime();
+    billingData.createdAt = istTime.toISOString();
+    billingData.updatedAt = istTime.toISOString();
     billingData.createdBy = token.id;
+    billingData.billDate = now.toLocaleDateString();
+    
+
+    console.log('Creating unified billing:', billingData);
+   
 
     // decrease stock quantity of costume
     for(const item of billingData.costumes) {
@@ -199,7 +207,7 @@ export const refundUnifiedBilling = async (billingId: string, access_token: stri
     
     // Update billing record
     billing.isReturned = true;
-    billing.updatedAt = new Date().toISOString();
+    billing.updatedAt = todayISTDateTime().toISOString();
     billing.updatedBy = token.id;
     
     // Save to database
@@ -354,7 +362,7 @@ export const refundUnifiedBillingByCostumeAndLockerIds = async (billingId: strin
      
     /// update isReturned
     billing.isReturned = true;
-    billing.updatedAt = new Date().toISOString();
+    billing.updatedAt = todayISTDateTime().toISOString();
     billing.updatedBy = token.id;
     
     // Save to database

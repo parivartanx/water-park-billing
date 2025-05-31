@@ -22,6 +22,7 @@ import SignIn from './components/SignIn'
 import ProtectedRoute from './components/ProtectedRoute'
 import ReturnItems from './components/ReturnItems'
 import SalesReport from './components/SalesReport'
+import SyncToCloud from './components/SyncToCloud'
 import { AuthProvider } from './context/AuthContext'
 import { Toaster } from 'react-hot-toast'
 
@@ -75,6 +76,7 @@ const App = (): JSX.Element => {
             <Route path="/costume" element={<CostumeStock />} />
             <Route path="/cash-store" element={<CashStore />} />
             <Route path="/return-items" element={<ReturnItems />} />
+            <Route path="/sync" element={<SyncToCloud />} />
           </Route>
 
           {/* Redirect any unknown routes to signin */}
