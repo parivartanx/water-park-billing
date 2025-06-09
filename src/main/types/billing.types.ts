@@ -107,6 +107,8 @@ export interface UnifiedBilling {
   costumes: CostumeV2Item[];
   tickets: TicketV2Item[];
   lockers: LockerV2Item[];
+  ticketsNo?: string | null;
+  stickersNo?: string | null;
   discount: number;
   discountType: 'flat' | 'percentage';
   cashPaid: number;

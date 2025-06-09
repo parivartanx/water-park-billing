@@ -310,12 +310,13 @@ const Dashboard: React.FC = () => {
   const getOriginalBill = (billId: string) => {
     return unifiedBills.find(bill => bill._id === billId);
   };
-
   // Use the unified bills from the store instead of mock data
   const recentBookings = unifiedBills.slice(0, 10).map(bill => ({
     id: bill._id || '',
     customer: bill.customerName || 'Unknown',
     customerNumber: bill.customerNumber || 'N/A',
+    ticketsNo: bill.ticketsNo || null,
+    stickersNo: bill.stickersNo || null,
     product: determineBillType(bill),
     quantity: calculateTotalQuantity(bill),
     date: bill.createdAt || '',
@@ -461,8 +462,7 @@ const Dashboard: React.FC = () => {
                         >
                           {expandedBill === booking.id ? '▼' : '▶'}
                         </button>
-                      </td>
-                      <td className="py-3 px-4">
+                      </td>                      <td className="py-3 px-4">
                         <div className="flex items-center">
                           <div className="w-8 h-8 rounded-full bg-[#DC004E]/10 flex items-center justify-center mr-3">
                             <span className="text-[#DC004E] font-bold">
@@ -472,6 +472,13 @@ const Dashboard: React.FC = () => {
                           <div>
                             <span className="font-medium block">{booking.customer}</span>
                             <span className="text-xs text-gray-500">{booking.customerNumber}</span>
+                            {(booking.ticketsNo || booking.stickersNo) && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {booking.ticketsNo && <span>Ticket: {booking.ticketsNo}</span>}
+                                {booking.ticketsNo && booking.stickersNo && <span> • </span>}
+                                {booking.stickersNo && <span>Sticker: {booking.stickersNo}</span>}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -510,9 +517,34 @@ const Dashboard: React.FC = () => {
                     
                     {/* Expanded details row */}
                     {expandedBill === booking.id && (
-                      <tr className="bg-gray-50">
-                        <td colSpan={7} className="py-4 px-6">
+                      <tr className="bg-gray-50">                        <td colSpan={7} className="py-4 px-6">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Customer Information */}
+                            {(booking.ticketsNo || booking.stickersNo) && (
+                              <div className="bg-white p-4 rounded shadow-sm">
+                                <h4 className="font-semibold text-sm mb-2 text-gray-700 flex items-center">
+                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  </svg>
+                                  Customer Info
+                                </h4>
+                                <div className="space-y-2">
+                                  {booking.ticketsNo && (
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Ticket Number:</span>
+                                      <span className="text-sm font-medium">{booking.ticketsNo}</span>
+                                    </div>
+                                  )}
+                                  {booking.stickersNo && (
+                                    <div className="flex justify-between">
+                                      <span className="text-sm text-gray-600">Sticker Number:</span>
+                                      <span className="text-sm font-medium">{booking.stickersNo}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            
                             {/* Payment details */}
                             <div className="bg-white p-4 rounded shadow-sm">
                               <h4 className="font-semibold text-sm mb-2 text-gray-700">Payment Details</h4>

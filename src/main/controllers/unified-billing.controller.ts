@@ -11,6 +11,49 @@ import { todayISTDateTime } from './ist.controller';
 // Initialize PouchDB with the find plugin
 PouchDB.plugin(PouchDBFind);
 
+/**
+ * Apply discount deduction to refund prices proportionally
+ * This function handles the case where a discount was applied to the original billing.
+ * It proportionally reduces the refund price for lockers and costumes based on their
+ * contribution to the total refund amount, ensuring no refund price goes below 0.
+ * @param billing The billing record with costumes and lockers
+ * @param discountAmount The discount amount to deduct
+ */
+const applyDiscountToRefundPrices = (billing: UnifiedBilling, discountAmount: number) => {
+  if (discountAmount <= 0) return;
+  
+  // Calculate total original refund amount
+  const totalRefundAmount = 
+    billing.costumes.reduce((sum, item) => sum + (item.refundPrice || 0), 0) +
+    billing.lockers.reduce((sum, item) => sum + (item.refundPrice || 0), 0);
+  
+  if (totalRefundAmount <= 0) return;
+  
+  let remainingDiscountToDeduct = discountAmount;
+  
+  // Deduct discount proportionally from costumes
+  for(const item of billing.costumes) {
+    if (remainingDiscountToDeduct <= 0 || (item.refundPrice || 0) <= 0) continue;
+    
+    const proportionalDiscount = ((item.refundPrice || 0) / totalRefundAmount) * discountAmount;
+    const discountToDeduct = Math.min(proportionalDiscount, remainingDiscountToDeduct, item.refundPrice || 0);
+    
+    item.refundPrice = Math.max(0, (item.refundPrice || 0) - discountToDeduct);
+    remainingDiscountToDeduct -= discountToDeduct;
+  }
+  
+  // Deduct discount proportionally from lockers
+  for(const item of billing.lockers) {
+    if (remainingDiscountToDeduct <= 0 || (item.refundPrice || 0) <= 0) continue;
+    
+    const proportionalDiscount = ((item.refundPrice || 0) / totalRefundAmount) * discountAmount;
+    const discountToDeduct = Math.min(proportionalDiscount, remainingDiscountToDeduct, item.refundPrice || 0);
+    
+    item.refundPrice = Math.max(0, (item.refundPrice || 0) - discountToDeduct);
+    remainingDiscountToDeduct -= discountToDeduct;
+  }
+};
+
 
 /**
  * Create a new unified billing record
@@ -80,15 +123,18 @@ export const createUnifiedBilling = async (billingData: UnifiedBilling, access_t
 
       item.refundPrice = (locker.docs[0].refundAmount || 0);
 
-      
-      await lockerDB.put({
+        await lockerDB.put({
         ...locker.docs[0],
         _id: locker.docs[0]._id,
         _rev: locker.docs[0]._rev,
         status:"occupied"
       })
     }
-      
+    
+    // Apply discount deduction to refund prices if discount was applied
+    if (billingData.discountAmount > 0) {
+      applyDiscountToRefundPrices(billingData, billingData.discountAmount);
+    }
     
     // Save to database
     const result = await unifiedBillingDB.post(billingData);
@@ -246,9 +292,9 @@ export const getLastUnifiedBillingByCustomerPhoneForRefund = async (customerPhon
 
     if (!result || result.docs.length === 0) {
       return { success: false, error: 'No unified billing found' };
-    }
+    }    const billingHistory = result.docs[0];
     
-    const billingHistory = result.docs[0];
+    // Calculate original refund prices for costumes
     for(const item of billingHistory.costumes) {
       // fetch costume stock
       const stock = await v2CostumeStockDB.find({
@@ -259,7 +305,7 @@ export const getLastUnifiedBillingByCustomerPhoneForRefund = async (customerPhon
 
       item.refundPrice = (stock.docs[0].refundPrice || 0) * item.quantity;
     }
-    
+      // Calculate original refund prices for lockers
     for(const item of billingHistory.lockers) {
       // fetch locker stock
       const stock = await lockerDB.find({
@@ -271,6 +317,10 @@ export const getLastUnifiedBillingByCustomerPhoneForRefund = async (customerPhon
       item.refundPrice =  (stock.docs[0].refundAmount || 0) * item.quantity;
     }
 
+    // // Apply discount deduction to refund prices if discount was applied to the original billing
+    if (billingHistory.discountAmount > 0) {
+      applyDiscountToRefundPrices(billingHistory, billingHistory.discountAmount);
+    }
 
     return { 
       success: true, 

@@ -370,8 +370,7 @@ const BillHistory: React.FC = (): React.ReactElement => {
                           >
                             {expandedBill === bill._id ? '▼' : '▶'}
                           </button>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        </td>                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="w-8 h-8 rounded-full bg-[#DC004E]/10 flex items-center justify-center mr-3">
                               <span className="text-[#DC004E] font-bold">
@@ -385,6 +384,13 @@ const BillHistory: React.FC = (): React.ReactElement => {
                               <div className="text-sm text-gray-500">
                                 {bill.customerNumber}
                               </div>
+                              {(bill.ticketsNo || bill.stickersNo) && (
+                                <div className="text-xs text-gray-400 mt-1">
+                                  {bill.ticketsNo && <span>Ticket: {bill.ticketsNo}</span>}
+                                  {bill.ticketsNo && bill.stickersNo && <span> • </span>}
+                                  {bill.stickersNo && <span>Sticker: {bill.stickersNo}</span>}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -429,9 +435,34 @@ const BillHistory: React.FC = (): React.ReactElement => {
 
                       {/* Expanded details row */}
                       {expandedBill === bill._id && (
-                        <tr className="bg-gray-50">
-                          <td colSpan={7} className="py-4 px-6">
+                        <tr className="bg-gray-50">                          <td colSpan={7} className="py-4 px-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {/* Customer Information */}
+                              {(bill.ticketsNo || bill.stickersNo) && (
+                                <div className="bg-white p-4 rounded shadow-sm">
+                                  <h4 className="font-semibold text-sm mb-2 text-gray-700 flex items-center">
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Customer Info
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {bill.ticketsNo && (
+                                      <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Ticket Number:</span>
+                                        <span className="text-sm font-medium">{bill.ticketsNo}</span>
+                                      </div>
+                                    )}
+                                    {bill.stickersNo && (
+                                      <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Sticker Number:</span>
+                                        <span className="text-sm font-medium">{bill.stickersNo}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              
                               {/* Payment details */}
                               <div className="bg-white p-4 rounded shadow-sm">
                                 <h4 className="font-semibold text-sm mb-2 text-gray-700 flex items-center">

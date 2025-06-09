@@ -39,10 +39,11 @@ const AllBilling: React.FC = () => {
   const [ticketDialogOpen, setTicketDialogOpen] = useState(false)
   const [lockerDialogOpen, setLockerDialogOpen] = useState(false)
   const [costumeDialogOpen, setCostumeDialogOpen] = useState(false)
-
   // Customer information
   const [customerName, setCustomerName] = useState('')
   const [mobileNumber, setMobileNumber] = useState('')
+  const [ticketNo, setTicketNo] = useState('')
+  const [stickerNo, setStickerNo] = useState('')
 
   // Cart state
   const [cartItems, setCartItems] = useState<CartItem[]>([])
@@ -245,9 +246,7 @@ const AllBilling: React.FC = () => {
       // Group cart items by type
       const ticketItems = cartItems.filter((item) => item.type === 'ticket')
       const lockerItems = cartItems.filter((item) => item.type === 'locker')
-      const costumeItems = cartItems.filter((item) => item.type === 'costume')
-
-      // Create unified billing data
+      const costumeItems = cartItems.filter((item) => item.type === 'costume')      // Create unified billing data
       const unifiedBillingData = {
         customerName,
         customerNumber: mobileNumber,
@@ -277,6 +276,10 @@ const AllBilling: React.FC = () => {
           category: item.originalItem.category
         })),
         
+        // Ticket and sticker numbers
+        ticketsNo: ticketNo || null,
+        stickersNo: stickerNo || null,
+        
         // Payment and discount details
         discount,
         discountType,
@@ -304,11 +307,12 @@ const AllBilling: React.FC = () => {
       // Update status on success
       setBillingStatus('success')
       toast.success('Unified billing created successfully!')
-      
-      // Reset form after successful submission
+        // Reset form after successful submission
       setCartItems([])
       setCustomerName('')
       setMobileNumber('')
+      setTicketNo('')
+      setStickerNo('')
       setDiscount(0)
       setCashAmount(null)
       setOnlineAmount(null)
@@ -369,8 +373,7 @@ const AllBilling: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <User className="h-6 w-6 text-[#DC004E]" />
             Customer Details
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          </h2>          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="group relative">
               <div className="absolute -inset-0.5 bg-[#DC004E] rounded-xl opacity-25 group-hover:opacity-50 transition duration-300 blur-sm group-hover:blur-md"></div>
               <div className="relative bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all duration-300 group-hover:border-[#DC004E] group-hover:shadow-lg">
@@ -403,6 +406,38 @@ const AllBilling: React.FC = () => {
                   required
                   placeholder="Enter 10-digit number"
                   maxLength={10}
+                />
+              </div>
+            </div>
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-[#DC004E] rounded-xl opacity-25 group-hover:opacity-50 transition duration-300 blur-sm group-hover:blur-md"></div>
+              <div className="relative bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all duration-300 group-hover:border-[#DC004E] group-hover:shadow-lg">
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <Ticket className="h-4 w-4 mr-2 text-[#DC004E]" />
+                  Ticket Number
+                </label>
+                <input
+                  type="text"
+                  value={ticketNo}
+                  onChange={(e) => setTicketNo(e.target.value)}
+                  className="w-full px-4 py-3 border-b-2 border-transparent focus:border-[#DC004E] bg-gray-50 rounded-lg transition-all duration-300 focus:bg-white focus:outline-none"
+                  placeholder="Enter ticket number (optional)"
+                />
+              </div>
+            </div>
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-[#DC004E] rounded-xl opacity-25 group-hover:opacity-50 transition duration-300 blur-sm group-hover:blur-md"></div>
+              <div className="relative bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all duration-300 group-hover:border-[#DC004E] group-hover:shadow-lg">
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <FaTshirt className="h-4 w-4 mr-2 text-[#DC004E]" />
+                  Sticker Number
+                </label>
+                <input
+                  type="text"
+                  value={stickerNo}
+                  onChange={(e) => setStickerNo(e.target.value)}
+                  className="w-full px-4 py-3 border-b-2 border-transparent focus:border-[#DC004E] bg-gray-50 rounded-lg transition-all duration-300 focus:bg-white focus:outline-none"
+                  placeholder="Enter sticker number (optional)"
                 />
               </div>
             </div>
