@@ -1,5 +1,5 @@
-2025/06/10-00:07:54.199 84c Recovering log #58
-2025/06/10-00:07:54.199 84c Level-0 table #60: started
-2025/06/10-00:07:54.220 84c Level-0 table #60: 237 bytes OK
-2025/06/10-00:07:54.232 84c Delete type=0 #58
-2025/06/10-00:07:54.233 84c Delete type=3 #56
+2025/06/10-00:14:50.064 242c Recovering log #61
+2025/06/10-00:14:50.064 242c Level-0 table #63: started
+2025/06/10-00:14:50.101 242c Level-0 table #63: 237 bytes OK
+2025/06/10-00:14:50.129 242c Delete type=0 #61
+2025/06/10-00:14:50.131 242c Delete type=3 #59
