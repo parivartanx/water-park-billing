@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { Cloud, CloudUpload, RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { Cloud, CloudUpload, CloudDownload, RefreshCw, CheckCircle, AlertCircle, Loader2, ArrowUpDown } from 'lucide-react'
 
 interface SyncProgress {
   total: number;
@@ -109,6 +109,102 @@ const SyncToCloud: React.FC = () => {
         total: 11,
         completed: 0,
         currentTable: 'Sync failed',
+        status: 'error'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSyncFromCloud = async () => {
+    const access_token = localStorage.getItem('access_token')
+    if (!access_token) {
+      toast.error('You are not authenticated. Please log in.')
+      return
+    }
+
+    setIsLoading(true)
+    setSyncProgress(null)
+
+    try {
+      // Show initial progress
+      setSyncProgress({
+        total: 11,
+        completed: 0,
+        currentTable: 'Initializing cloud download...',
+        status: 'syncing'
+      });
+
+      toast.loading('Starting sync from cloud...', { id: 'sync-toast' });
+
+      const result = await window.electron.ipcRenderer.invoke('force-sync-from-cloud', {
+        access_token
+      }) as SyncResult
+
+      if (result.success) {
+        setSyncProgress(result.progress || null)
+        toast.success(result.message, { id: 'sync-toast' })
+        setLastSyncTime(new Date().toLocaleString())
+      } else {
+        setSyncProgress(result.progress || null)
+        toast.error(result.error || result.message, { id: 'sync-toast' })
+      }
+
+    } catch (error) {
+      console.error('Sync from cloud error:', error)
+      toast.error('Failed to sync data from cloud', { id: 'sync-toast' })
+      setSyncProgress({
+        total: 11,
+        completed: 0,
+        currentTable: 'Cloud sync failed',
+        status: 'error'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleBidirectionalSync = async () => {
+    const access_token = localStorage.getItem('access_token')
+    if (!access_token) {
+      toast.error('You are not authenticated. Please log in.')
+      return
+    }
+
+    setIsLoading(true)
+    setSyncProgress(null)
+
+    try {
+      // Show initial progress - bidirectional has double the operations
+      setSyncProgress({
+        total: 22, // 11 databases × 2 operations each
+        completed: 0,
+        currentTable: 'Initializing bidirectional sync...',
+        status: 'syncing'
+      });
+
+      toast.loading('Starting bidirectional sync...', { id: 'sync-toast' });
+
+      const result = await window.electron.ipcRenderer.invoke('bidirectional-sync', {
+        access_token
+      }) as SyncResult
+
+      if (result.success) {
+        setSyncProgress(result.progress || null)
+        toast.success(result.message, { id: 'sync-toast' })
+        setLastSyncTime(new Date().toLocaleString())
+      } else {
+        setSyncProgress(result.progress || null)
+        toast.error(result.error || result.message, { id: 'sync-toast' })
+      }
+
+    } catch (error) {
+      console.error('Bidirectional sync error:', error)
+      toast.error('Failed to perform bidirectional sync', { id: 'sync-toast' })
+      setSyncProgress({
+        total: 22,
+        completed: 0,
+        currentTable: 'Bidirectional sync failed',
         status: 'error'
       })
     } finally {
@@ -229,9 +325,7 @@ const SyncToCloud: React.FC = () => {
             <CloudUpload className="w-5 h-5" />
           )}
           {isLoading ? 'Syncing...' : '🚀 Priority Sync (Unified Billing)'}
-        </button>
-
-        <div className="flex gap-4">
+        </button>        <div className="flex gap-4">
           <button
             onClick={handleSyncToCloud}
             disabled={isLoading}
@@ -246,7 +340,43 @@ const SyncToCloud: React.FC = () => {
             ) : (
               <CloudUpload className="w-5 h-5" />
             )}
-            {isLoading ? 'Syncing...' : 'Sync All Data to Cloud'}
+            {isLoading ? 'Syncing...' : 'Push to Cloud'}
+          </button>
+
+          <button
+            onClick={handleSyncFromCloud}
+            disabled={isLoading}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+              isLoading
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-purple-600 text-white hover:bg-purple-700'
+            }`}
+          >
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <CloudDownload className="w-5 h-5" />
+            )}
+            {isLoading ? 'Syncing...' : 'Pull from Cloud'}
+          </button>
+        </div>
+
+        <div className="flex gap-4">
+          <button
+            onClick={handleBidirectionalSync}
+            disabled={isLoading}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+              isLoading
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+            }`}
+          >
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <ArrowUpDown className="w-5 h-5" />
+            )}
+            {isLoading ? 'Syncing...' : '🔄 Bidirectional Sync'}
           </button>
 
           <button
@@ -258,19 +388,19 @@ const SyncToCloud: React.FC = () => {
             Check Status
           </button>
         </div>
-      </div>
-
-      {/* Information Section */}
+      </div>      {/* Information Section */}
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
         <h3 className="font-medium text-blue-800 mb-2">Sync Options:</h3>
         <ul className="text-sm text-blue-700 space-y-1">
           <li>• <strong>Priority Sync:</strong> Syncs only unified billing data (fastest, most critical)</li>
-          <li>• <strong>Full Sync:</strong> Syncs all data including employees, customers, inventory, etc.</li>
+          <li>• <strong>Push to Cloud:</strong> Upload all local data to cloud (local → cloud)</li>
+          <li>• <strong>Pull from Cloud:</strong> Download all cloud data to local (cloud → local)</li>
+          <li>• <strong>Bidirectional Sync:</strong> Both push and pull for complete synchronization</li>
         </ul>
         <div className="mt-3 p-3 bg-green-100 rounded border border-green-200">
           <p className="text-sm text-green-800">
-            <strong>💡 Tip:</strong> Use Priority Sync for daily operations to quickly backup billing data.
-            Use Full Sync for complete data backup.
+            <strong>💡 Tip:</strong> Use <strong>Bidirectional Sync</strong> for the most comprehensive data synchronization.
+            Use individual Push/Pull when you need specific data flow direction.
           </p>
         </div>
       </div>
@@ -280,9 +410,8 @@ const SyncToCloud: React.FC = () => {
         <div className="flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
           <div className="text-sm text-amber-800">
-            <strong>Note:</strong> This will upload all local data to the cloud. 
-            Ensure you have a stable internet connection before starting the sync process.
-            Large amounts of data may take several minutes to sync.
+            <strong>Note:</strong> Ensure you have a stable internet connection before starting any sync process.
+            Large amounts of data may take several minutes to sync. Bidirectional sync takes the longest as it performs both operations.
           </div>
         </div>
       </div>

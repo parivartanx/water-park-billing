@@ -43,20 +43,32 @@ export const billingHistories = async ({from, to, type, searchStr, access_token}
        toDate.setHours(23, 59, 59, 999); // Set to end of day
         //  console.log("To date", toDate)
 
+        const billMonth = fromDate.getMonth() + 1; // Months are 0-indexed in JavaScript
+        const billDay = fromDate.getDate();
+        const billYear = fromDate.getFullYear();
+
+        const billDate = `${billMonth}/${billDay}/${billYear}`;
+
        // Base selector for date range
        const dateSelector = {
-           createdAt: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() },
+        //    createdAt: { $gte: fromDate.toISOString(), $lte: toDate.toISOString() },
+              billDate: billDate,
            createdBy: token.id
        };
 
-    //    console.log("today billing histories", dateSelector)
+       
+       console.log("today billing histories", dateSelector)
        
        /// if type === all then get all unified bills
   
             const unifiedBills = await unifiedBillingDB.find({
-                selector: dateSelector
+                selector: {
+                    ...dateSelector,
+                }
             }) as PouchDB.Find.FindResponse<UnifiedBilling>;
-            
+
+            // console.log("Unified Bills for history", unifiedBills);
+
             return { unifiedBills: unifiedBills.docs || [] };
        
        

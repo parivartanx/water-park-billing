@@ -6,7 +6,7 @@ const validChannels = ['login', 'logout', 'get-tickets', 'get-ticket-by-id', 'cr
   'get-billing-histories', 'get-recent-billing-histories', 'get-costume-billing-by-customer-phone', 'refund-costume-billing',
   'get-locker-billing-by-customer-phone', 'refund-locker-billing', 'get-employee-by-id', 'create-unified-billing', 'get-unified-billing-by-customer-phone', 'refund-unified-billing',
   'get-all-unified-billings', 'set-cash-management', 'get-cash-management-history', 'get-last-unified-billing-by-customer-phone',
-  'refund-unified-billing-by-costume-and-locker-ids', 'get-category-list', 'get-cash-statistics', 'force-sync-to-cloud', 'sync-unified-billing-only', 'get-sync-status'
+  'refund-unified-billing-by-costume-and-locker-ids', 'get-category-list', 'get-cash-statistics', 'force-sync-to-cloud', 'force-sync-from-cloud', 'bidirectional-sync', 'sync-unified-billing-only', 'get-sync-status'
 ] as const
 export type ValidChannel = typeof validChannels[number]
 

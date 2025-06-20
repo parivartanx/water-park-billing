@@ -312,3 +312,290 @@ export const getSyncStatus = async (access_token: string): Promise<SyncResult> =
     };
   }
 };
+
+/**
+ * Force sync from cloud to local databases (pull from remote)
+ * Priority: unified-billing database first, then others
+ * @param access_token Access token for authentication
+ * @returns Sync result with progress information
+ */
+export const forceSyncFromCloud = async (access_token: string): Promise<SyncResult> => {
+  try {
+    // Verify access token
+    const token = decodeToken(access_token);
+    if (!token) {
+      return {
+        success: false,
+        message: 'Invalid access token',
+        error: 'Authentication failed'
+      };
+    }
+
+    console.log('Starting manual sync from cloud with unified-billing priority...');
+    
+    const totalDatabases = databases.length;
+    let completedDatabases = 0;
+    const syncResults: Array<{name: string, success: boolean, error?: string, docCount?: number}> = [];
+
+    // Process each database in priority order
+    for (const { name, db, priority } of databases) {
+      try {
+        console.log(`${priority ? '[PRIORITY] ' : ''}Pulling ${name} from cloud...`);
+        
+        // Special handling for unified-billing (priority database)
+        if (priority) {
+          console.log('🚀 PRIORITY PULL: Processing unified-billing database...');
+        }
+        
+        // Force pull from remote using replication with timeout
+        const replicationPromise = db.replicate.from(`http://admin:password@165.232.179.60:5984/${name}`, {
+          live: false,
+          retry: false,
+          timeout: priority ? 60000 : 30000 // Longer timeout for priority DB
+        });
+
+        // Add timeout wrapper for better error handling
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Sync timeout')), priority ? 120000 : 60000);
+        });
+
+        const replicationResult = await Promise.race([replicationPromise, timeoutPromise]);
+        
+        // Get updated document count after pull
+        const allDocs = await db.allDocs({ include_docs: true });
+        const docCount = allDocs.rows.length;
+        
+        console.log(`✅ Pull completed for ${name}:`, replicationResult);
+        console.log(`📊 ${name} now has ${docCount} documents locally`);
+        syncResults.push({ name, success: true, docCount });
+        
+        if (priority) {
+          console.log('🎉 PRIORITY PULL COMPLETED: unified-billing synced successfully from cloud!');
+        }
+        
+        completedDatabases++;
+        
+      } catch (error) {
+        console.error(`❌ Error pulling ${name}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        
+        // Special error handling for priority database
+        if (priority) {
+          console.error('🚨 CRITICAL: Failed to pull unified-billing database from cloud!');
+          return {
+            success: false,
+            message: 'Failed to sync critical unified-billing database from cloud',
+            error: `Unified billing pull failed: ${errorMessage}`,
+            progress: {
+              total: totalDatabases,
+              completed: completedDatabases,
+              currentTable: `Failed: ${name}`,
+              status: 'error'
+            }
+          };
+        }
+        
+        syncResults.push({ 
+          name, 
+          success: false, 
+          error: errorMessage
+        });
+        completedDatabases++;
+      }
+    }
+
+    // Calculate results
+    const failedSyncs = syncResults.filter(result => !result.success);
+    const totalSyncedDocs = syncResults.reduce((sum, result) => sum + (result.docCount || 0), 0);
+    
+    if (failedSyncs.length === 0) {
+      return {
+        success: true,
+        message: `✅ Successfully pulled all ${totalDatabases} databases from cloud (${totalSyncedDocs} total documents)`,
+        progress: {
+          total: totalDatabases,
+          completed: completedDatabases,
+          currentTable: 'All databases pulled successfully',
+          status: 'completed'
+        }
+      };
+    } else {
+      return {
+        success: false,
+        message: `⚠️ Pull completed with ${failedSyncs.length} failures (${totalSyncedDocs} documents synced)`,
+        error: `Failed databases: ${failedSyncs.map(f => f.name).join(', ')}`,
+        progress: {
+          total: totalDatabases,
+          completed: completedDatabases,
+          currentTable: 'Completed with errors',
+          status: 'error'
+        }
+      };
+    }
+
+  } catch (error) {
+    console.error('Error in manual pull from cloud:', error);
+    return {
+      success: false,
+      message: 'Manual pull from cloud failed',
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};
+
+/**
+ * Bidirectional sync - both push and pull
+ * @param access_token Access token for authentication
+ * @returns Sync result with progress information
+ */
+export const bidirectionalSync = async (access_token: string): Promise<SyncResult> => {
+  try {
+    // Verify access token
+    const token = decodeToken(access_token);
+    if (!token) {
+      return {
+        success: false,
+        message: 'Invalid access token',
+        error: 'Authentication failed'
+      };
+    }
+
+    console.log('Starting bidirectional sync (push + pull) with unified-billing priority...');
+    
+    const totalDatabases = databases.length * 2; // Double because we do both push and pull
+    let completedOperations = 0;
+    const syncResults: Array<{name: string, operation: string, success: boolean, error?: string, docCount?: number}> = [];
+
+    // Process each database in priority order - BIDIRECTIONAL
+    for (const { name, db, priority } of databases) {
+      try {
+        console.log(`${priority ? '[PRIORITY] ' : ''}Bidirectional sync for ${name}...`);
+        
+        if (priority) {
+          console.log('🚀 PRIORITY BIDIRECTIONAL: Processing unified-billing database...');
+        }
+        
+        // STEP 1: PULL FROM CLOUD (get latest from remote)
+        try {
+          const pullPromise = db.replicate.from(`http://admin:password@165.232.179.60:5984/${name}`, {
+            live: false,
+            retry: false,
+            timeout: priority ? 60000 : 30000
+          });          const pullTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Pull timeout')), priority ? 120000 : 60000);
+          });
+
+          await Promise.race([pullPromise, pullTimeoutPromise]);
+          console.log(`✅ Pull completed for ${name}`);
+          syncResults.push({ name, operation: 'pull', success: true });
+          completedOperations++;
+        } catch (pullError) {
+          console.error(`❌ Pull failed for ${name}:`, pullError);
+          syncResults.push({ 
+            name, 
+            operation: 'pull', 
+            success: false, 
+            error: pullError instanceof Error ? pullError.message : 'Pull failed'
+          });
+          completedOperations++;
+        }
+        
+        // STEP 2: PUSH TO CLOUD (send local changes)
+        try {
+          const allDocs = await db.allDocs({ include_docs: true });
+          const docCount = allDocs.rows.length;
+          
+          const pushPromise = db.replicate.to(`http://admin:password@165.232.179.60:5984/${name}`, {
+            live: false,
+            retry: false,
+            timeout: priority ? 60000 : 30000
+          });          const pushTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Push timeout')), priority ? 120000 : 60000);
+          });
+
+          await Promise.race([pushPromise, pushTimeoutPromise]);
+          console.log(`✅ Push completed for ${name}`);
+          syncResults.push({ name, operation: 'push', success: true, docCount });
+          completedOperations++;
+        } catch (pushError) {
+          console.error(`❌ Push failed for ${name}:`, pushError);
+          syncResults.push({ 
+            name, 
+            operation: 'push', 
+            success: false, 
+            error: pushError instanceof Error ? pushError.message : 'Push failed'
+          });
+          completedOperations++;
+        }
+        
+        if (priority) {
+          console.log('🎉 PRIORITY BIDIRECTIONAL SYNC COMPLETED: unified-billing synced both ways!');
+        }
+        
+      } catch (error) {
+        console.error(`❌ Error in bidirectional sync for ${name}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        
+        if (priority) {
+          console.error('🚨 CRITICAL: Failed bidirectional sync for unified-billing database!');
+          return {
+            success: false,
+            message: 'Failed critical unified-billing bidirectional sync',
+            error: `Unified billing bidirectional sync failed: ${errorMessage}`,
+            progress: {
+              total: totalDatabases,
+              completed: completedOperations,
+              currentTable: `Failed: ${name}`,
+              status: 'error'
+            }
+          };
+        }
+        
+        syncResults.push({ 
+          name, 
+          operation: 'both', 
+          success: false, 
+          error: errorMessage
+        });
+        completedOperations += 2; // Account for both operations failing
+      }
+    }
+
+    // Calculate results
+    const failedSyncs = syncResults.filter(result => !result.success);
+    const totalDocCount = syncResults.reduce((sum, result) => sum + (result.docCount || 0), 0);
+    
+    if (failedSyncs.length === 0) {
+      return {
+        success: true,
+        message: `✅ Successfully completed bidirectional sync for all databases (${totalDocCount} documents processed)`,
+        progress: {
+          total: totalDatabases,
+          completed: completedOperations,
+          currentTable: 'All bidirectional syncs completed',
+          status: 'completed'
+        }
+      };
+    } else {
+      return {
+        success: false,
+        message: `⚠️ Bidirectional sync completed with ${failedSyncs.length} failures`,
+        error: `Failed operations: ${failedSyncs.map(f => `${f.name} (${f.operation})`).join(', ')}`,
+        progress: {
+          total: totalDatabases,
+          completed: completedOperations,
+          currentTable: 'Completed with errors',
+          status: 'error'
+        }
+      };
+    }
+
+  } catch (error) {
+    console.error('Error in bidirectional sync:', error);
+    return {
+      success: false,
+      message: 'Bidirectional sync failed',
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};

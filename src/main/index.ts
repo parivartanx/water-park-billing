@@ -13,7 +13,7 @@ import { createUnifiedBilling, getUnifiedBillingByCustomerPhone, getAllUnifiedBi
 import { setCashManagement, getCashManagementHistory } from './controllers/cash-management-controller'
 import { getLastUnifiedBillingByCustomerPhoneForRefund, refundUnifiedBillingByCostumeAndLockerIds } from './controllers/unified-billing.controller'
 import { getCashStatistics } from './controllers/cash-statistics.controller'
-import { forceSyncToCloud, getSyncStatus, syncUnifiedBillingOnly } from './controllers/sync.controller'
+import { forceSyncToCloud, forceSyncFromCloud, bidirectionalSync, getSyncStatus, syncUnifiedBillingOnly } from './controllers/sync.controller'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const escpos = require('escpos');
@@ -358,7 +358,6 @@ app.whenReady().then(() => {
       return { error: 'Failed to get cash statistics' }
     }
   })
-
   // Manual sync handlers
   ipcMain.handle('force-sync-to-cloud', async (_event, args) => {
     try {
@@ -366,6 +365,26 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error in force sync to cloud:', error)
       return { error: 'Failed to sync data to cloud' }
+    }
+  })
+
+  // Manual sync from cloud to local
+  ipcMain.handle('force-sync-from-cloud', async (_event, args) => {
+    try {
+      return await forceSyncFromCloud(args.access_token)
+    } catch (error) {
+      console.error('Error in force sync from cloud:', error)
+      return { error: 'Failed to sync data from cloud' }
+    }
+  })
+
+  // Bidirectional sync (both push and pull)
+  ipcMain.handle('bidirectional-sync', async (_event, args) => {
+    try {
+      return await bidirectionalSync(args.access_token)
+    } catch (error) {
+      console.error('Error in bidirectional sync:', error)
+      return { error: 'Failed to perform bidirectional sync' }
     }
   })
 
